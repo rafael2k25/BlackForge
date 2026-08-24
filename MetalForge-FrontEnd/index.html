@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css"> 
+    <title>CNC System</title>
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            <h1>CNC</h1>
+            <span>SYSTEM</span>
+        </div>
+
+        <nav class="menu">
+
+            <button class="menu-item active" data-section="dashboard">
+                Dashboard
+            </button>
+
+            <button class="menu-item" data-section="ordens">
+                Ordens de Serviço
+            </button>
+
+            <button class="menu-item" data-section="materiais">
+                Materiais
+            </button>
+
+            <button class="menu-item" data-section="ferramentas">
+                Ferramentas
+            </button>
+
+            <button class="menu-item" data-section="maquinas">
+                Máquinas
+            </button>
+
+            <button class="menu-item" data-section="manutencao">
+                Manutenção
+            </button>
+
+            <button class="menu-item" data-section="orcamentos">
+                Orçamentos
+            </button>
+
+        </nav>
+
+    </aside>
+
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="main-content">
+
+        <!-- HEADER -->
+        <header class="topbar">
+
+            <div>
+                <span class="page-label">SISTEMA CNC</span>
+                <h2 id="page-title">Dashboard</h2>
+            </div>
+
+            <div class="user-area">
+                <span>Operador</span>
+            </div>
+
+        </header>
+
+
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="page-section active-section">
+
+            <h2>Dashboard</h2>
+
+            <div class="dashboard-cards">
+
+                <div class="dashboard-card">
+                    <span>Ordens Abertas</span>
+                    <strong>0</strong>
+                </div>
+
+                <div class="dashboard-card">
+                    <span>Em Produção</span>
+                    <strong>0</strong>
+                </div>
+
+                <div class="dashboard-card">
+                    <span>Máquinas Ativas</span>
+                    <strong>0</strong>
+                </div>
+
+                <div class="dashboard-card">
+                    <span>Estoque Baixo</span>
+                    <strong>0</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ORDENS DE SERVIÇO -->
+        <section id="ordens" class="page-section">
+
+            <div class="section-header">
+
+                <div>
+                    <span class="section-label">PRODUÇÃO</span>
+                    <h2>Ordens de Serviço</h2>
+                </div>
+
+                <button class="primary-button">
+                    + Nova OS
+                </button>
+
+            </div>
+
+            <div class="content-card">
+
+                <p>Nenhuma ordem de serviço cadastrada.</p>
+
+            </div>
+
+        </section>
+
+
+        <!-- MATERIAIS -->
+        <section id="materiais" class="page-section">
+
+            <div class="section-header">
+
+                <div>
+                    <span class="section-label">ESTOQUE</span>
+                    <h2>Materiais</h2>
+                </div>
+
+                <button class="primary-button">
+                    + Novo Material
+                </button>
+
+            </div>
+
+            <div class="content-card">
+
+                <p>Nenhum material cadastrado.</p>
+
+            </div>
+
+        </section>
+
+
+        <!-- FERRAMENTAS -->
+        <section id="ferramentas" class="page-section">
+
+            <div class="section-header">
+
+                <div>
+                    <span class="section-label">FERRAMENTARIA</span>
+                    <h2>Ferramentas</h2>
+                </div>
+
+                <button class="primary-button">
+                    + Nova Ferramenta
+                </button>
+
+            </div>
+
+            <div class="content-card">
+
+                <p>Nenhuma ferramenta cadastrada.</p>
+
+            </div>
+
+        </section>
+
+
+        <!-- MÁQUINAS -->
+        <section id="maquinas" class="page-section">
+
+            <div class="section-header">
+
+                <div>
+                    <span class="section-label">PRODUÇÃO</span>
+                    <h2>Máquinas</h2>
+                </div>
+
+                <button class="primary-button">
+                    + Nova Máquina
+                </button>
+
+            </div>
+
+            <div class="content-card">
+
+                <p>Nenhuma máquina cadastrada.</p>
+
+            </div>
+
+        </section>
+
+
+        <!-- MANUTENÇÃO -->
+        <section id="manutencao" class="page-section">
+
+            <div class="section-header">
+
+                <div>
+                    <span class="section-label">MANUTENÇÃO</span>
+                    <h2>Manutenção</h2>
+                </div>
+
+                <button class="primary-button">
+                    + Registrar Manutenção
+                </button>
+
+            </div>
+
+            <div class="content-card">
+
+                <p>Nenhuma manutenção registrada.</p>
+
+            </div>
+
+        </section>
+
+
+        <!-- ORÇAMENTOS -->
+        <section id="orcamentos" class="page-section">
+            <div class="section-header">
+                <div>
+                    <span class="section-label">FINANCEIRO</span>
+                    <h2>Orçamentos</h2>
+                </div>
+
+                <button class="primary-button">
+                    + Novo Orçamento
+                </button>
+            </div>
+            <div class="content-card">
+
+                <p>Nenhum orçamento cadastrado.</p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
