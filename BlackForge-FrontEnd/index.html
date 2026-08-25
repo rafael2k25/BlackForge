@@ -1,258 +1,746 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css"> 
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link rel="stylesheet" href="style.css">
     <title>Black Forge</title>
 </head>
 
 <body>
 
-    <!-- SIDEBAR -->
+    <!-- =========================================
+         SIDEBAR
+    ========================================== -->
+
     <aside class="sidebar">
 
-        <div class="logo">
-            <h1>Black Forge</h1>
-            <span>SISTEMA INDUSTRIAL</span>
+        <div class="brand">
+
+            <div class="brand-mark">
+                BF
+            </div>
+
+            <div class="logo">
+                <span>BLACKFORGE</span>
+                <small>SISTEMA INDUSTRIAL</small>
+            </div>
+
         </div>
 
-        <nav class="menu">
 
-            <button class="menu-item active" data-section="dashboard">
-                Dashboard
-            </button>
+        <div class="sidebar-section">
 
-            <button class="menu-item" data-section="ordens">
-                Ordens de Serviço
-            </button>
+            <span class="sidebar-label">
+                NAVEGAÇÃO
+            </span>
 
-            <button class="menu-item" data-section="materiais">
-                Materiais
-            </button>
+            <nav class="menu">
 
-            <button class="menu-item" data-section="ferramentas">
-                Ferramentas
-            </button>
+                <button class="menu-item active" data-section="dashboard" data-title="Dashboard">
+                    <ion-icon name="arrow-forward-sharp"></ion-icon>
+                    <span>Dashboard</span>
+                </button>
 
-            <button class="menu-item" data-section="maquinas">
-                Máquinas
-            </button>
 
-            <button class="menu-item" data-section="manutencao">
-                Manutenção
-            </button>
+                <button class="menu-item" data-section="ordens">
 
-            <button class="menu-item" data-section="orcamentos">
-                Orçamentos
-            </button>
+                    <ion-icon name="arrow-forward-sharp"></ion-icon>
+                    <span>Ordens de Serviço</span>
 
-        </nav>
+                </button>
+
+
+                <button class="menu-item" data-section="materiais">
+
+                    <ion-icon name="arrow-forward-sharp"></ion-icon>
+                    <span>Materiais</span>
+
+                </button>
+
+
+                <button class="menu-item" data-section="ferramentas">
+
+                    <ion-icon name="arrow-forward-sharp"></ion-icon>
+                    <span>Ferramentas</span>
+
+                </button>
+
+
+                <button class="menu-item" data-section="maquinas">
+
+                    <ion-icon name="arrow-forward-sharp"></ion-icon>
+                    <span>Máquinas</span>
+
+                </button>
+
+
+                <button class="menu-item" data-section="manutencao">
+
+                    <ion-icon name="arrow-forward-sharp"></ion-icon>
+                    <span>Manutenção</span>
+
+                </button>
+
+
+                <button class="menu-item" data-section="orcamentos">
+
+                    <ion-icon name="arrow-forward-sharp"></ion-icon>
+                    <span>Orçamentos</span>
+
+                </button>
+
+            </nav>
+
+        </div>
+
+
+        <div class="sidebar-footer">
+
+            <div class="system-status">
+
+                <span class="status-dot"></span>
+
+                <div>
+                    <strong id="dataHora"></strong>
+                    <small></small>
+                </div>
+
+            </div>
+
+            <div class="version">
+                Build: BAG1.0
+            </div>
+
+        </div>
 
     </aside>
 
 
-    <!-- CONTEÚDO PRINCIPAL -->
+
+    <!-- =========================================
+         CONTEÚDO
+    ========================================== -->
+
     <main class="main-content">
 
-        <!-- HEADER -->
+
+        <!-- =====================================
+             TOPBAR
+        ====================================== -->
+
         <header class="topbar">
 
-            <div>
-                <span class="page-label">SISTEMA BLACKFORGE</span>
-                <h2 id="page-title">Dashboard</h2>
+            <div class="topbar-left">
+
+                <div class="system-indicator">
+                    <span></span>
+                </div>
+
+                <div>
+                    <span class="page-label">
+
+                    </span>
+
+                    <h2 id="page-title">
+                        Dashboard
+                    </h2>
+                </div>
+
             </div>
 
-            <div class="user-area">
-                <span>Operador</span>
+
+            <div class="topbar-right">
+
+                <!-- <div class="machine-status">
+                    <span class="status-dot"></span>
+                    TESTE
+                </div> -->
+
+                <div class="user-area">
+                    <span>USUÁRIO</span>
+                    <strong>ADMIN</strong>
+                </div>
+
             </div>
 
         </header>
 
 
-        <!-- DASHBOARD -->
+
+        <!-- =====================================
+             DASHBOARD
+        ====================================== -->
+
         <section id="dashboard" class="page-section active-section">
 
-            <h2>Dashboard</h2>
 
-            <div class="dashboard-cards">
+            <div class="dashboard-header">
 
-                <div class="dashboard-card">
-                    <span>Ordens Abertas</span>
-                    <strong>0</strong>
+                <div>
+
+                    <h1>
+                        Painel Industrial
+                    </h1>
+
+                    <span class="section-label">
+                        VISÃO GERAL DAS OPERAÇÕES
+                    </span>
+
                 </div>
 
-                <div class="dashboard-card">
-                    <span>Em Produção</span>
-                    <strong>0</strong>
-                </div>
 
-                <div class="dashboard-card">
-                    <span>Máquinas Ativas</span>
-                    <strong>0</strong>
-                </div>
+                <div class="dashboard-time">
 
-                <div class="dashboard-card">
-                    <span>Estoque Baixo</span>
-                    <strong>0</strong>
+                    <span>STATUS DO SISTEMA</span>
+
+                    <strong>OPERACIONAL</strong>
+
                 </div>
 
             </div>
 
+
+
+            <!-- INDICADORES -->
+
+            <div class="dashboard-cards">
+
+
+                <div class="dashboard-card">
+
+                    <div class="card-top">
+                        <span>01</span>
+                        <span class="card-status active">
+                            STATUS #1
+                        </span>
+                    </div>
+
+                    <span class="card-label">
+                        Ordens Abertas
+                    </span>
+
+                    <strong>
+                        0
+                    </strong>
+
+                    <div class="card-footer">
+                        OPERAÇÕES PENDENTES
+                    </div>
+
+                </div>
+
+
+
+                <div class="dashboard-card">
+
+                    <div class="card-top">
+                        <span>02</span>
+                        <span class="card-status active">
+                            STATUS #2
+                        </span>
+                    </div>
+
+                    <span class="card-label">
+                        Em Produção
+                    </span>
+
+                    <strong>
+                        0
+                    </strong>
+
+                    <div class="card-footer">
+                        ORDENS EM PROCESSAMENTO
+                    </div>
+
+                </div>
+
+
+
+                <div class="dashboard-card">
+
+                    <div class="card-top">
+                        <span>03</span>
+                        <span class="card-status active">
+                            STATUS #3
+                        </span>
+                    </div>
+
+                    <span class="card-label">
+                        Máquinas Ativas
+                    </span>
+
+                    <strong>
+                        0
+                    </strong>
+
+                    <div class="card-footer">
+                        EQUIPAMENTOS OPERACIONAIS
+                    </div>
+
+                </div>
+
+
+
+                <div class="dashboard-card warning-card">
+
+                    <div class="card-top">
+                        <span>04</span>
+                        <span class="card-status warning">
+                            STATUS #4
+                        </span>
+                    </div>
+
+                    <span class="card-label">
+                        Estoque Baixo
+                    </span>
+
+                    <strong>
+                        0
+                    </strong>
+
+                    <div class="card-footer">
+                        MATERIAIS EM NÍVEL CRÍTICO
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- PAINÉIS INFERIORES -->
+
+            <div class="dashboard-grid">
+
+
+                <div class="industrial-panel">
+
+                    <div class="panel-header">
+
+                        <div>
+
+                            <span>
+                                MONITORAMENTO
+                            </span>
+
+                            <h3>
+                                Operação do Sistema
+                            </h3>
+
+                        </div>
+
+                        <div class="panel-code">
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="operation-display">
+
+                        <div class="operation-ring">
+
+                            <div>
+                                <strong>100%</strong>
+                                <span></span>
+                            </div>
+
+                        </div>
+
+
+                        <div class="operation-info">
+
+                            <div>
+                                <span>PRODUÇÃO</span>
+                                <strong>ESTÁVEL</strong>
+                            </div>
+
+                            <div>
+                                <span>MÁQUINAS</span>
+                                <strong>0 ATIVAS</strong>
+                            </div>
+
+                            <div>
+                                <span>MANUTENÇÃO</span>
+                                <strong>0 PENDÊNCIAS</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="industrial-panel">
+
+                    <div class="panel-header">
+
+                        <div>
+
+                            <span>
+                                ATIVIDADE
+                            </span>
+
+                            <h3>
+                                Últimos Eventos
+                            </h3>
+
+                        </div>
+
+                        <div class="panel-code">
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="event-list">
+
+                        <div class="event-empty">
+
+                            <div class="event-icon">
+                                <ion-icon name="warning-sharp"></ion-icon>
+                            </div>
+
+                            <span style="font-size: 14px;">
+                                Nenhuma atividade registrada
+                            </span>
+
+                            <small style="font-size: 13px;">
+                                Os eventos do sistema aparecerão aqui.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
         </section>
 
 
-        <!-- ORDENS DE SERVIÇO -->
+
+        <!-- =====================================
+             ORDENS
+        ====================================== -->
+
         <section id="ordens" class="page-section">
 
             <div class="section-header">
 
                 <div>
-                    <span class="section-label">PRODUÇÃO</span>
-                    <h2>Ordens de Serviço</h2>
+                    <span class="section-label">
+
+                    </span>
+
+                    <h1>
+                        Ordens de Serviço
+                    </h1>
+
+                    <p>
+                        Controle e acompanhamento das ordens de produção.
+                    </p>
                 </div>
 
                 <button class="primary-button">
-                    + Nova OS
+                    + NOVA OS
                 </button>
 
             </div>
 
-            <div class="content-card">
 
-                <p>Nenhuma ordem de serviço cadastrada.</p>
+            <div class="industrial-panel empty-panel">
+
+                <!-- <div class="empty-icon">
+                    Nenhuma ordem de serviço
+                </div> -->
+
+                <h3>
+                    Não existem ordens de serviço cadastradas no sistema.
+                </h3>
+
+                <p>
+
+                </p>
+
+                <button class="secondary-button">
+                    CRIAR OS
+                </button>
 
             </div>
 
         </section>
 
 
-        <!-- MATERIAIS -->
+
+        <!-- =====================================
+             MATERIAIS
+        ====================================== -->
+
         <section id="materiais" class="page-section">
 
             <div class="section-header">
 
                 <div>
-                    <span class="section-label">ESTOQUE</span>
-                    <h2>Materiais</h2>
+                    <span class="section-label">
+
+                    </span>
+
+                    <h1>
+                        Materiais
+                    </h1>
+
+                    <p>
+                        Gerenciamento de materiais e estoque industrial.
+                    </p>
                 </div>
 
                 <button class="primary-button">
-                    + Novo Material
+                    + NOVO MATERIAL
                 </button>
 
             </div>
 
-            <div class="content-card">
 
-                <p>Nenhum material cadastrado.</p>
+            <div class="industrial-panel empty-panel">
+
+
+
+                <h3>
+                    O estoque ainda não possui materiais registrados.
+                </h3>
+
+                <p>
+
+                </p>
+
+                <button class="secondary-button">
+                    CADASTRAR MATERIAL
+                </button>
 
             </div>
 
         </section>
 
 
-        <!-- FERRAMENTAS -->
+
+        <!-- =====================================
+             FERRAMENTAS
+        ====================================== -->
+
         <section id="ferramentas" class="page-section">
 
             <div class="section-header">
 
                 <div>
-                    <span class="section-label">FERRAMENTARIA</span>
-                    <h2>Ferramentas</h2>
+                    <span class="section-label">
+
+                    </span>
+
+                    <h1>
+                        Ferramentas
+                    </h1>
+
+                    <p>
+                        Controle das ferramentas utilizadas na operação.
+                    </p>
+
                 </div>
 
                 <button class="primary-button">
-                    + Nova Ferramenta
+                    + NOVA FERRAMENTA
                 </button>
 
             </div>
 
-            <div class="content-card">
 
-                <p>Nenhuma ferramenta cadastrada.</p>
+            <div class="industrial-panel empty-panel">
+
+
+
+                <h3>
+                    Não existem ferramentas registradas.
+                </h3>
+
+                <p>
+
+                </p>
+
+                <button class="secondary-button">
+                    CADASTRAR FERRAMENTA
+                </button>
 
             </div>
 
         </section>
 
 
-        <!-- MÁQUINAS -->
+
+        <!-- =====================================
+             MÁQUINAS
+        ====================================== -->
+
         <section id="maquinas" class="page-section">
 
             <div class="section-header">
 
                 <div>
-                    <span class="section-label">PRODUÇÃO</span>
-                    <h2>Máquinas</h2>
+                    <span class="section-label">
+
+                    </span>
+
+                    <h1>
+                        Máquinas
+                    </h1>
+
+                    <p>
+                        Monitoramento e controle dos equipamentos industriais.
+                    </p>
+
                 </div>
 
                 <button class="primary-button">
-                    + Nova Máquina
+                    + NOVA MÁQUINA
                 </button>
 
             </div>
 
-            <div class="content-card">
 
-                <p>Nenhuma máquina cadastrada.</p>
+            <div class="industrial-panel empty-panel">
+
+
+
+                <h3>
+                    Nenhum equipamento foi registrado no sistema.
+                </h3>
+
+                <p>
+
+                </p>
+
+                <button class="secondary-button">
+                    CADASTRAR MÁQUINA
+                </button>
 
             </div>
 
         </section>
 
 
-        <!-- MANUTENÇÃO -->
+
+        <!-- =====================================
+             MANUTENÇÃO
+        ====================================== -->
+
         <section id="manutencao" class="page-section">
 
             <div class="section-header">
 
                 <div>
-                    <span class="section-label">MANUTENÇÃO</span>
-                    <h2>Manutenção</h2>
+                    <span class="section-label">
+
+                    </span>
+
+                    <h1>
+                        Manutenção
+                    </h1>
+
+                    <p>
+                        Controle preventivo e corretivo dos equipamentos.
+                    </p>
+
                 </div>
 
                 <button class="primary-button">
-                    + Registrar Manutenção
+                    + REGISTRAR MANUTENÇÃO
                 </button>
 
             </div>
 
-            <div class="content-card">
 
-                <p>Nenhuma manutenção registrada.</p>
+            <div class="industrial-panel empty-panel">
+
+
+
+                <h3>
+                    Não existem registros de manutenção no sistema.
+                </h3>
+
+                <p>
+
+                </p>
+
+                <button class="secondary-button">
+                    REGISTRAR MANUTENÇÃO
+                </button>
 
             </div>
 
         </section>
 
 
-        <!-- ORÇAMENTOS -->
+
+        <!-- =====================================
+             ORÇAMENTOS
+        ====================================== -->
+
         <section id="orcamentos" class="page-section">
+
             <div class="section-header">
+
                 <div>
-                    <span class="section-label">FINANCEIRO</span>
-                    <h2>Orçamentos</h2>
+                    <span class="section-label">
+
+                    </span>
+
+                    <h1>
+                        Orçamentos
+                    </h1>
+
+                    <p>
+                        Controle financeiro e acompanhamento de orçamentos.
+                    </p>
+
                 </div>
 
                 <button class="primary-button">
-                    + Novo Orçamento
+                    + NOVO ORÇAMENTO
                 </button>
-            </div>
-            <div class="content-card">
 
-                <p>Nenhum orçamento cadastrado.</p>
+            </div>
+
+
+            <div class="industrial-panel empty-panel">
+
+                <h3>
+                    Não existem orçamentos registrados.
+                </h3>
+
+                <p></p>
+
+                <button class="secondary-button">
+                    CRIAR ORÇAMENTO
+                </button>
 
             </div>
 
         </section>
+
 
     </main>
 
 
     <script src="script.js"></script>
-
 </body>
 
 </html>
