@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -32,7 +33,7 @@
                 <!-- DASHBOARD -->
                 <button class="menu-item active" data-section="dashboard" data-title="Dashboard">
                     <src name="arrow-forward-sharp"></src>
-                    <span>Dashboard</span>
+                    <span>Início</span>
                 </button>
 
                 <!-- =====================================================
@@ -107,95 +108,54 @@
                         <button class="menu-item submenu-item" data-section="materiais" data-title="Materiais">
 
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
-
                             <span>Materiais</span>
-
                         </button>
-
                         <button class="menu-item submenu-item" data-section="produtos" data-title="Produtos">
-
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
-
                             <span>Produtos</span>
-
                         </button>
-
                         <button class="menu-item submenu-item" data-section="lotes" data-title="Lotes">
-
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
-
                             <span>Lotes</span>
-
                         </button>
-
                         <button class="menu-item submenu-item" data-section="movimentacoes" data-title="Movimentações">
-
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
-
                             <span>Movimentações</span>
-
                         </button>
-
                     </div>
-
                 </div>
-
 
                 <!-- =====================================================
                      MANUTENÇÃO
                 ====================================================== -->
 
                 <div class="menu-category">
-
                     <button type="button" class="menu-category-button" data-category="manutencao">
-
                         <span class="category-left">
-
                             <ion-icon name="construct-outline"></ion-icon>
-
                             <span>MANUTENÇÃO</span>
-
                         </span>
-
                         <ion-icon class="category-arrow" name="chevron-forward-sharp">
                         </ion-icon>
-
                     </button>
-
-
                     <div class="submenu" data-submenu="manutencao">
-
                         <button class="menu-item submenu-item" data-section="manutencao-preventiva"
                             data-title="Manutenção Preventiva">
-
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
-
                             <span>Preventiva</span>
-
                         </button>
-
                         <button class="menu-item submenu-item" data-section="manutencao-corretiva"
                             data-title="Manutenção Corretiva">
-
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
-
                             <span>Corretiva</span>
-
                         </button>
-
                         <button class="menu-item submenu-item" data-section="manutencao-historico"
                             data-title="Histórico de Manutenção">
-
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
-
                             <span>Histórico</span>
-
                         </button>
-
                     </div>
-
                 </div>
-
 
                 <!-- =====================================================
                      FINANCEIRO
@@ -507,11 +467,8 @@
                         </div>
                     </div>
                     <div class="operation-display">
-                        <div class="operation-ring">
-                            <div>
-                                <strong>100%</strong>
-                                <span></span>
-                            </div>
+                        <div class="operation-chart">
+                            <canvas id="productionChart"></canvas>
                         </div>
                         <div class="operation-info">
                             <div>

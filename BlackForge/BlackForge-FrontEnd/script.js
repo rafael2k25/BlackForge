@@ -174,3 +174,71 @@ document.addEventListener("keydown", function (event) {
         fecharOS();
     }
 });
+
+// =========================================================
+// GRÁFICOS DASHBOARD
+// =========================================================
+
+const ctx = document.getElementById("productionChart");
+const productionChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+        labels: [
+            "CNC 01",
+            "CNC 02",
+            "CNC 03"
+        ],
+        datasets: [
+            {
+                label: "Produção",
+                data: [
+                    85,
+                    62,
+                    74
+                ],
+                backgroundColor: "#f5c400",
+                borderWidth: 0,
+                borderRadius: 2,
+                barThickness: 8
+            }
+        ]
+    },
+    options: {
+        indexAxis: "y",
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                max: 100,
+                grid: {
+                    color: "rgba(255, 255, 255, 0.05)"
+                },
+                ticks: {
+                    color: "#9aa4aa",
+                    font: {
+                        family: "'Share Tech Mono', monospace",
+                        size: 9
+                    }
+                }
+            },
+            y: {
+                grid: {
+                    display: false
+                },
+                ticks: {
+                    color: "#9aa4aa",
+                    font: {
+                        family: "'Share Tech Mono', monospace",
+                        size: 10
+                    }
+                }
+            }
+        }
+    }
+});
