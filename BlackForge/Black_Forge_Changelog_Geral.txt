@@ -1,0 +1,279 @@
+BLACK FORGE
+CHANGELOG DO PROJETO
+
+[0.x] ESTRUTURA INICIAL E CONCEITO
+
+- Criação do conceito do Black Forge como sistema de gestão industrial para uma empresa de usinagem/CNC.
+- Definição da Ordem de Serviço (OS) como elemento central do sistema.
+- Definição da arquitetura geral:
+  - Estoque
+  - Materiais
+  - Lotes
+  - Movimentações
+  - Máquinas
+  - Manutenção
+  - Ordens de Serviço
+  - Orçamentos
+  - Funcionários
+  - Relatórios
+- Definição do sistema para utilização em um único computador, eliminando a necessidade inicial de cadastro/login de usuários.
+- Definição da identidade visual industrial inspirada em interfaces cyberpunk/industrial.
+- Substituição de tons verdes por amarelo industrial.
+- Definição de fundo escuro baseado em tons semelhantes ao Discord/WhatsApp, evitando preto absoluto.
+- Definição das fontes:
+  - Rajdhani
+  - Share Tech Mono
+
+
+[0.x] INTERFACE E DASHBOARD
+
+- Criação da estrutura principal do sistema.
+- Implementação da sidebar de navegação.
+- Organização dos módulos por categorias:
+
+SERVIÇOS
+- Ordens de Serviço
+- Máquinas e Equipamentos
+
+ESTOQUE
+- Materiais
+- Lotes
+- Movimentações
+
+GESTÃO
+- Funcionários
+
+RELATÓRIOS
+- Serviços
+- Estoque
+- Financeiro
+- Máquinas
+- Manutenção
+
+- Criação do Dashboard industrial.
+- Criação dos painéis e cards de indicadores.
+- Implementação de elementos visuais inspirados em sistemas de controle industrial.
+- Desenvolvimento de indicadores visuais e componentes gráficos.
+- Substituição do conceito de círculo operacional por gráficos de barras horizontais.
+- Ajuste dos gráficos para utilizar três barras mais finas.
+
+
+[0.x] ORDEM DE SERVIÇO
+
+- Criação do módulo de Ordens de Serviço.
+- Desenvolvimento do modal de cadastro de OS.
+- Estruturação da OS em blocos independentes.
+
+IDENTIFICAÇÃO
+- Número da OS
+- Cliente
+- Responsável
+- Informações gerais
+
+PRODUÇÃO
+- Dados relacionados ao serviço
+- Máquina
+- Operação
+- Informações de produção
+
+MATERIAIS
+- Materiais utilizados
+- Quantidades
+- Informações relacionadas ao estoque
+
+FERRAMENTAS
+- Registro de ferramentas utilizadas na execução do serviço.
+
+FINANCEIRO
+- Custos
+- Valores
+- Condições de pagamento
+
+OBSERVAÇÕES
+- Informações adicionais do serviço.
+
+ANEXOS
+- Documentos e arquivos relacionados à OS.
+
+- Estrutura visual da OS baseada em blocos industriais.
+- Preparação da OS para futura impressão/documentação.
+- Definição da OS como elo entre produção, estoque, máquinas, manutenção e financeiro.
+
+
+[0.x] ESTOQUE
+
+- Estruturação do módulo de estoque.
+- Criação do conceito de Produto/Material.
+- Implementação de controle de quantidade.
+- Implementação de controle por lotes.
+- Adição de:
+  - Data de fabricação
+  - Data de validade
+  - Quantidade por lote
+  - Código do lote
+- Implementação de movimentações de estoque.
+- Implementação da relação entre:
+  - Produto
+  - Lote
+  - Movimentação
+  - Item da movimentação
+- Implementação da lógica FEFO (First Expire, First Out) para retirada de materiais.
+- Ajuste da lógica de desconto de quantidade por lote.
+- Correção da atualização das quantidades dos lotes.
+- Correção dos relacionamentos entre Produto e Lote.
+
+[0.x] BACKEND
+
+- Desenvolvimento da API em C# / ASP.NET Core Web API.
+- Integração com SQL Server através do Entity Framework Core.
+- Criação dos controllers:
+  - ProdutoController
+  - LoteController
+  - MovimentacaoController
+  - ItemMovimentacaoController
+  - UsuarioController
+- Implementação de consultas incluindo os lotes dos produtos.
+- Configuração de sessão.
+- Configuração de CORS.
+- Criação de atributos/filtros para controle de acesso.
+
+
+[0.x] MÁQUINAS
+
+- Criação do módulo Máquinas e Equipamentos.
+- Remoção da necessidade de um módulo independente de ferramentas.
+- Definição da máquina como entidade própria do sistema.
+- Criação da tela inicial de máquinas.
+- Criação do estado vazio:
+  Nenhum equipamento foi registrado no sistema.
+- Criação do botão:
+  + NOVA MÁQUINA
+
+CADASTRO DE MÁQUINA
+
+IDENTIFICAÇÃO
+- Nome da Máquina
+- Código interno
+- Tipo
+- Fabricante
+- Modelo
+- Número de Série
+- Data de Aquisição
+
+INFORMAÇÕES ADICIONAIS
+- Observações
+
+Foi decidido não cadastrar inicialmente:
+- Status
+- Localização
+- Ano de fabricação
+- Dados operacionais
+
+Essas informações poderão fazer parte da tela de detalhes/gestão da máquina posteriormente.
+
+CÓDIGO X NÚMERO DE SÉRIE
+
+- Código = identificação interna da empresa.
+- Número de Série = identificação original fornecida pelo fabricante.
+
+Exemplo:
+  Máquina: Torno CNC 01
+  Código: MC-001
+  Fabricante: ROMI
+  Modelo: GL 240
+  Nº de Série: 123456789
+
+
+[0.x] MODAL DE MÁQUINA
+
+- Criação do modal modalMaquina.
+- Implementação de abertura pelo botão NOVA MÁQUINA.
+- Implementação do botão de fechamento.
+- Implementação do botão CANCELAR.
+- Implementação do fechamento ao clicar fora do modal.
+- Aproveitamento da estrutura visual já existente do modal de OS.
+- Criação de estilos específicos através de:
+  .modal-maquina
+- Criação do container de ações:
+  .modal-actions
+- Ajuste responsivo para desktop, tablet e telas menores.
+- Ajuste do formulário para utilizar uma estrutura de duas colunas.
+
+[0.x] RELATÓRIOS
+
+Estrutura inicial criada para:
+- Relatório de Serviços
+- Relatório de Estoque
+- Relatório Financeiro
+- Relatório de Máquinas
+- Relatório de Manutenção
+
+Os relatórios permanecem como módulos a serem desenvolvidos.
+
+[0.x] INTERFACE E CSS
+
+- Criação de sistema de variáveis CSS.
+- Padronização de cores.
+- Criação de componentes visuais:
+  - Botões primários
+  - Botões secundários
+  - Inputs
+  - Selects
+  - Textareas
+  - Cards
+  - Painéis
+  - Modais
+  - Indicadores
+- Criação de efeitos de hover/focus.
+- Criação de bordas e destaques amarelos.
+- Implementação de animações de entrada dos modais.
+- Implementação de responsividade.
+- Ajustes de espaçamento e grids.
+- Correção de sobreposição de elementos.
+- Ajustes de layout dos cards.
+- Refinamento progressivo da estética industrial.
+
+
+[0.x] ARQUITETURA ATUAL
+
+                    BLACK FORGE
+                        |
+          +-------------+-------------+
+          |                           |
+       SERVIÇOS                    ESTOQUE
+          |                           |
+    +-----+-----+              +------+------+
+    |           |              |      |      |
+   OS        MÁQUINAS       Materiais Lotes Movimentações
+    |           |
+    |           +---------+
+    |                     |
+    +----------+----------+
+               |         
+               |
+               v
+           RELATÓRIOS
+
+[0.x] PRÓXIMOS PASSOS
+
+1. Finalizar visual do cadastro de máquina.
+2. Implementar cadastro de máquina no backend.
+3. Criar entidade/tabela Maquina.
+4. Criar MaquinaController.
+5. Integrar o modal de máquina com a API.
+6. Fazer a lista de máquinas carregar do banco.
+7. Criar a tela de detalhes da máquina.
+8. Implementar status operacional.
+9. Relacionar máquinas às Ordens de Serviço.
+10. Relacionar máquinas ao módulo de Manutenção.
+11. Desenvolver histórico de manutenção.
+12. Continuar migração dos módulos para React.
+13. Desenvolver relatórios.
+14. Integrar completamente frontend + API + SQL Server.
+
+
+ESTADO ATUAL DO PROJETO
+
+A fundação do Black Forge está definida. A interface, a arquitetura dos módulos, a estrutura inicial do estoque, o backend, o banco de dados e o conceito de máquinas já foram estabelecidos.
+
+O próximo grande passo é transformar Máquinas, Ordens de Serviço, Estoque e Manutenção em módulos completamente conectados ao banco de dados, consolidando a integração entre frontend React, API ASP.NET Core e SQL Server.

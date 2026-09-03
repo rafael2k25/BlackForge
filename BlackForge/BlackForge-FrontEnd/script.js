@@ -242,3 +242,38 @@ const productionChart = new Chart(ctx, {
         }
     }
 });
+
+// =========================================================
+// MODAL NOVA MÁQUINA
+// =========================================================
+
+const abrirModalMaquina = document.getElementById("abrirModalMaquina");
+const modalMaquina = document.getElementById("modalMaquina");
+const fecharModalMaquina = document.getElementById("fecharModalMaquina");
+const cancelarModalMaquina = document.getElementById("cancelarModalMaquina");
+
+// ABRIR MODAL
+
+abrirModalMaquina.addEventListener("click", () => {
+    modalMaquina.classList.add("active");
+});
+
+// FECHAR PELO X
+
+fecharModalMaquina.addEventListener("click", () => {
+    modalMaquina.classList.remove("active");
+});
+
+// FECHAR PELO CANCELAR
+
+cancelarModalMaquina.addEventListener("click", () => {
+    modalMaquina.classList.remove("active");
+});
+
+// FECHAR CLICANDO FORA DO MODAL
+
+modalMaquina.addEventListener("click", (event) => {
+    if (event.target === modalMaquina) {
+        modalMaquina.classList.remove("active");
+    }
+});
