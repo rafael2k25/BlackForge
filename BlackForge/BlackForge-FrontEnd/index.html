@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <title>Black Forge</title>
+</head>
+
+<body>
+
+    <!-- ======================== INÍCIO CATEGORIA SIDEBAR ======================== -->
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark">
+                BF
+            </div>
+            <div class="logo">
+                <span>BLACKFORGE</span>
+                <small>SISTEMA INDUSTRIAL</small>
+            </div>
+        </div>
+        <div class="sidebar-section">
+            <span class="sidebar-label">
+                NAVEGAÇÃO
+            </span>
+            <nav class="menu">
+                <!-- DASHBOARD -->
+                <button class="menu-item active" data-section="dashboard" data-title="Dashboard">
+                    <src name="arrow-forward-sharp"></src>
+                    <span>Início</span>
+                </button>
+
+                <!-- =====================================================
+                     SERVIÇOS
+                ====================================================== -->
+
+                <div class="menu-category">
+                    <button type="button" class="menu-category-button" data-category="servicos">
+                        <span class="category-left">
+                            <ion-icon name="hammer-outline"></ion-icon>
+                            <span>SERVIÇOS</span>
+                        </span>
+                        <ion-icon class="category-arrow" name="chevron-forward-sharp">
+                        </ion-icon>
+                    </button>
+                    <div class="submenu" data-submenu="servicos">
+
+                        <button class="menu-item submenu-item" data-section="ordens" data-title="Ordens de Serviço">
+
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+
+                            <span>Ordens de Serviço</span>
+
+                        </button>                      
+                      
+                        <button class="menu-item submenu-item" data-section="maquinas"
+                            data-title="Máquinas e Equipamentos">
+
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+
+                            <span>Máquinas e Equipamentos</span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =====================================================
+                     ESTOQUE
+                ====================================================== -->
+
+                <div class="menu-category">
+
+                    <button type="button" class="menu-category-button" data-category="estoque">
+
+                        <span class="category-left">
+
+                            <ion-icon name="cube-outline"></ion-icon>
+
+                            <span>ESTOQUE</span>
+
+                        </span>
+
+                        <ion-icon class="category-arrow" name="chevron-forward-sharp">
+                        </ion-icon>
+
+                    </button>
+
+
+                    <div class="submenu" data-submenu="estoque">
+
+                        <button class="menu-item submenu-item" data-section="materiais" data-title="Materiais">
+
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+                            <span>Materiais</span>
+                        </button>                      
+                        <button class="menu-item submenu-item" data-section="lotes" data-title="Lotes">
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+                            <span>Lotes</span>
+                        </button>
+                    </div>
+                </div>
+
+                
+                           
+                <!-- =====================================================
+                     GESTÃO
+                ====================================================== -->
+
+                <div class="menu-category">
+
+                    <button type="button" class="menu-category-button" data-category="gestao">
+
+                        <span class="category-left">
+
+                            <ion-icon name="people-outline"></ion-icon>
+
+                            <span>GESTÃO</span>
+
+                        </span>
+
+                        <ion-icon class="category-arrow" name="chevron-forward-sharp">
+                        </ion-icon>
+
+                    </button>
+
+
+                    <div class="submenu" data-submenu="gestao">
+
+                        <button class="menu-item submenu-item" data-section="funcionarios" data-title="Funcionários">
+
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+
+                            <span>Funcionários</span>
+
+                        </button>                                            
+
+                    </div>
+
+                </div>
+
+
+                <!-- =====================================================
+                     RELATÓRIOS
+                ====================================================== -->
+
+                <div class="menu-category">
+
+                    <button type="button" class="menu-category-button" data-category="relatorios">
+
+                        <span class="category-left">
+
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+
+                            <span>RELATÓRIOS</span>
+
+                        </span>
+
+                        <ion-icon class="category-arrow" name="chevron-forward-sharp">
+                        </ion-icon>
+
+                    </button>
+                    <div class="submenu" data-submenu="relatorios">
+                        <button class="menu-item submenu-item" data-section="relatorios-servicos"
+                            data-title="Relatórios de Serviços">
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+                            <span>Serviços</span>
+                        </button>
+                        <button class="menu-item submenu-item" data-section="relatorios-estoque"
+                            data-title="Relatórios de Estoque">
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+                            <span>Estoque</span>
+                        </button>
+                        <button class="menu-item submenu-item" data-section="relatorios-financeiro"
+                            data-title="Relatórios Financeiros">
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+                            <span>Financeiro</span>
+                        </button>
+                        <button class="menu-item submenu-item" data-section="relatorios-maquinas"
+                            data-title="Relatórios de Máquinas">
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+                            <span>Máquinas</span>
+                        </button>
+                        <button class="menu-item submenu-item" data-section="relatorios-manutencao"
+                            data-title="Relatórios de Manutenção">
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+                            <span>Manutenção</span>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="system-status">
+                <span class="status-dot"></span>
+                <div>
+                    <strong id="dataHora"></strong>
+                    <small>
+                        <!-- CAMPO VAZIO -->
+                    </small>
+                </div>
+            </div>
+            <div class="version">
+                Build: AG1.0
+            </div>
+        </div>
+    </aside>
+
+    <!-- ======================== FIM CATEGORIA  ======================== -->
+
+   
+
+    <!-- ======================================= INÍCIO CATEGORIA CONTEÚDO PRINCIPAL ======================================= -->
+
+    <main class="main-content">
+
+        <!-- ======================== INÍCIO CATEGORIA TOPBAR ======================== -->
+
+        <header class="topbar">
+            <div class="topbar-left">
+                <div class="system-indicator">
+                    <span>
+                        <!-- CAMPO VAZIO -->
+                    </span>
+                </div>
+                <div>
+                    <span class="page-label">
+                        <!-- CAMPO VAZIO -->
+                    </span>
+                    <h2 id="page-title">
+                        Dashboard
+                    </h2>
+                </div>
+            </div>
+            <div class="topbar-right">
+
+                <!-- <div class="machine-status">
+                    <span class="status-dot"></span>
+                    TESTE
+                </div> -->
+
+                <div class="user-area">
+                    <span>USUÁRIO</span>
+                    <strong>ADMIN</strong>
+                </div>
+            </div>
+        </header>
+
+        <!-- ======================== FIM CATEGORIA TOPBAR ======================== -->
+
+        <!-- ======================== INÍCIO CATEGORIA DASHBOARD ======================== -->
+
+        <section id="dashboard" class="page-section active-section">
+            <div class="dashboard-header">
+                <div>
+                    <h1>
+                        Painel Industrial
+                    </h1>
+                    <span class="section-label">
+                        VISÃO GERAL DAS OPERAÇÕES
+                    </span>
+                </div>
+            </div>
+
+            <!-- ================ INDICADORES ================ -->
+
+            <div class="dashboard-cards">
+                <div class="dashboard-card">
+                    <div class="card-top">
+                        <span>01</span>
+                        <span class="card-status active">
+                            STATUS #1
+                        </span>
+                    </div>                    
+                    <strong>
+                        0
+                    </strong>
+                    <div class="card-footer">
+                        OPERAÇÕES PENDENTES
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-top">
+                        <span>02</span>
+                        <span class="card-status active">
+                            STATUS #2
+                        </span>
+                    </div>                   
+                    <strong>
+                        0
+                    </strong>
+                    <div class="card-footer">
+                        ORDENS EM PROCESSAMENTO
+                    </div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="card-top">
+                        <span>03</span>
+                        <span class="card-status active">
+                            STATUS #3
+                        </span>
+                    </div>                   
+                    <strong>
+                        0
+                    </strong>
+                    <div class="card-footer">
+                        EQUIPAMENTOS OPERACIONAIS
+                    </div>
+                </div>
+                <div class="dashboard-card warning-card">
+                    <div class="card-top">
+                        <span>04</span>
+                        <span class="card-status warning">
+                            STATUS #4
+                        </span>
+                    </div>                   
+                    <strong>
+                        0
+                    </strong>
+                    <div class="card-footer">
+                        MATERIAIS EM NÍVEL CRÍTICO
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================ PAINÉIS INFERIORES ================ -->
+
+            <div class="dashboard-grid">
+                <div class="industrial-panel">
+                    <div class="panel-header">
+                        <div>
+                            <span>
+                                MONITORAMENTO
+                            </span>
+                            <h3>
+                                Operação do Sistema
+                            </h3>
+                        </div>
+                        <div class="panel-code">
+                            <!-- CAMPO VAZIO -->
+                        </div>
+                    </div>
+                    <div class="operation-display">
+                        <div class="operation-chart">
+                            <canvas id="productionChart"></canvas>
+                        </div>
+                        <div class="operation-info">
+                            <div>
+                                <span>PRODUÇÃO</span>
+                                <strong>ESTÁVEL</strong>
+                            </div>
+                            <div>
+                                <span>MÁQUINAS</span>
+                                <strong>0 ATIVAS</strong>
+                            </div>
+                            <div>
+                                <span>MANUTENÇÃO</span>
+                                <strong>0 PENDÊNCIAS</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="industrial-panel">
+                    <div class="panel-header">
+                        <div>
+                            <span>
+                                ATIVIDADE
+                            </span>
+                            <h3>
+                                Últimos Eventos
+                            </h3>
+                        </div>
+                        <div class="panel-code">
+                            <!-- CAMPO VAZIO -->
+                        </div>
+                    </div>
+                    <div class="event-list">
+                        <div class="event-empty">
+                            <div class="event-icon">
+                                <ion-icon name="warning-sharp"></ion-icon>
+                            </div>
+                            <span style="font-size: 14px;">
+                                Nenhuma atividade registrada
+                            </span>
+                            <small style="font-size: 13px;">
+                                Os eventos do sistema aparecerão aqui.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================== FIM CATEGORIA DASHBOARD ======================== -->
+
+        <!-- ======================== INÍCIO CATEGORIA ORDENS DE SERVIÇO ======================== -->
+
+        <section id="ordens" class="page-section">
+            <div class="section-header">
+                <div>
+                    <h1>
+                        Ordens de Serviço
+                    </h1>
+                    <p>
+                        Controle e acompanhamento das ordens de produção.
+                    </p>
+                </div>
+                <button type="button" class="primary-button" id="novaOS">
+                    + NOVA OS
+                </button>
+            </div>
+            <div class="industrial-panel empty-panel">
+                <h3>
+                    Não existem ordens de serviço cadastradas no sistema.
+                </h3>
+                <p>
+                    Crie uma nova ordem para iniciar uma operação.
+                </p>
+                <button type="button" class="secondary-button" id="criarOS">
+                    CRIAR OS
+                </button>
+            </div>
+        </section>
+
+        <!-- ======================== FIM CATEGORIA ORDENS DE SERVIÇO ======================== -->
+
+        <!-- ======================== INÍCIO CATEGORIA MATERIAIS ======================== -->
+
+        <section id="materiais" class="page-section">
+            <div class="section-header">       
+                <div>
+                    <span class="section-label">
+                        <!-- CAMPO VAZIO -->
+                    </span>
+                    <h1>
+                        Materiais
+                    </h1>
+                    <p>
+                        Gerenciamento de materiais e estoque industrial.
+                    </p>      
+                </div>      
+                <button
+                    type="button"
+                    class="primary-button"
+                    id="abrirModalMaterial"
+                >
+                    + NOVO MATERIAL
+                </button>       
+            </div>              
+            <div class="industrial-panel empty-panel">
+                <h3>
+                    O estoque ainda não possui materiais registrados.
+                </h3>
+                <p>
+                    <!-- CAMPO VAZIO -->
+                </p>
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cadastrarMaterialVazio"
+                >
+                    CADASTRAR MATERIAL
+                </button>      
+            </div>      
+        </section>
+
+        <!-- ======================== FIM CATEGORIA MATERIAIS ======================== -->
+
+        <!-- ======================== INÍCIO CATEGORIA MÁQUINAS ======================== -->
+
+        <section id="maquinas" class="page-section">
+            <div class="section-header">
+                <div>
+                    <span class="section-label">
+                        <!-- CAMPO VAZIO -->
+                    </span>
+                    <h1>
+                        Máquinas
+                    </h1>
+                    <p>
+                        Monitoramento e controle dos equipamentos industriais.
+                    </p>
+                </div>
+                <button type="button" class="primary-button" id="abrirModalMaquina">
+                    + NOVA MÁQUINA
+                </button>
+            </div>
+            <div class="industrial-panel empty-panel">
+                <h3>
+                    Nenhum equipamento foi registrado no sistema.
+                </h3>
+                <p>
+                    <!-- CAMPO VAZIO -->
+                </p>
+                <button class="secondary-button">
+                    CADASTRAR MÁQUINA
+                </button>
+            </div>
+        </section>
+
+        <!-- ======================== FIM CATEGORIA MÁQUINAS ======================== --> 
+        
+        <!-- ======================== INÍCIO LOTES ======================== -->
+
+         <!-- =========================================================
+     LOTES
+     ========================================================= -->
+
+<section id="lotes" class="page-section">
+
+    <!-- CABEÇALHO -->
+    <div class="section-header">
+
+        <div>
+
+            <span class="section-label"></span>
+
+            <h1>Lotes</h1>
+
+            <p>
+                Controle e rastreamento dos lotes de materiais industriais.
+            </p>
+
+        </div>
+
+        <button
+            class="primary-button"
+            id="abrirModalLote"
+            type="button"
+        >
+            + NOVO LOTE
+        </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         PAINEL DE LOTES
+         ===================================================== -->
+
+    <div class="industrial-panel lotes-panel">
+
+        <!-- BARRA DE CONTROLES -->
+        <div class="lotes-toolbar">
+
+            <!-- BUSCA -->
+            <div class="lotes-search">
+
+                <ion-icon name="search-outline"></ion-icon>
+
+                <input
+                    type="text"
+                    id="buscarLote"
+                    placeholder="Buscar por lote ou material..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <!-- FILTRO -->
+            <div class="lotes-filter">
+                <select id="filtroLote">
+                    <option value="todos">
+                        Todos os lotes
+                    </option>
+                    <option value="normal">
+                        Dentro da validade
+                    </option>
+                    <option value="proximo">
+                        Próximos da validade
+                    </option>
+                    <option value="vencido">
+                        Vencidos
+                    </option>
+                </select>
+            </div>
+        </div>
+
+
+        <!-- =================================================
+             RESUMO DOS LOTES
+             ================================================= -->
+
+        <div class="lotes-summary">
+
+            <!-- TOTAL -->
+            <div class="lote-summary-card">
+                <span class="lote-summary-label">
+                    TOTAL DE LOTES
+                </span>
+                <strong id="totalLotes">
+                    0
+                </strong>
+            </div>
+
+            <!-- PRÓXIMOS DO VENCIMENTO -->
+            <div class="lote-summary-card">
+                <span class="lote-summary-label">
+                    PRÓXIMOS DO VENCIMENTO
+                </span>
+                <strong id="lotesProximos">
+                    0
+                </strong>
+            </div>
+
+            <!-- VENCIDOS -->
+            <div class="lote-summary-card">
+                <span class="lote-summary-label">
+                    VENCIDOS
+                </span>
+                <strong id="lotesVencidos">
+                    0
+                </strong>
+            </div>
+        </div>
+
+        <!-- =================================================
+             TABELA DE LOTES
+             ================================================= -->
+
+        <div class="lotes-table-wrapper">
+            <table class="lotes-table">
+                <thead>
+                    <tr>
+                        <th>
+                            LOTE
+                        </th>
+                        <th>
+                            MATERIAL
+                        </th>
+                        <th>
+                            QUANTIDADE
+                        </th>
+                        <th>
+                            FABRICAÇÃO
+                        </th>
+                        <th>
+                            VALIDADE
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="listaLotes">
+                    <tr class="lotes-empty">
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <ion-icon
+                                    name="cube-outline"
+                                ></ion-icon>
+                                <h3>
+                                    Nenhum lote cadastrado
+                                </h3><br>                               
+                                <button
+                                    class="secondary-button"
+                                    id="cadastrarLoteVazio"
+                                    type="button"
+                                >
+                                    CADASTRAR LOTE
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+        <!-- ======================== FIM LOTES ======================== -->
+
+    </main>
+
+    <!-- ======================================= FIM CATEGORIA CONTEÚDO PRINCIPAL ======================================= -->
+
+    <!-- ======================== INÍCIO MODAL NOVA ORDEM DE SERVIÇO [508 - 876] ======================== -->
+
+    <div class="modal-overlay" id="modalOS">
+        <div class="modal modal-os">
+
+            <!-- ================ CABEÇALHO ================ -->
+
+            <div class="modal-header">
+                <div>
+                    <h2>
+                        Nova Ordem de Serviço
+                    </h2>
+                    <p>
+                        Cadastro e configuração da ordem de produção.
+                    </p>
+                </div>
+                <button type="button" class="modal-close" id="fecharModalOS">
+                    <ion-icon name="close-sharp"></ion-icon>
+                </button>
+            </div>
+
+            <!-- ================ DADOS DA ORDEM ================ -->
+
+            <div class="os-block">
+                <div class="os-block-header">
+                    <div>
+                        <span>
+                            ● IDENTIFICAÇÃO
+                        </span>
+                        <h3>
+                            Dados do Cliente
+                        </h3>
+                    </div>
+                </div>
+                <div class="form-grid form-grid-3">
+                    <div class="form-group">
+                        <label for="clienteOS">
+                            CLIENTE
+                        </label>
+                        <input type="text" id="clienteOS" placeholder="Nome do cliente">
+                    </div>
+                    <div class="form-group">
+                        <label for="contatoOS">
+                            CONTATO
+                        </label>
+                        <input type="text" id="contatoOS" placeholder="Ex.: (79) 4002-8922">
+                    </div>
+                    <div class="form-group">
+                        <label for="enderecoOS">
+                            ENDEREÇO
+                        </label>
+                        <input type="text" id="enderecoOS" placeholder="Endereço do cliente">
+                    </div>
+                    <div class="form-group">
+                        <label for="numeroOS">
+                            NÚMERO DA OS
+                        </label>
+                        <input type="text" id="numeroOS" placeholder="Ex.: OS-0001">
+                    </div>
+                    <div class="form-group">
+                        <label for="dataOS">
+                            DATA DE ABERTURA
+                        </label>
+                        <input type="date" id="dataOS">
+                    </div>
+                    <div class="form-group form-full">
+                        <label for="descricaoOS">
+                            DESCRIÇÃO DO SERVIÇO
+                        </label>
+                        <textarea id="descricaoOS" rows="3"
+                            placeholder="Descreva o serviço que será realizado..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================ PRODUÇÃO ================ -->
+
+            <div class="os-block">
+                <div class="os-block-header">
+                    <div>
+                        <span>
+                            ● PRODUÇÃO
+                        </span>
+                        <h3>
+                            Dados de Produção
+                        </h3>
+                    </div>
+                </div>
+                <div class="form-grid form-grid-3">
+                    <div class="form-group">
+                        <label for="tipoServico">
+                            TIPO DE SERVIÇO
+                        </label>
+                        <select id="tipoServico">
+                            <option value="">
+                                Selecionar...
+                            </option>
+                            <option value="usinagem">
+                                Usinagem
+                            </option>
+                            <option value="torneamento">
+                                Torneamento
+                            </option>
+                            <option value="fresagem">
+                                Fresagem
+                            </option>
+                            <option value="corte">
+                                Corte
+                            </option>
+                            <option value="solda">
+                                Solda
+                            </option>
+                            <option value="outro">
+                                Outro
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dataInicioOS">
+                            DATA DE INÍCIO
+                        </label>
+                        <input type="date" id="dataInicioOS">
+                    </div>
+                    <div class="form-group">
+                        <label for="dataEntregaOS">
+                            PREVISÃO DE ENTREGA
+                        </label>
+                        <input type="date" id="dataEntregaOS">
+                    </div>
+                    <div class="form-group">
+                        <label for="responsavelOS">
+                            RESPONSÁVEL
+                        </label>
+                        <input type="text" id="responsavelOS" placeholder="Responsável pela OS">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================ MATERIAIS ================ -->
+
+            <div class="os-block">
+                <div class="os-block-header">
+                    <div>
+                        <span>
+                            ● MATERIAIS
+                        </span>
+                        <h3>
+                            Materiais Utilizados
+                        </h3>
+                    </div>
+                    <button type="button" class="os-add-button" id="adicionarMaterial">
+                        <ion-icon name="add-sharp"></ion-icon>
+                        ADICIONAR
+                    </button>
+                </div>
+                <div class="os-table-wrapper">
+                    <table class="os-table">
+                        <thead>
+                            <tr>
+                                <th>MATERIAL</th>
+                                <th>QUANTIDADE</th>
+                                <th>UNIDADE</th>
+                                <th>VALOR UNIT.</th>
+                                <th>SUBTOTAL</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaMateriais">
+                            <tr class="os-table-empty">
+                                <td colspan="6">
+                                    Nenhum material adicionado à ordem.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ================ FERRAMENTAS ================ -->
+
+            <div class="os-block">
+                <div class="os-block-header">
+                    <div>
+                        <span>
+                            ● FERRAMENTAS
+                        </span>
+                        <h3>
+                            Ferramentas Utilizadas
+                        </h3>
+                    </div>
+                    <button type="button" class="os-add-button" id="adicionarFerramenta">
+                        <ion-icon name="add-sharp"></ion-icon>
+                        ADICIONAR
+                    </button>
+                </div>
+                <div class="os-table-wrapper">
+                    <table class="os-table">
+                        <thead>
+                            <tr>
+                                <th>FERRAMENTA</th>
+                                <th>QUANTIDADE</th>
+                                <th>OBSERVAÇÃO</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaFerramentas">
+                            <tr class="os-table-empty">
+                                <td colspan="4">
+                                    Nenhuma ferramenta adicionada à ordem.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ================ FINANCEIRO ================ -->
+
+            <div class="os-block">
+                <div class="os-block-header">
+                    <div>
+                        <span>
+                            ● FINANCEIRO
+                        </span>
+                        <h3>
+                            Valores da Ordem
+                        </h3>
+                    </div>
+                </div>
+                <div class="form-grid form-grid-3">
+                    <div class="form-group">
+                        <label for="valorMateriais">
+                            MATERIAIS
+                        </label>
+                        <input type="number" id="valorMateriais" value="0.00" min="0" step="0.01" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="valorMaoObra">
+                            MÃO DE OBRA
+                        </label>
+                        <input type="number" id="valorMaoObra" value="0.00" min="0" step="0.01">
+                    </div> <br>
+                    <div class="form-group">
+                        <label for="descontoOS">
+                            DESCONTO
+                        </label>
+                        <input type="number" id="descontoOS" value="0.00" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="os-total-box">
+                    <div>
+                        <span>
+                            VALOR TOTAL DA ORDEM
+                        </span>
+                        <small>
+                            Materiais + mão de obra - desconto
+                        </small>
+                    </div>
+                    <strong id="valorTotalOS">
+                        R$ 0,00
+                    </strong>
+                </div> <br>
+                <div class="form-grid form-grid-2">
+                    <div class="form-group">
+                        <label for="condicaoPagamento">
+                            CONDIÇÃO DE PAGAMENTO
+                        </label>
+                        <select id="condicaoPagamento">
+                            <option value="">
+                                Selecionar...
+                            </option>
+                            <option value="avista">
+                                À vista
+                            </option>
+                            <option value="pix">
+                                PIX
+                            </option>
+                            <option value="cartao">
+                                Cartão
+                            </option>
+                            <option value="boleto">
+                                Boleto
+                            </option>
+                            <option value="30dias">
+                                30 dias
+                            </option>
+                            <option value="parcelado">
+                                Parcelado
+                            </option>
+                            <option value="outro">
+                                Outro
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================ OBSERVAÇÕES ================ -->
+
+            <div class="os-block">
+                <div class="os-block-header">
+                    <div>
+                        <span>
+                            ● OBSERVAÇÕES
+                        </span>
+                        <h3>
+                            Informações Adicionais
+                        </h3>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="observacoesOS">
+                        OBSERVAÇÕES
+                    </label>
+                    <textarea id="observacoesOS" rows="4"
+                        placeholder="Adicione observações, recomendações ou informações complementares...">
+                    </textarea>
+                </div>
+            </div>
+
+            <!-- ================ ANEXOS ================ -->
+
+            <div class="os-block">
+                <div class="os-block-header">
+                    <div>
+                        <span>
+                            ● DOCUMENTAÇÃO
+                        </span>
+                        <h3>
+                            Anexos
+                        </h3>
+                    </div>
+                </div>
+                <div class="os-upload-area">
+                    <ion-icon name="cloud-upload-outline"></ion-icon>
+                    <strong>
+                        Adicionar documentos
+                    </strong>
+                    <span>
+                        Desenhos técnicos, fotos, projetos ou outros arquivos.
+                    </span>
+                    <label for="anexosOS" class="secondary-button">
+                        SELECIONAR ARQUIVOS
+                    </label>
+                    <input type="file" id="anexosOS" multiple hidden>
+                </div>
+                <div class="os-file-list" id="listaAnexos"></div>
+            </div>
+         
+            <!-- ================ RODAPÉ ================ -->
+
+            <div class="modal-os-footer">
+                <button type="button" class="secondary-button" id="cancelarOS">
+                    CANCELAR
+                </button>
+                <div class="modal-os-footer-right">
+                    <button type="button" class="secondary-button" id="salvarOS">
+                        SALVAR OS
+                    </button>
+                    <button type="button" class="primary-button" id="salvarImprimirOS">
+                        <ion-icon name="print-sharp"></ion-icon>
+                        SALVAR E IMPRIMIR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== FIM MODAL NOVA ORDEM DE SERVIÇO ======================== -->
+
+    <!-- ======================== INÍCIO MODAL NOVA MÁQUINA [880 - 855] ======================== -->
+
+     <div class="modal-overlay" id="modalMaquina">
+
+        <div class="modal modal-maquina">
+    
+            <!-- =====================================================
+                 CABEÇALHO
+                 ===================================================== -->
+    
+            <div class="modal-header">
+    
+                <div>
+                    <span class="section-label">
+                        CADASTRO
+                    </span>
+    
+                    <h2>
+                        Nova Máquina
+                    </h2>
+    
+                    <p>
+                        Cadastre um novo equipamento industrial no sistema.
+                    </p>
+                </div>
+    
+                <button
+                    class="modal-close"
+                    id="fecharModalMaquina"
+                    type="button"
+                >
+                    ×
+                </button>
+    
+            </div>
+    
+    
+            <!-- =====================================================
+                 IDENTIFICAÇÃO
+                 ===================================================== -->
+    
+            <div class="os-block">
+    
+                <div class="os-block-header">
+    
+                    <div>
+                        <span>
+                            ● IDENTIFICAÇÃO
+                        </span>
+    
+                        <h3>
+                            Dados do Equipamento
+                        </h3>
+                    </div>
+    
+                </div>
+    
+    
+                <div class="form-grid form-grid-3">
+    
+                    <!-- NOME DA MÁQUINA -->
+    
+                    <div class="form-group">
+    
+                        <label for="nomeMaquina">
+                            Nome da Máquina
+                        </label>
+    
+                        <input
+                            type="text"
+                            id="nomeMaquina"
+                            name="nomeMaquina"
+                        >
+    
+                    </div>
+    
+    
+                    <!-- CÓDIGO -->
+    
+                    <div class="form-group">
+                        <label for="codigoMaquina">
+                            Código
+                        </label>
+    
+                        <input
+                            type="text"
+                            id="codigoMaquina"
+                            name="codigoMaquina"
+                            placeholder="Ex.: MC-001"
+                        >   
+                    </div>
+    
+    
+                    <!-- TIPO -->
+    
+                    <div class="form-group">
+    
+                        <label for="tipoMaquina">
+                            Tipo
+                        </label>
+    
+                        <select
+                            id="tipoMaquina"
+                            name="tipoMaquina"
+                        >
+    
+                            <option value="">
+                                Selecione
+                            </option>
+    
+                            <option value="TORNO_CNC">
+                                Torno CNC
+                            </option>
+    
+                            <option value="TORNO_CONVENCIONAL">
+                                Torno Convencional
+                            </option>
+    
+                            <option value="CENTRO_USINAGEM">
+                                Centro de Usinagem
+                            </option>
+    
+                            <option value="FRESADORA">
+                                Fresadora
+                            </option>
+    
+                            <option value="RETIFICA">
+                                Retífica
+                            </option>
+    
+                            <option value="SERRA">
+                                Serra
+                            </option>
+    
+                            <option value="PRENSA">
+                                Prensa
+                            </option>
+    
+                            <option value="SOLDAGEM">
+                                Equipamento de Soldagem
+                            </option>
+    
+                            <option value="OUTRO">
+                                Outro
+                            </option>
+    
+                        </select>
+    
+                    </div>
+       
+                    <!-- FABRICANTE -->
+    
+                    <div class="form-group">
+    
+                        <label for="fabricanteMaquina">
+                            Fabricante
+                        </label>
+    
+                        <input
+                            type="text"
+                            id="fabricanteMaquina"
+                            name="fabricanteMaquina"                           
+                        >
+                    </div>
+    
+                    <!-- MODELO -->
+    
+                    <div class="form-group">
+                        <label for="modeloMaquina">
+                            Modelo
+                        </label>   
+                        <input
+                            type="text"
+                            id="modeloMaquina"
+                            name="modeloMaquina"
+                        >   
+                    </div>   
+    
+                    <!-- NÚMERO DE SÉRIE -->
+    
+                    <div class="form-group">
+    
+                        <label for="serieMaquina">
+                            Nº de Série
+                        </label>
+    
+                        <input
+                            type="text"
+                            id="serieMaquina"
+                            name="serieMaquina"
+                            placeholder="Ex.: SN-000123"
+                        >
+    
+                    </div>
+    
+    
+                    <!-- DATA DE AQUISIÇÃO -->
+    
+                    <div class="form-group">
+    
+                        <label for="dataAquisicaoMaquina">
+                            Data de Aquisição
+                        </label>
+    
+                        <input
+                            type="date"
+                            id="dataAquisicaoMaquina"
+                            name="dataAquisicaoMaquina"
+                        >
+    
+                    </div>
+    
+                </div>
+    
+            </div>
+    
+    
+            <!-- =====================================================
+                 INFORMAÇÕES ADICIONAIS
+                 ===================================================== -->
+    
+            <div class="os-block">
+    
+                <div class="os-block-header">
+    
+                    <div>
+                        <span>
+                            ● INFORMAÇÕES ADICIONAIS
+                        </span>
+    
+                        <h3>
+                            Observações
+                        </h3>
+                    </div>
+    
+                </div>
+    
+    
+                <div class="form-group">
+    
+                    <label for="observacoesMaquina">
+                        Observações
+                    </label>   
+                    <textarea
+                        id="observacoesMaquina"
+                        name="observacoesMaquina"
+                        rows="5"
+                        placeholder="Digite informações adicionais sobre o equipamento..."
+                    ></textarea>   
+                </div>   
+            </div>
+            <!-- =====================================================
+                 AÇÕES
+                 ===================================================== -->
+            <div class="modal-actions">
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cancelarModalMaquina"
+                >
+                    CANCELAR
+                </button>
+                <button
+                    type="button"
+                    class="primary-button"
+                    id="cadastrarMaquina"
+                >
+                    CADASTRAR MÁQUINA
+                </button>   
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== FIM MODAL NOVA MÁQUINA ======================== -->
+
+<!-- ======================== INÍCIO MODAL NOVO MATERIAL ======================== -->
+
+<div class="modal-overlay" id="modalNovoMaterial">
+    <div class="modal-material">
+        <!-- CABEÇALHO -->
+        <div class="modal-material-header">
+            <div>
+                <h2>NOVO MATERIAL</h2>
+                <span>Cadastro de material industrial</span>
+            </div>
+            <button
+                class="modal-close"
+                id="fecharModalMaterial"
+                type="button"
+            >
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+        </div>
+        <!-- CONTEÚDO -->
+        <div class="modal-material-content">
+            <!-- IDENTIFICAÇÃO -->
+            <div class="material-section">
+                <div class="material-section-title">
+                    IDENTIFICAÇÃO
+                </div>
+                <div class="material-form-grid">
+                    <!-- CÓDIGO -->
+                    <div class="material-form-group">
+                        <label for="materialCodigo">
+                            CÓDIGO
+                        </label>
+                        <input
+                            type="text"
+                            id="materialCodigo"
+                            placeholder="MAT-001"
+                        >
+                    </div>
+                    <!-- NOME -->
+                    <div class="material-form-group">
+                        <label for="materialNome">
+                            NOME
+                        </label>
+                        <input
+                            type="text"
+                            id="materialNome"
+                            placeholder="Aço 1020"
+                        >
+                    </div>
+                    <!-- CATEGORIA -->
+                    <div class="material-form-group">
+                        <label for="materialCategoria">
+                            CATEGORIA
+                        </label>
+                        <select id="materialCategoria">
+                            <option value="">
+                                Selecione
+                            </option>
+                            <option value="Metal">
+                                Metal
+                            </option>
+                            <option value="Plástico">
+                                Plástico
+                            </option>
+                            <option value="Ferramenta">
+                                Ferramenta
+                            </option>
+                            <option value="Consumível">
+                                Consumível
+                            </option>
+                            <option value="Elétrico">
+                                Elétrico
+                            </option>
+                            <option value="Lubrificante">
+                                Lubrificante
+                            </option>
+                            <option value="EPI">
+                                EPI
+                            </option>
+                            <option value="Outro">
+                                Outro
+                            </option>
+                        </select>
+                    </div>
+                    <!-- UNIDADE -->
+                    <div class="material-form-group">
+                        <label for="materialUnidade">
+                            UNIDADE
+                        </label>
+                        <select id="materialUnidade">
+                            <option value="">
+                                Selecione
+                            </option>
+                            <option value="Kg">
+                                Kg
+                            </option>
+
+                            <option value="Un">
+                                Un
+                            </option>
+
+                            <option value="L">
+                                L
+                            </option>
+                            <option value="m">
+                                m
+                            </option>
+                            <option value="m²">
+                                m²
+                            </option>
+                            <option value="m³">
+                                m³
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- DESCRIÇÃO -->
+            <div class="material-section">
+                <div class="material-section-title">
+                    DESCRIÇÃO
+                </div>
+                <div class="material-form-group">
+                    <textarea
+                        id="materialDescricao"
+                        placeholder="Descrição do material..."
+                    ></textarea>
+                </div>
+            </div>
+        </div>
+        <!-- RODAPÉ -->
+        <div class="modal-material-footer">
+            <button
+                class="btn-secondary"
+                id="cancelarMaterial"
+                type="button"
+            >
+                CANCELAR
+            </button>
+            <button
+                class="btn-primary"
+                id="cadastrarMaterial"
+                type="button"
+            >
+                CADASTRAR
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======================== FIM MODAL NOVO MATERIAL ======================== -->
+
+<!-- ======================== INÍCIO MODAL NOVO LOTE ======================== -->
+
+     <div class="modal-overlay" id="modalNovoLote">
+
+        <div class="modal-material">
+    
+            <!-- CABEÇALHO -->
+            <div class="modal-material-header">
+    
+                <div>
+                    <span class="section-label"></span>
+    
+                    <h2>NOVO LOTE</h2>
+    
+                    <p>Cadastro de lote de material industrial</p>
+                </div>
+    
+                <button
+                    class="modal-close"
+                    id="fecharModalLote"
+                    type="button"
+                    aria-label="Fechar"
+                >
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+    
+            </div>
+    
+    
+            <!-- CONTEÚDO -->
+            <div class="modal-material-content">
+    
+                <!-- =====================================================
+                     IDENTIFICAÇÃO
+                     ===================================================== -->
+    
+                <div class="material-section">
+    
+                    <div class="material-section-title">
+                        IDENTIFICAÇÃO
+                    </div>
+    
+    
+                    <div class="material-form-grid">
+    
+                        <!-- CÓDIGO DO LOTE -->
+                        <div class="material-form-group">
+    
+                            <label for="loteCodigo">
+                                Código do lote
+                            </label>
+    
+                            <input
+                                type="text"
+                                id="loteCodigo"
+                                placeholder="Ex.: LOT-001"
+                                autocomplete="off"
+                            >
+    
+                        </div>
+    
+    
+                        <!-- MATERIAL -->
+                        <div class="material-form-group">
+    
+                            <label for="loteMaterial">
+                                Material
+                            </label>
+    
+                            <select id="loteMaterial">
+    
+                                <option value="">
+                                    Selecione um material
+                                </option>
+    
+                                <!--
+                                    Os materiais serão carregados
+                                    dinamicamente pelo JavaScript
+                                    através da API.
+                                -->
+    
+                            </select>
+    
+                        </div>
+    
+                    </div>
+    
+                </div>
+    
+    
+                <!-- =====================================================
+                     QUANTIDADE
+                     ===================================================== -->
+    
+                <div class="material-section">
+    
+                    <div class="material-section-title">
+                        QUANTIDADE
+                    </div>
+    
+    
+                    <div class="material-form-grid">
+    
+                        <div class="material-form-group">
+    
+                            <label for="loteQuantidade">
+                                Quantidade
+                            </label>
+    
+                            <input
+                                type="number"
+                                id="loteQuantidade"
+                                placeholder="Ex.: 500"
+                                min="0"
+                                step="0.01"
+                            >
+    
+                        </div>
+    
+                    </div>
+    
+                </div>
+    
+                <!-- =====================================================
+                     DATAS
+                     ===================================================== -->
+
+                <div class="material-section">
+                    <div class="material-section-title">
+                        DATAS
+                    </div>
+                    <div class="material-form-grid">
+                        <!-- DATA DE FABRICAÇÃO -->
+                        <div class="material-form-group">
+                            <label for="loteDataFabricacao">
+                                Data de fabricação
+                            </label>
+                            <input
+                                type="date"
+                                id="loteDataFabricacao"
+                            >
+                        </div>
+                        <!-- DATA DE VALIDADE -->
+                        <div class="material-form-group">
+                            <label for="loteDataValidade">
+                                Data de validade
+                            </label>
+                            <input
+                                type="date"
+                                id="loteDataValidade"
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div> 
+            <!-- RODAPÉ -->
+            <div class="modal-material-footer">  
+                <button
+                    class="btn-secondary"
+                    id="cancelarLote"
+                    type="button"
+                >
+                    CANCELAR
+                </button>
+                <button
+                    class="btn-primary"
+                    id="cadastrarLote"
+                    type="button"
+                >
+                    CADASTRAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+<!-- ======================== FIM MODAL NOVO LOTE ======================== -->
+
+    <script src="script.js"></script>
+</body>
+</html>
