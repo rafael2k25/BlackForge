@@ -2573,3 +2573,887 @@ tbody tr:last-child td {
         grid-template-columns: 1fr;
     }
 }
+
+/* =========================================================
+   MODAL - NOVO MATERIAL
+   ========================================================= */
+
+   .modal-material {
+    width: min(720px, 92vw);
+    max-height: 90vh;
+
+    background: #17191c;
+
+    border: 1px solid rgba(255, 193, 7, 0.35);
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.65),
+        0 0 35px rgba(255, 193, 7, 0.08);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    animation: materialModalIn 0.2s ease-out;
+}
+
+
+/* =========================================================
+   ANIMAÇÃO
+   ========================================================= */
+
+@keyframes materialModalIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(-12px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+}
+
+
+/* =========================================================
+   CABEÇALHO
+   ========================================================= */
+
+.modal-material-header {
+
+    min-height: 78px;
+
+    padding: 18px 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    background: #1b1e21;
+}
+
+
+.modal-material-header h2 {
+
+    margin: 0;
+
+    font-family: 'Rajdhani', sans-serif;
+
+    font-size: 21px;
+    font-weight: 700;
+
+    letter-spacing: 1.5px;
+
+    color: #f5f5f5;
+}
+
+
+.modal-material-header span {
+
+    display: block;
+
+    margin-top: 3px;
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 11px;
+
+    color: #777d82;
+}
+
+
+/* =========================================================
+   BOTÃO FECHAR
+   ========================================================= */
+
+.modal-material-header .modal-close {
+
+    width: 34px;
+    height: 34px;
+
+    padding: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    background: transparent;
+
+    color: #858b90;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+.modal-material-header .modal-close ion-icon {
+
+    font-size: 21px;
+}
+
+
+.modal-material-header .modal-close:hover {
+
+    color: #ffc107;
+
+    border-color: rgba(255, 193, 7, 0.4);
+
+    background: rgba(255, 193, 7, 0.05);
+}
+
+
+/* =========================================================
+   CONTEÚDO
+   ========================================================= */
+
+.modal-material-content {
+
+    padding: 26px 24px;
+
+    overflow-y: auto;
+}
+
+
+/* =========================================================
+   SEÇÕES
+   ========================================================= */
+
+.material-section {
+
+    margin-bottom: 28px;
+}
+
+
+.material-section:last-child {
+
+    margin-bottom: 0;
+}
+
+
+.material-section-title {
+
+    margin-bottom: 18px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    font-family: 'Rajdhani', sans-serif;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    letter-spacing: 1.8px;
+
+    color: #ffc107;
+}
+
+
+.material-section-title::after {
+
+    content: "";
+
+    flex: 1;
+
+    height: 1px;
+
+    background: rgba(255, 193, 7, 0.12);
+}
+
+
+/* =========================================================
+   GRID
+   ========================================================= */
+
+.material-form-grid {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 18px 20px;
+}
+
+
+/* =========================================================
+   CAMPOS
+   ========================================================= */
+
+.material-form-group {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+.material-form-group label {
+
+    font-family: 'Rajdhani', sans-serif;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    letter-spacing: 1.2px;
+
+    color: #92989d;
+}
+
+
+.material-form-group input,
+.material-form-group select,
+.material-form-group textarea {
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    border: 1px solid rgba(255, 255, 255, 0.09);
+
+    background: #101214;
+
+    color: #e7e7e7;
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 13px;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+
+.material-form-group input,
+.material-form-group select {
+
+    height: 42px;
+
+    padding: 0 13px;
+}
+
+
+.material-form-group textarea {
+
+    min-height: 110px;
+
+    padding: 12px 13px;
+
+    resize: vertical;
+
+    line-height: 1.5;
+}
+
+
+.material-form-group input::placeholder,
+.material-form-group textarea::placeholder {
+
+    color: #4f555a;
+}
+
+
+.material-form-group select {
+
+    cursor: pointer;
+}
+
+
+.material-form-group select option {
+
+    background: #17191c;
+
+    color: #e7e7e7;
+}
+
+
+/* =========================================================
+   FOCO
+   ========================================================= */
+
+.material-form-group input:focus,
+.material-form-group select:focus,
+.material-form-group textarea:focus {
+
+    border-color: rgba(255, 193, 7, 0.55);
+
+    background: #131619;
+
+    box-shadow:
+        0 0 0 2px rgba(255, 193, 7, 0.06),
+        0 0 12px rgba(255, 193, 7, 0.05);
+}
+
+
+/* =========================================================
+   RODAPÉ
+   ========================================================= */
+
+.modal-material-footer {
+
+    min-height: 72px;
+
+    padding: 14px 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+    background: #1b1e21;
+}
+
+
+/* =========================================================
+   BOTÕES
+   ========================================================= */
+
+.modal-material-footer button {
+
+    height: 38px;
+
+    padding: 0 20px;
+
+    font-family: 'Rajdhani', sans-serif;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: 1px;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+.modal-material-footer .btn-secondary {
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+
+    background: transparent;
+
+    color: #858b90;
+}
+
+
+.modal-material-footer .btn-secondary:hover {
+
+    border-color: rgba(255, 255, 255, 0.2);
+
+    color: #d5d5d5;
+
+    background: rgba(255, 255, 255, 0.03);
+}
+
+
+.modal-material-footer .btn-primary {
+
+    border: 1px solid #ffc107;
+
+    background: #ffc107;
+
+    color: #111;
+
+    box-shadow:
+        0 0 12px rgba(255, 193, 7, 0.12);
+}
+
+
+.modal-material-footer .btn-primary:hover {
+
+    background: #ffd34d;
+
+    box-shadow:
+        0 0 18px rgba(255, 193, 7, 0.22);
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .modal-material {
+
+        width: 94vw;
+    }
+
+
+    .material-form-grid {
+
+        grid-template-columns: 1fr;
+    }
+
+
+    .modal-material-header {
+
+        padding: 16px 18px;
+    }
+
+
+    .modal-material-content {
+
+        padding: 22px 18px;
+    }
+
+
+    .modal-material-footer {
+
+        padding: 14px 18px;
+    }
+
+}
+
+/* =========================================================
+   TELA DE LOTES
+   ========================================================= */
+
+   .lotes-panel {
+    width: 100%;
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   BARRA DE CONTROLES
+   ========================================================= */
+
+.lotes-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    padding: 18px 22px;
+
+    border-bottom: 1px solid var(--border);
+
+    background: var(--panel-dark);
+}
+
+
+/* =========================================================
+   BUSCA
+   ========================================================= */
+
+.lotes-search {
+    position: relative;
+
+    flex: 1;
+    max-width: 520px;
+}
+
+
+.lotes-search ion-icon {
+    position: absolute;
+
+    left: 14px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    color: var(--text-primary);
+
+    font-size: 17px;
+
+    pointer-events: none;
+}
+
+
+.lotes-search input {
+    width: 100%;
+
+    height: 42px;
+
+    padding: 0 14px 0 42px;
+
+    background: #232428;
+
+    border: 1px solid var(--border);
+
+    color: var(--text-primary);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 12px;
+
+    outline: none;
+}
+
+
+.lotes-search input:focus {
+    border-color: var(--yellow-dark);
+
+    box-shadow:
+        0 0 0 2px rgba(240, 200, 8, 0.06);
+}
+
+
+/* =========================================================
+   FILTRO
+   ========================================================= */
+
+.lotes-filter {
+    width: 220px;
+}
+
+
+.lotes-filter select {
+    width: 100%;
+
+    height: 42px;
+
+    padding: 0 12px;
+
+    background: #232428;
+
+    border: 1px solid var(--border);
+
+    color: var(--text-primary);
+
+    font-family: 'Rajdhani', sans-serif;
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    outline: none;
+}
+
+
+.lotes-filter select:focus {
+    border-color: var(--yellow-dark);
+}
+
+
+/* =========================================================
+   RESUMO
+   ========================================================= */
+
+.lotes-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+
+.lote-summary-card {
+    min-height: 105px;
+
+    padding: 18px 20px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    background: var(--panel);
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+
+.lote-summary-card::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+
+    width: 2px;
+    height: 100%;
+
+    background: var(--yellow-dark);
+}
+
+
+.lote-summary-label {
+    color: var(--text-primary);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 9px;
+
+    letter-spacing: 1.2px;
+}
+
+
+.lote-summary-card strong {
+    color: var(--yellow-bright);
+
+    font-family: 'Rajdhani', sans-serif;
+
+    font-size: 32px;
+
+    font-weight: 600;
+
+    line-height: 1;
+}
+
+
+/* =========================================================
+   TABELA
+   ========================================================= */
+
+.lotes-table-wrapper {
+    width: 100%;
+
+    overflow-x: auto;
+}
+
+
+.lotes-table {
+    width: 100%;
+
+    min-width: 850px;
+
+    border-collapse: collapse;
+
+    background: var(--panel);
+}
+
+
+.lotes-table thead {
+    background: var(--bg-tertiary);
+}
+
+
+.lotes-table th {
+    padding: 14px 16px;
+
+    border-bottom: 1px solid var(--border);
+
+    color: var(--yellow);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 9px;
+
+    font-weight: 400;
+
+    letter-spacing: 1px;
+
+    text-align: left;
+
+    white-space: nowrap;
+}
+
+
+.lotes-table td {
+    padding: 15px 16px;
+
+    border-bottom:
+        1px solid rgba(64, 66, 73, 0.65);
+
+    color: var(--text-secondary);
+
+    font-family: 'Rajdhani', sans-serif;
+
+    font-size: 14px;
+
+    vertical-align: middle;
+}
+
+
+.lotes-table tbody tr {
+    transition:
+        background 0.15s ease;
+}
+
+
+.lotes-table tbody tr:hover {
+    background:
+        rgba(240, 200, 8, 0.035);
+}
+
+
+.lotes-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+/* =========================================================
+   CÓDIGO DO LOTE
+   ========================================================= */
+
+.lote-code {
+    color: var(--yellow-bright);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 12px;
+
+    letter-spacing: 0.5px;
+}
+
+
+/* =========================================================
+   MATERIAL
+   ========================================================= */
+
+.lote-material {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 2px;
+}
+
+
+.lote-material strong {
+    color: var(--text-primary);
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+.lote-material small {
+    color: var(--text-primary);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 9px;
+
+    letter-spacing: 0.5px;
+}
+
+
+/* =========================================================
+   QUANTIDADE
+   ========================================================= */
+
+.lote-quantidade {
+    color: var(--text-primary);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 12px;
+}
+
+/* =========================================================
+   ESTADO VAZIO
+   ========================================================= */
+
+.lotes-empty td {
+    height: 330px;
+
+    padding: 0;
+
+    text-align: center;
+}
+
+
+.empty-state {
+    min-height: 330px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    flex-direction: column;
+
+    padding: 40px;
+}
+
+
+.empty-state ion-icon {
+    margin-bottom: 18px;
+
+    font-size: 42px;
+
+    color: var(--yellow);
+
+    opacity: 0.65;
+}
+
+
+.empty-state h3 {
+    color: var(--text-primary);
+
+    font-size: 19px;
+
+    font-weight: 600;
+}
+
+
+.empty-state p {
+    margin-top: 6px;
+
+    margin-bottom: 22px;
+
+    color: var(--text-primary);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 11px;
+
+    letter-spacing: 0.3px;
+}
+
+
+/* =========================================================
+   RESPONSIVO
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+    .lotes-summary {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .lotes-toolbar {
+        align-items: stretch;
+
+        flex-direction: column;
+    }
+
+    .lotes-search {
+        max-width: none;
+    }
+
+    .lotes-filter {
+        width: 100%;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .lotes-summary {
+        grid-template-columns: 1fr;
+    }
+
+}

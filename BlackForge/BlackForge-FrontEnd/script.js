@@ -277,3 +277,121 @@ modalMaquina.addEventListener("click", (event) => {
         modalMaquina.classList.remove("active");
     }
 });
+
+// =========================================================
+// MODAL - NOVO MATERIAL
+// =========================================================
+
+const modalNovoMaterial = document.getElementById("modalNovoMaterial");
+
+const abrirModalMaterial = document.getElementById("abrirModalMaterial");
+
+const cadastrarMaterialVazio = document.getElementById("cadastrarMaterialVazio");
+
+const fecharModalMaterial = document.getElementById("fecharModalMaterial");
+
+const cancelarMaterial = document.getElementById("cancelarMaterial");
+
+// =========================================================
+// ABRIR MODAL
+// =========================================================
+
+function abrirModalNovoMaterial() {
+
+    modalNovoMaterial.classList.add("active");
+
+}
+
+// =========================================================
+// FECHAR MODAL
+// =========================================================
+
+function fecharModalNovoMaterial() {
+
+    modalNovoMaterial.classList.remove("active");
+
+}
+
+// =========================================================
+// BOTÕES DE ABERTURA
+// =========================================================
+
+abrirModalMaterial.addEventListener(
+    "click",
+    abrirModalNovoMaterial
+);
+
+cadastrarMaterialVazio.addEventListener(
+    "click",
+    abrirModalNovoMaterial
+);
+
+// =========================================================
+// BOTÕES DE FECHAMENTO
+// =========================================================
+
+fecharModalMaterial.addEventListener(
+    "click",
+    fecharModalNovoMaterial
+);
+
+cancelarMaterial.addEventListener(
+    "click",
+    fecharModalNovoMaterial
+);
+
+// =========================================================
+// FECHAR CLICANDO FORA
+// =========================================================
+
+modalNovoMaterial.addEventListener("click", (event) => {
+
+    if (event.target === modalNovoMaterial) {
+
+        fecharModalNovoMaterial();
+
+    }
+
+});
+
+// =========================================================
+// MODAL NOVO LOTE
+// =========================================================
+
+const modalNovoLote = document.getElementById("modalNovoLote");
+const abrirModalLote = document.getElementById("abrirModalLote");
+const cadastrarLoteVazio = document.getElementById("cadastrarLoteVazio");
+const fecharModalLote = document.getElementById("fecharModalLote");
+const cancelarLote = document.getElementById("cancelarLote");
+
+function abrirModalNovoLote() {
+    modalNovoLote.classList.add("active");
+}
+
+function fecharModalNovoLote() {
+    modalNovoLote.classList.remove("active");
+}
+
+if (abrirModalLote) {
+    abrirModalLote.addEventListener("click", abrirModalNovoLote);
+}
+
+if (cadastrarLoteVazio) {
+    cadastrarLoteVazio.addEventListener("click", abrirModalNovoLote);
+}
+
+if (fecharModalLote) {
+    fecharModalLote.addEventListener("click", fecharModalNovoLote);
+}
+
+if (cancelarLote) {
+    cancelarLote.addEventListener("click", fecharModalNovoLote);
+}
+
+if (modalNovoLote) {
+    modalNovoLote.addEventListener("click", (event) => {
+        if (event.target === modalNovoLote) {
+            fecharModalNovoLote();
+        }
+    });
+}

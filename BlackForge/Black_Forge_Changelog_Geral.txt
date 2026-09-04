@@ -276,4 +276,4 @@ ESTADO ATUAL DO PROJETO
 
 A fundação do Black Forge está definida. A interface, a arquitetura dos módulos, a estrutura inicial do estoque, o backend, o banco de dados e o conceito de máquinas já foram estabelecidos.
 
-O próximo grande passo é transformar Máquinas, Ordens de Serviço, Estoque e Manutenção em módulos completamente conectados ao banco de dados, consolidando a integração entre frontend React, API ASP.NET Core e SQL Server.
+O próximo grande passo é transformar Máquinas, Ordens de Serviço, Estoque e Manutenção em módulos completamente conectados ao banco de dados, consolidando a integração entre frontend, API ASP.NET Core e SQL Server.

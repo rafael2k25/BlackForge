@@ -106,12 +106,10 @@
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
                             <span>Lotes</span>
                         </button>
-                        <button class="menu-item submenu-item" data-section="movimentacoes" data-title="Movimentações">
-                            <ion-icon name="arrow-forward-sharp"></ion-icon>
-                            <span>Movimentações</span>
-                        </button>
                     </div>
                 </div>
+
+                
                            
                 <!-- =====================================================
                      GESTÃO
@@ -218,6 +216,8 @@
     </aside>
 
     <!-- ======================== FIM CATEGORIA  ======================== -->
+
+   
 
     <!-- ======================================= INÍCIO CATEGORIA CONTEÚDO PRINCIPAL ======================================= -->
 
@@ -436,7 +436,7 @@
         <!-- ======================== INÍCIO CATEGORIA MATERIAIS ======================== -->
 
         <section id="materiais" class="page-section">
-            <div class="section-header">
+            <div class="section-header">       
                 <div>
                     <span class="section-label">
                         <!-- CAMPO VAZIO -->
@@ -446,12 +446,16 @@
                     </h1>
                     <p>
                         Gerenciamento de materiais e estoque industrial.
-                    </p>
-                </div>
-                <button class="primary-button">
+                    </p>      
+                </div>      
+                <button
+                    type="button"
+                    class="primary-button"
+                    id="abrirModalMaterial"
+                >
                     + NOVO MATERIAL
-                </button>
-            </div>
+                </button>       
+            </div>              
             <div class="industrial-panel empty-panel">
                 <h3>
                     O estoque ainda não possui materiais registrados.
@@ -459,10 +463,14 @@
                 <p>
                     <!-- CAMPO VAZIO -->
                 </p>
-                <button class="secondary-button">
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cadastrarMaterialVazio"
+                >
                     CADASTRAR MATERIAL
-                </button>
-            </div>
+                </button>      
+            </div>      
         </section>
 
         <!-- ======================== FIM CATEGORIA MATERIAIS ======================== -->
@@ -499,7 +507,183 @@
             </div>
         </section>
 
-        <!-- ======================== FIM CATEGORIA MÁQUINAS ======================== -->           
+        <!-- ======================== FIM CATEGORIA MÁQUINAS ======================== --> 
+        
+        <!-- ======================== INÍCIO LOTES ======================== -->
+
+         <!-- =========================================================
+     LOTES
+     ========================================================= -->
+
+<section id="lotes" class="page-section">
+
+    <!-- CABEÇALHO -->
+    <div class="section-header">
+
+        <div>
+
+            <span class="section-label"></span>
+
+            <h1>Lotes</h1>
+
+            <p>
+                Controle e rastreamento dos lotes de materiais industriais.
+            </p>
+
+        </div>
+
+        <button
+            class="primary-button"
+            id="abrirModalLote"
+            type="button"
+        >
+            + NOVO LOTE
+        </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         PAINEL DE LOTES
+         ===================================================== -->
+
+    <div class="industrial-panel lotes-panel">
+
+        <!-- BARRA DE CONTROLES -->
+        <div class="lotes-toolbar">
+
+            <!-- BUSCA -->
+            <div class="lotes-search">
+
+                <ion-icon name="search-outline"></ion-icon>
+
+                <input
+                    type="text"
+                    id="buscarLote"
+                    placeholder="Buscar por lote ou material..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <!-- FILTRO -->
+            <div class="lotes-filter">
+
+                <select id="filtroLote">
+
+                    <option value="todos">
+                        Todos os lotes
+                    </option>
+
+                    <option value="normal">
+                        Dentro da validade
+                    </option>
+
+                    <option value="proximo">
+                        Próximos da validade
+                    </option>
+
+                    <option value="vencido">
+                        Vencidos
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             RESUMO DOS LOTES
+             ================================================= -->
+
+        <div class="lotes-summary">
+
+            <!-- TOTAL -->
+            <div class="lote-summary-card">
+                <span class="lote-summary-label">
+                    TOTAL DE LOTES
+                </span>
+                <strong id="totalLotes">
+                    0
+                </strong>
+            </div>
+
+            <!-- PRÓXIMOS DO VENCIMENTO -->
+            <div class="lote-summary-card">
+                <span class="lote-summary-label">
+                    PRÓXIMOS DO VENCIMENTO
+                </span>
+                <strong id="lotesProximos">
+                    0
+                </strong>
+            </div>
+
+            <!-- VENCIDOS -->
+            <div class="lote-summary-card">
+                <span class="lote-summary-label">
+                    VENCIDOS
+                </span>
+                <strong id="lotesVencidos">
+                    0
+                </strong>
+            </div>
+        </div>
+
+        <!-- =================================================
+             TABELA DE LOTES
+             ================================================= -->
+
+        <div class="lotes-table-wrapper">
+            <table class="lotes-table">
+                <thead>
+                    <tr>
+                        <th>
+                            LOTE
+                        </th>
+                        <th>
+                            MATERIAL
+                        </th>
+                        <th>
+                            QUANTIDADE
+                        </th>
+                        <th>
+                            FABRICAÇÃO
+                        </th>
+                        <th>
+                            VALIDADE
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="listaLotes">
+                    <tr class="lotes-empty">
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <ion-icon
+                                    name="cube-outline"
+                                ></ion-icon>
+                                <h3>
+                                    Nenhum lote cadastrado
+                                </h3><br>                               
+                                <button
+                                    class="secondary-button"
+                                    id="cadastrarLoteVazio"
+                                    type="button"
+                                >
+                                    CADASTRAR LOTE
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+        <!-- ======================== FIM LOTES ======================== -->
 
     </main>
 
@@ -1150,7 +1334,334 @@
 
     <!-- ======================== FIM MODAL NOVA MÁQUINA ======================== -->
 
+<!-- ======================== INÍCIO MODAL NOVO MATERIAL ======================== -->
+
+<div class="modal-overlay" id="modalNovoMaterial">
+    <div class="modal-material">
+        <!-- CABEÇALHO -->
+        <div class="modal-material-header">
+            <div>
+                <h2>NOVO MATERIAL</h2>
+                <span>Cadastro de material industrial</span>
+            </div>
+            <button
+                class="modal-close"
+                id="fecharModalMaterial"
+                type="button"
+            >
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+        </div>
+        <!-- CONTEÚDO -->
+        <div class="modal-material-content">
+            <!-- IDENTIFICAÇÃO -->
+            <div class="material-section">
+                <div class="material-section-title">
+                    IDENTIFICAÇÃO
+                </div>
+                <div class="material-form-grid">
+                    <!-- CÓDIGO -->
+                    <div class="material-form-group">
+                        <label for="materialCodigo">
+                            CÓDIGO
+                        </label>
+                        <input
+                            type="text"
+                            id="materialCodigo"
+                            placeholder="MAT-001"
+                        >
+                    </div>
+                    <!-- NOME -->
+                    <div class="material-form-group">
+                        <label for="materialNome">
+                            NOME
+                        </label>
+                        <input
+                            type="text"
+                            id="materialNome"
+                            placeholder="Aço 1020"
+                        >
+                    </div>
+                    <!-- CATEGORIA -->
+                    <div class="material-form-group">
+                        <label for="materialCategoria">
+                            CATEGORIA
+                        </label>
+                        <select id="materialCategoria">
+                            <option value="">
+                                Selecione
+                            </option>
+                            <option value="Metal">
+                                Metal
+                            </option>
+                            <option value="Plástico">
+                                Plástico
+                            </option>
+                            <option value="Ferramenta">
+                                Ferramenta
+                            </option>
+                            <option value="Consumível">
+                                Consumível
+                            </option>
+                            <option value="Elétrico">
+                                Elétrico
+                            </option>
+                            <option value="Lubrificante">
+                                Lubrificante
+                            </option>
+                            <option value="EPI">
+                                EPI
+                            </option>
+                            <option value="Outro">
+                                Outro
+                            </option>
+                        </select>
+                    </div>
+                    <!-- UNIDADE -->
+                    <div class="material-form-group">
+                        <label for="materialUnidade">
+                            UNIDADE
+                        </label>
+                        <select id="materialUnidade">
+                            <option value="">
+                                Selecione
+                            </option>
+                            <option value="Kg">
+                                Kg
+                            </option>
+
+                            <option value="Un">
+                                Un
+                            </option>
+
+                            <option value="L">
+                                L
+                            </option>
+                            <option value="m">
+                                m
+                            </option>
+                            <option value="m²">
+                                m²
+                            </option>
+                            <option value="m³">
+                                m³
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!-- DESCRIÇÃO -->
+            <div class="material-section">
+                <div class="material-section-title">
+                    DESCRIÇÃO
+                </div>
+                <div class="material-form-group">
+                    <textarea
+                        id="materialDescricao"
+                        placeholder="Descrição do material..."
+                    ></textarea>
+                </div>
+            </div>
+        </div>
+        <!-- RODAPÉ -->
+        <div class="modal-material-footer">
+            <button
+                class="btn-secondary"
+                id="cancelarMaterial"
+                type="button"
+            >
+                CANCELAR
+            </button>
+            <button
+                class="btn-primary"
+                id="cadastrarMaterial"
+                type="button"
+            >
+                CADASTRAR
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======================== FIM MODAL NOVO MATERIAL ======================== -->
+
+<!-- ======================== INÍCIO MODAL NOVO LOTE ======================== -->
+
+     <div class="modal-overlay" id="modalNovoLote">
+
+        <div class="modal-material">
+    
+            <!-- CABEÇALHO -->
+            <div class="modal-material-header">
+    
+                <div>
+                    <span class="section-label"></span>
+    
+                    <h2>NOVO LOTE</h2>
+    
+                    <p>Cadastro de lote de material industrial</p>
+                </div>
+    
+                <button
+                    class="modal-close"
+                    id="fecharModalLote"
+                    type="button"
+                    aria-label="Fechar"
+                >
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+    
+            </div>
+    
+    
+            <!-- CONTEÚDO -->
+            <div class="modal-material-content">
+    
+                <!-- =====================================================
+                     IDENTIFICAÇÃO
+                     ===================================================== -->
+    
+                <div class="material-section">
+    
+                    <div class="material-section-title">
+                        IDENTIFICAÇÃO
+                    </div>
+    
+    
+                    <div class="material-form-grid">
+    
+                        <!-- CÓDIGO DO LOTE -->
+                        <div class="material-form-group">
+    
+                            <label for="loteCodigo">
+                                Código do lote
+                            </label>
+    
+                            <input
+                                type="text"
+                                id="loteCodigo"
+                                placeholder="Ex.: LOT-001"
+                                autocomplete="off"
+                            >
+    
+                        </div>
+    
+    
+                        <!-- MATERIAL -->
+                        <div class="material-form-group">
+    
+                            <label for="loteMaterial">
+                                Material
+                            </label>
+    
+                            <select id="loteMaterial">
+    
+                                <option value="">
+                                    Selecione um material
+                                </option>
+    
+                                <!--
+                                    Os materiais serão carregados
+                                    dinamicamente pelo JavaScript
+                                    através da API.
+                                -->
+    
+                            </select>
+    
+                        </div>
+    
+                    </div>
+    
+                </div>
+    
+    
+                <!-- =====================================================
+                     QUANTIDADE
+                     ===================================================== -->
+    
+                <div class="material-section">
+    
+                    <div class="material-section-title">
+                        QUANTIDADE
+                    </div>
+    
+    
+                    <div class="material-form-grid">
+    
+                        <div class="material-form-group">
+    
+                            <label for="loteQuantidade">
+                                Quantidade
+                            </label>
+    
+                            <input
+                                type="number"
+                                id="loteQuantidade"
+                                placeholder="Ex.: 500"
+                                min="0"
+                                step="0.01"
+                            >
+    
+                        </div>
+    
+                    </div>
+    
+                </div>
+    
+                <!-- =====================================================
+                     DATAS
+                     ===================================================== -->
+
+                <div class="material-section">
+                    <div class="material-section-title">
+                        DATAS
+                    </div>
+                    <div class="material-form-grid">
+                        <!-- DATA DE FABRICAÇÃO -->
+                        <div class="material-form-group">
+                            <label for="loteDataFabricacao">
+                                Data de fabricação
+                            </label>
+                            <input
+                                type="date"
+                                id="loteDataFabricacao"
+                            >
+                        </div>
+                        <!-- DATA DE VALIDADE -->
+                        <div class="material-form-group">
+                            <label for="loteDataValidade">
+                                Data de validade
+                            </label>
+                            <input
+                                type="date"
+                                id="loteDataValidade"
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div> 
+            <!-- RODAPÉ -->
+            <div class="modal-material-footer">  
+                <button
+                    class="btn-secondary"
+                    id="cancelarLote"
+                    type="button"
+                >
+                    CANCELAR
+                </button>
+                <button
+                    class="btn-primary"
+                    id="cadastrarLote"
+                    type="button"
+                >
+                    CADASTRAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+<!-- ======================== FIM MODAL NOVO LOTE ======================== -->
+
     <script src="script.js"></script>
 </body>
-
 </html>
