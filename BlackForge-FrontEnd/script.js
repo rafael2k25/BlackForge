@@ -13,7 +13,6 @@ const pageTitle = document.getElementById("page-title");
 
 menuItems.forEach(menuItem => {
     menuItem.addEventListener("click", () => {
-        // Pega o ID da seção através do data-section
         const sectionId = menuItem.dataset.section;
         // Pega o título através do data-title
         const title = menuItem.dataset.title;
@@ -35,7 +34,6 @@ menuItems.forEach(menuItem => {
         menuItems.forEach(item => {
             item.classList.remove("active");
         });
-
         // Ativa o item clicado
         menuItem.classList.add("active");
     });
@@ -67,11 +65,6 @@ categoryButtons.forEach(categoryButton => {
 const categories = document.querySelectorAll(".menu-category");
 categories.forEach(category => {
     let closeTimer;
-
-    // =====================================================
-    // MOUSE ENTROU NA CATEGORIA
-    // =====================================================
-
     category.addEventListener("mouseenter", () => {
         // Cancela um fechamento anterior
         clearTimeout(closeTimer);
@@ -84,11 +77,6 @@ categories.forEach(category => {
         // Abre a categoria atual
         category.classList.add("open");
     });
-
-    // =====================================================
-    // MOUSE SAIU DA CATEGORIA
-    // =====================================================
-
     category.addEventListener("mouseleave", () => {
         // Aguarda 12 segundos para fechar
         closeTimer = setTimeout(() => {
@@ -394,4 +382,780 @@ if (modalNovoLote) {
             fecharModalNovoLote();
         }
     });
+}
+
+// =========================================================
+// FUNCIONÁRIOS
+// =========================================================
+
+
+// =========================================================
+// ARRAY DE FUNCIONÁRIOS
+// =========================================================
+
+// Por enquanto permanece vazio.
+// Futuramente será substituído pelos dados vindos do backend.
+
+let funcionarios = [];
+
+
+// =========================================================
+// ELEMENTOS
+// =========================================================
+
+const modalNovoFuncionario =
+    document.getElementById("modalNovoFuncionario");
+
+const modalDetalhesFuncionario =
+    document.getElementById("modalDetalhesFuncionario");
+
+const abrirModalFuncionario =
+    document.getElementById("abrirModalFuncionario");
+
+const cadastrarPrimeiroFuncionario =
+    document.getElementById("cadastrarPrimeiroFuncionario");
+
+const fecharModalFuncionario =
+    document.getElementById("fecharModalFuncionario");
+
+const cancelarFuncionario =
+    document.getElementById("cancelarFuncionario");
+
+const fecharDetalhesFuncionario =
+    document.getElementById("fecharDetalhesFuncionario");
+
+const fecharDetalhesFuncionarioBotao =
+    document.getElementById("fecharDetalhesFuncionarioBotao");
+
+
+// =========================================================
+// ABRIR MODAL DE CADASTRO
+// =========================================================
+
+function abrirCadastroFuncionario() {
+
+    if (!modalNovoFuncionario) {
+        return;
+    }
+
+    modalNovoFuncionario.classList.add("active");
+
+}
+
+
+// =========================================================
+// FECHAR MODAL DE CADASTRO
+// =========================================================
+
+function fecharCadastroFuncionario() {
+
+    if (!modalNovoFuncionario) {
+        return;
+    }
+
+    modalNovoFuncionario.classList.remove("active");
+
+}
+
+
+// =========================================================
+// ABRIR MODAL
+// =========================================================
+
+if (abrirModalFuncionario) {
+
+    abrirModalFuncionario.addEventListener(
+        "click",
+        abrirCadastroFuncionario
+    );
+
+}
+
+
+if (cadastrarPrimeiroFuncionario) {
+
+    cadastrarPrimeiroFuncionario.addEventListener(
+        "click",
+        abrirCadastroFuncionario
+    );
+
+}
+
+
+// =========================================================
+// FECHAR MODAL
+// =========================================================
+
+if (fecharModalFuncionario) {
+
+    fecharModalFuncionario.addEventListener(
+        "click",
+        fecharCadastroFuncionario
+    );
+
+}
+
+
+if (cancelarFuncionario) {
+
+    cancelarFuncionario.addEventListener(
+        "click",
+        fecharCadastroFuncionario
+    );
+
+}
+
+
+// =========================================================
+// FECHAR AO CLICAR NO FUNDO
+// =========================================================
+
+if (modalNovoFuncionario) {
+
+    modalNovoFuncionario.addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                event.target === modalNovoFuncionario
+            ) {
+
+                fecharCadastroFuncionario();
+
+            }
+
+        }
+    );
+
+}
+
+
+// =========================================================
+// FECHAR MODAL DE DETALHES
+// =========================================================
+
+function fecharModalDetalhesFuncionario() {
+
+    if (!modalDetalhesFuncionario) {
+        return;
+    }
+
+    modalDetalhesFuncionario.classList.remove("active");
+
+}
+
+
+if (fecharDetalhesFuncionario) {
+
+    fecharDetalhesFuncionario.addEventListener(
+        "click",
+        fecharModalDetalhesFuncionario
+    );
+
+}
+
+
+if (fecharDetalhesFuncionarioBotao) {
+
+    fecharDetalhesFuncionarioBotao.addEventListener(
+        "click",
+        fecharModalDetalhesFuncionario
+    );
+
+}
+
+
+if (modalDetalhesFuncionario) {
+
+    modalDetalhesFuncionario.addEventListener(
+        "click",
+        function (event) {
+
+            if (
+                event.target === modalDetalhesFuncionario
+            ) {
+
+                fecharModalDetalhesFuncionario();
+
+            }
+
+        }
+    );
+
+}
+
+
+// =========================================================
+// ESC
+// =========================================================
+
+document.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (event.key !== "Escape") {
+            return;
+        }
+
+
+        fecharCadastroFuncionario();
+
+        fecharModalDetalhesFuncionario();
+
+    }
+);
+
+
+// =========================================================
+// RENDERIZAR FUNCIONÁRIOS
+// =========================================================
+
+function renderizarFuncionarios() {
+
+    const grid =
+        document.getElementById("funcionariosGrid");
+
+    const empty =
+        document.getElementById("funcionariosEmpty");
+
+
+    if (!grid || !empty) {
+        return;
+    }
+
+
+    // Limpa o grid
+
+    grid.innerHTML = "";
+
+
+    // Nenhum funcionário
+
+    if (funcionarios.length === 0) {
+
+        empty.style.display = "flex";
+
+        grid.style.display = "none";
+
+        return;
+
+    }
+
+
+    // Existem funcionários
+
+    empty.style.display = "none";
+
+    grid.style.display = "grid";
+
+
+    funcionarios.forEach(
+        function (funcionario, index) {
+
+            const card =
+                document.createElement("div");
+
+            card.className =
+                "funcionario-card";
+
+
+            const iniciais =
+                funcionario.nome
+                    .split(" ")
+                    .map(
+                        nome => nome.charAt(0)
+                    )
+                    .slice(0, 2)
+                    .join("")
+                    .toUpperCase();
+
+
+            card.innerHTML = `
+
+                <div class="funcionario-avatar">
+                    ${iniciais}
+                </div>
+
+                <h3>
+                    ${funcionario.nome}
+                </h3>
+
+                <span class="funcionario-card-cargo">
+                    ${funcionario.cargo}
+                </span>
+
+                <div class="funcionario-card-info">
+
+                    <span>
+                        MATRÍCULA
+                    </span>
+
+                    <strong>
+                        ${funcionario.matricula}
+                    </strong>
+
+                    <span>
+                        SETOR
+                    </span>
+
+                    <strong>
+                        ${funcionario.setor}
+                    </strong>
+
+                </div>
+
+                <button
+                    class="funcionario-card-button"
+                    type="button"
+                    data-funcionario-index="${index}"
+                >
+                    VER DETALHES →
+                </button>
+
+            `;
+
+
+            grid.appendChild(card);
+
+        }
+    );
+
+
+    adicionarEventosDetalhes();
+
+}
+
+
+// =========================================================
+// EVENTOS DOS BOTÕES DE DETALHES
+// =========================================================
+
+function adicionarEventosDetalhes() {
+
+    const botoes =
+        document.querySelectorAll(
+            ".funcionario-card-button"
+        );
+
+
+    botoes.forEach(
+        function (botao) {
+
+            botao.addEventListener(
+                "click",
+                function () {
+
+                    const index =
+                        Number(
+                            botao.dataset.funcionarioIndex
+                        );
+
+
+                    abrirDetalhesFuncionario(
+                        funcionarios[index]
+                    );
+
+                }
+            );
+
+        }
+    );
+
+}
+
+
+// =========================================================
+// ABRIR DETALHES
+// =========================================================
+
+function abrirDetalhesFuncionario(funcionario) {
+
+    if (
+        !modalDetalhesFuncionario ||
+        !funcionario
+    ) {
+        return;
+    }
+
+
+    document.getElementById(
+        "detalhesFuncionarioNome"
+    ).textContent =
+        funcionario.nome;
+
+
+    document.getElementById(
+        "detalhesFuncionarioCargo"
+    ).textContent =
+        funcionario.cargo;
+
+
+    document.getElementById(
+        "detalhesFuncionarioMatricula"
+    ).textContent =
+        funcionario.matricula;
+
+
+    document.getElementById(
+        "detalhesFuncionarioCpf"
+    ).textContent =
+        funcionario.cpf;
+
+
+    document.getElementById(
+        "detalhesFuncionarioNascimento"
+    ).textContent =
+        funcionario.nascimento;
+
+
+    document.getElementById(
+        "detalhesFuncionarioCargoInfo"
+    ).textContent =
+        funcionario.cargo;
+
+
+    document.getElementById(
+        "detalhesFuncionarioSetor"
+    ).textContent =
+        funcionario.setor;
+
+
+    document.getElementById(
+        "detalhesFuncionarioAdmissao"
+    ).textContent =
+        funcionario.admissao;
+
+
+    const status =
+        document.getElementById(
+            "detalhesFuncionarioStatus"
+        );
+
+
+    status.textContent =
+        funcionario.status;
+
+
+    status.className =
+        "funcionario-status " +
+        funcionario.status
+            .toLowerCase();
+
+
+    document.getElementById(
+        "detalhesFuncionarioTelefone"
+    ).textContent =
+        funcionario.telefone;
+
+
+    document.getElementById(
+        "detalhesFuncionarioEmail"
+    ).textContent =
+        funcionario.email;
+
+
+    document.getElementById(
+        "detalhesFuncionarioObservacoes"
+    ).textContent =
+        funcionario.observacoes ||
+        "Nenhuma observação registrada.";
+
+
+    fecharCadastroFuncionario();
+
+    modalDetalhesFuncionario.classList.add(
+        "active"
+    );
+
+}
+
+// =========================================================
+// INICIALIZAÇÃO
+// =========================================================
+
+renderizarFuncionarios();
+
+// =========================================================
+// RELATÓRIOS DE SERVIÇOS
+// =========================================================
+
+const limparFiltrosServicos =
+    document.getElementById("limparFiltrosServicos");
+
+const gerarRelatorioServicos =
+    document.getElementById("gerarRelatorioServicos");
+
+const servicosDataInicio =
+    document.getElementById("servicosDataInicio");
+
+const servicosDataFim =
+    document.getElementById("servicosDataFim");
+
+const servicosStatus =
+    document.getElementById("servicosStatus");
+
+function limparFiltrosRelatorioServicos() {
+
+    if (servicosDataInicio) {
+        servicosDataInicio.value = "";
+    }
+
+    if (servicosDataFim) {
+        servicosDataFim.value = "";
+    }
+
+    if (servicosStatus) {
+        servicosStatus.value = "";
+    }
+
+}
+
+
+function gerarRelatorioDeServicos() {
+
+    /*
+     * FUTURO BACKEND
+     *
+     * Aqui posteriormente vamos enviar os filtros
+     * para a API e receber os dados das ordens de serviço.
+     *
+     * Exemplo futuro:
+     *
+     * GET /api/relatorios/servicos
+     *
+     * ?dataInicio=
+     * &dataFim=
+     * &status=
+     */
+
+    console.log("Gerando relatório de serviços...", {
+        dataInicio: servicosDataInicio?.value || null,
+        dataFim: servicosDataFim?.value || null,
+        status: servicosStatus?.value || null,
+    });
+
+}
+
+
+if (limparFiltrosServicos) {
+
+    limparFiltrosServicos.addEventListener(
+        "click",
+        limparFiltrosRelatorioServicos
+    );
+
+}
+
+
+if (gerarRelatorioServicos) {
+
+    gerarRelatorioServicos.addEventListener(
+        "click",
+        gerarRelatorioDeServicos
+    );
+
+}
+
+// =========================================================
+// RELATÓRIO DE ESTOQUE
+// =========================================================
+
+const limparFiltrosEstoque =
+    document.getElementById("limparFiltrosEstoque");
+
+const gerarRelatorioEstoque =
+    document.getElementById("gerarRelatorioEstoque");
+
+const estoqueDataInicio =
+    document.getElementById("estoqueDataInicio");
+
+const estoqueDataFim =
+    document.getElementById("estoqueDataFim");
+
+const estoqueTipoMovimentacao =
+    document.getElementById("estoqueTipoMovimentacao");
+
+const estoqueMaterial =
+    document.getElementById("estoqueMaterial");
+
+
+// =========================================================
+// LIMPAR FILTROS
+// =========================================================
+
+function limparFiltrosRelatorioEstoque() {
+
+    if (estoqueDataInicio) {
+        estoqueDataInicio.value = "";
+    }
+
+    if (estoqueDataFim) {
+        estoqueDataFim.value = "";
+    }
+
+    if (estoqueTipoMovimentacao) {
+        estoqueTipoMovimentacao.value = "";
+    }
+
+    if (estoqueMaterial) {
+        estoqueMaterial.value = "";
+    }
+
+}
+
+
+// =========================================================
+// GERAR RELATÓRIO
+// =========================================================
+
+function gerarRelatorioDeEstoque() {
+
+    console.log(
+        "Gerando relatório de estoque...",
+        {
+            dataInicio:
+                estoqueDataInicio?.value || null,
+
+            dataFim:
+                estoqueDataFim?.value || null,
+
+            tipoMovimentacao:
+                estoqueTipoMovimentacao?.value || null,
+
+            material:
+                estoqueMaterial?.value || null
+        }
+    );
+
+}
+
+
+// =========================================================
+// EVENTOS
+// =========================================================
+
+if (limparFiltrosEstoque) {
+
+    limparFiltrosEstoque.addEventListener(
+        "click",
+        limparFiltrosRelatorioEstoque
+    );
+
+}
+
+
+if (gerarRelatorioEstoque) {
+
+    gerarRelatorioEstoque.addEventListener(
+        "click",
+        gerarRelatorioDeEstoque
+    );
+
+}
+
+// =========================================================
+// RELATÓRIO FINANCEIRO
+// =========================================================
+
+const limparFiltrosFinanceiro =
+    document.getElementById("limparFiltrosFinanceiro");
+
+const gerarRelatorioFinanceiro =
+    document.getElementById("gerarRelatorioFinanceiro");
+
+const financeiroDataInicio =
+    document.getElementById("financeiroDataInicio");
+
+const financeiroDataFim =
+    document.getElementById("financeiroDataFim");
+
+const financeiroTipo =
+    document.getElementById("financeiroTipo");
+
+const financeiroStatus =
+    document.getElementById("financeiroStatus");
+
+const financeiroPagamento =
+    document.getElementById("financeiroPagamento");
+
+
+// =========================================================
+// LIMPAR FILTROS
+// =========================================================
+
+function limparFiltrosRelatorioFinanceiro() {
+
+    if (financeiroDataInicio) {
+        financeiroDataInicio.value = "";
+    }
+
+    if (financeiroDataFim) {
+        financeiroDataFim.value = "";
+    }
+
+    if (financeiroTipo) {
+        financeiroTipo.value = "";
+    }
+
+    if (financeiroStatus) {
+        financeiroStatus.value = "";
+    }
+
+    if (financeiroPagamento) {
+        financeiroPagamento.value = "";
+    }
+
+}
+
+
+// =========================================================
+// GERAR RELATÓRIO
+// =========================================================
+
+function gerarRelatorioDeFinanceiro() {
+
+    console.log(
+        "Gerando relatório financeiro...",
+        {
+            dataInicio:
+                financeiroDataInicio?.value || null,
+
+            dataFim:
+                financeiroDataFim?.value || null,
+
+            tipo:
+                financeiroTipo?.value || null,
+
+            status:
+                financeiroStatus?.value || null,
+
+            pagamento:
+                financeiroPagamento?.value || null
+        }
+    );
+
+}
+
+
+// =========================================================
+// EVENTOS
+// =========================================================
+
+if (limparFiltrosFinanceiro) {
+
+    limparFiltrosFinanceiro.addEventListener(
+        "click",
+        limparFiltrosRelatorioFinanceiro
+    );
+
+}
+
+
+if (gerarRelatorioFinanceiro) {
+
+    gerarRelatorioFinanceiro.addEventListener(
+        "click",
+        gerarRelatorioDeFinanceiro
+    );
+
 }

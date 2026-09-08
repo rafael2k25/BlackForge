@@ -1,0 +1,917 @@
+/* =========================================================
+   FUNCIONÁRIOS
+   ========================================================= */
+
+
+/* =========================================================
+   PAINEL PRINCIPAL
+   ========================================================= */
+
+   .funcionarios-panel {
+
+    position: relative;
+
+    min-height: 500px;
+
+    padding: 25px;
+
+    background: var(--panel);
+
+    border: 1px solid var(--border);
+
+    overflow: hidden;
+
+}
+
+
+.funcionarios-panel::before,
+.funcionarios-panel::after {
+
+    content: "";
+
+    position: absolute;
+
+    width: 14px;
+    height: 14px;
+
+    border-color: var(--yellow-dark);
+
+    border-style: solid;
+
+    pointer-events: none;
+
+}
+
+
+.funcionarios-panel::before {
+
+    top: -1px;
+    left: -1px;
+
+    border-width:
+        2px 0 0 2px;
+
+}
+
+
+.funcionarios-panel::after {
+
+    right: -1px;
+    bottom: -1px;
+
+    border-width:
+        0 2px 2px 0;
+
+}
+
+
+/* =========================================================
+   CABEÇALHO DO QUADRO
+   ========================================================= */
+
+.funcionarios-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding-bottom: 20px;
+
+    margin-bottom: 20px;
+
+    border-bottom: 1px solid var(--border);
+
+}
+
+
+.funcionarios-label {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: var(--yellow);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+}
+
+
+.funcionarios-header h2 {
+
+    font-size: 24px;
+
+    font-weight: 600;
+
+    letter-spacing: 1px;
+
+}
+
+
+.funcionarios-count {
+
+    padding: 7px 12px;
+
+    background: var(--bg-tertiary);
+
+    border: 1px solid var(--border);
+
+    color: var(--text-secondary);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 10px;
+
+    letter-spacing: 1px;
+
+}
+
+
+/* =========================================================
+   ESTADO VAZIO
+   ========================================================= */
+
+.funcionarios-empty {
+
+    min-height: 390px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+}
+
+
+.funcionarios-empty-icon {
+    width: 72px;
+    height: 72px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--yellow-dark);
+    font-size: 32px;
+}
+
+
+.funcionarios-empty h3 {
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+
+.funcionarios-empty p {
+    max-width: 420px;
+    margin-bottom: 22px;
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   GRID
+   ========================================================= */
+
+.funcionarios-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+
+/* =========================================================
+   CARD DO FUNCIONÁRIO
+   ========================================================= */
+
+.funcionario-card {
+
+    position: relative;
+
+    min-height: 260px;
+
+    padding: 22px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #313338,
+            #292b2f
+        );
+
+    border: 1px solid var(--border);
+
+    overflow: hidden;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+
+}
+
+
+.funcionario-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 2px;
+
+    background:
+        var(--yellow-dark);
+
+}
+
+
+.funcionario-card:hover {
+
+    transform: translateY(-3px);
+
+    background: var(--panel-hover);
+
+    border-color: var(--border-yellow);
+
+}
+
+
+/* =========================================================
+   AVATAR
+   ========================================================= */
+
+.funcionario-avatar {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--yellow);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+
+.funcionario-card h3 {
+
+    margin-bottom: 3px;
+
+    color: var(--text-primary);
+
+    font-size: 20px;
+
+    font-weight: 600;
+
+}
+
+
+.funcionario-card-cargo {
+
+    display: block;
+
+    margin-bottom: 18px;
+
+    color: var(--yellow);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 10px;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+
+}
+
+
+.funcionario-card-info {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+    margin-bottom: 20px;
+
+}
+
+
+.funcionario-card-info span {
+
+    color: var(--text-secondary);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 10px;
+
+}
+
+
+.funcionario-card-info strong {
+
+    color: var(--text-secondary);
+
+    font-size: 13px;
+
+    font-weight: 500;
+
+}
+
+
+/* =========================================================
+   BOTÃO DO CARD
+   ========================================================= */
+
+.funcionario-card-button {
+
+    width: 100%;
+
+    padding: 9px 12px;
+
+    background: transparent;
+
+    border: 1px solid var(--border);
+
+    color: var(--text-secondary);
+
+    font-family: 'Rajdhani', sans-serif;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    letter-spacing: 0.7px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+
+}
+
+
+.funcionario-card-button:hover {
+
+    background: rgba(240, 200, 8, 0.08);
+
+    border-color: var(--border-yellow);
+
+    color: var(--yellow-bright);
+
+}
+
+
+/* =========================================================
+   DETALHES
+   ========================================================= */
+
+.funcionario-detalhes-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 12px;
+
+}
+
+
+.funcionario-info {
+
+    min-height: 70px;
+
+    padding: 13px 15px;
+
+    background: var(--bg-tertiary);
+
+    border: 1px solid var(--border);
+
+}
+
+
+.funcionario-info span {
+
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--text-secondary);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 9px;
+
+    letter-spacing: 1px;
+
+}
+
+
+.funcionario-info strong {
+
+    display: block;
+
+    color: var(--text-primary);
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+}
+
+
+.funcionario-status.ativo {
+
+    color: var(--success);
+
+}
+
+
+.funcionario-status.afastado {
+
+    color: var(--warning);
+
+}
+
+
+.funcionario-status.ferias {
+
+    color: var(--info);
+
+}
+
+
+.funcionario-status.inativo {
+
+    color: var(--danger);
+
+}
+
+
+/* =========================================================
+   OBSERVAÇÕES
+   ========================================================= */
+
+.funcionario-observacoes {
+
+    padding: 15px;
+
+    background: var(--bg-tertiary);
+
+    border: 1px solid var(--border);
+
+}
+
+
+.funcionario-observacoes p {
+
+    color: var(--text-secondary);
+
+    font-family: 'Share Tech Mono', monospace;
+
+    font-size: 11px;
+
+    line-height: 1.7;
+
+}
+
+
+/* =========================================================
+   MODAL FUNCIONÁRIO
+   ========================================================= */
+
+.funcionario-modal {
+
+    width: min(850px, calc(100vw - 40px));
+
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .funcionarios-grid {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+    }
+
+}
+
+
+@media (max-width: 700px) {
+
+    .funcionarios-header {
+
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 12px;
+
+    }
+
+
+    .funcionarios-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .funcionario-detalhes-grid {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+/* =========================================================
+   RELATÓRIOS DE SERVIÇOS
+   ========================================================= */
+
+.relatorio-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+
+/* =========================================================
+   FILTROS
+   ========================================================= */
+
+.relatorio-filtros {
+    position: relative;
+    margin-bottom: 18px;
+    padding: 22px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+}
+
+.relatorio-filtros::before,
+.relatorio-filtros::after {
+    content: "";
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border-color: var(--yellow-dark);
+    border-style: solid;
+    pointer-events: none;
+}
+
+.relatorio-filtros::before {
+    top: -1px;
+    left: -1px;
+    border-width: 2px 0 0 2px;
+}
+
+.relatorio-filtros::after {
+    right: -1px;
+    bottom: -1px;
+    border-width: 0 2px 2px 0;
+}
+
+.relatorio-filtros-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+}
+
+.relatorio-filtros-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.relatorio-filtros-header > ion-icon {
+    color: var(--yellow);
+    font-size: 20px;
+}
+
+.relatorio-filtros-label,
+.relatorio-card-label {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--yellow);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+}
+
+.relatorio-filtros-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+
+/* =========================================================
+   INDICADORES
+   ========================================================= */
+
+.relatorio-indicadores {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.relatorio-indicador {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 90px;
+    padding: 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+
+.relatorio-indicador:hover {
+    background: var(--panel-hover);
+    border-color: var(--border-yellow);
+}
+
+.relatorio-indicador-icon {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--yellow);
+    font-size: 21px;
+}
+
+.relatorio-indicador span {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.relatorio-indicador strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 25px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   CARDS DE ANÁLISE
+   ========================================================= */
+
+.relatorio-analise-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.relatorio-card {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.relatorio-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--yellow-dark);
+}
+
+.relatorio-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.relatorio-card-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+}
+
+.relatorio-card-header > ion-icon {
+    color: var(--yellow);
+    font-size: 20px;
+}
+
+.relatorio-grafico {
+    min-height: 270px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.relatorio-sem-dados {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    opacity: 0.7;
+}
+
+.relatorio-sem-dados ion-icon {
+    margin-bottom: 12px;
+    color: var(--yellow-dark);
+    font-size: 38px;
+}
+
+.relatorio-sem-dados span {
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.relatorio-sem-dados small {
+    max-width: 280px;
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   TABELA
+   ========================================================= */
+
+.relatorio-tabela-card {
+    margin-bottom: 20px;
+}
+
+.relatorio-registros {
+    padding: 6px 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.relatorio-tabela-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.relatorio-tabela {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.relatorio-tabela th {
+    padding: 13px 16px;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.relatorio-tabela td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.relatorio-tabela tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.relatorio-tabela-vazia {
+    height: 180px;
+    text-align: center !important;
+}
+
+.relatorio-tabela-vazia ion-icon {
+    display: block;
+    margin: 0 auto 10px;
+    color: var(--yellow-dark);
+    font-size: 30px;
+}
+
+.relatorio-tabela-vazia span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.relatorio-tabela-vazia small {
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 1100px) {
+
+    .relatorio-filtros-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .relatorio-indicadores {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+@media (max-width: 800px) {
+
+    .relatorio-analise-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .relatorio-header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .relatorio-header-actions button {
+        width: 100%;
+    }
+
+    .relatorio-filtros-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .relatorio-indicadores {
+        grid-template-columns: 1fr;
+    }
+
+}
