@@ -1,0 +1,6 @@
+@BlackForge_HostAddress = http://localhost:5143
+
+GET {{BlackForge_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

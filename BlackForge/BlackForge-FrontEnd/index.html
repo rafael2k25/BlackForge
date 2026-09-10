@@ -116,20 +116,13 @@
                 ====================================================== -->
 
                 <div class="menu-category">
-
                     <button type="button" class="menu-category-button" data-category="relatorios">
-
                         <span class="category-left">
-
                             <ion-icon name="bar-chart-outline"></ion-icon>
-
                             <span>RELATÓRIOS</span>
-
                         </span>
-
                         <ion-icon class="category-arrow" name="chevron-forward-sharp">
                         </ion-icon>
-
                     </button>
                     <div class="submenu" data-submenu="relatorios">
                         <button class="menu-item submenu-item" data-section="relatorios-servicos"
@@ -147,21 +140,10 @@
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
                             <span>Financeiro</span>
                         </button>
-                        <button class="menu-item submenu-item" data-section="relatorios-maquinas"
-                            data-title="Relatórios de Máquinas">
-                            <ion-icon name="arrow-forward-sharp"></ion-icon>
-                            <span>Máquinas</span>
-                        </button>
-                        <button class="menu-item submenu-item" data-section="relatorios-manutencao"
-                            data-title="Relatórios de Manutenção">
-                            <ion-icon name="arrow-forward-sharp"></ion-icon>
-                            <span>Manutenção</span>
-                        </button>
                     </div>
                 </div>
             </nav>
         </div>
-
         <div class="sidebar-footer">
             <div class="system-status">
                 <span class="status-dot"></span>
@@ -322,11 +304,7 @@
                             <div>
                                 <span>MÁQUINAS</span>
                                 <strong>0 ATIVAS</strong>
-                            </div>
-                            <div>
-                                <span>MANUTENÇÃO</span>
-                                <strong>0 PENDÊNCIAS</strong>
-                            </div>
+                            </div>            
                         </div>
                     </div>
                 </div>
@@ -1912,44 +1890,6 @@
                 </div>
             </div>
 
-            <!-- ================ FERRAMENTAS ================ -->
-
-            <div class="os-block">
-                <div class="os-block-header">
-                    <div>
-                        <span>
-                            ● FERRAMENTAS
-                        </span>
-                        <h3>
-                            Ferramentas Utilizadas
-                        </h3>
-                    </div>
-                    <button type="button" class="os-add-button" id="adicionarFerramenta">
-                        <ion-icon name="add-sharp"></ion-icon>
-                        ADICIONAR
-                    </button>
-                </div>
-                <div class="os-table-wrapper">
-                    <table class="os-table">
-                        <thead>
-                            <tr>
-                                <th>FERRAMENTA</th>
-                                <th>QUANTIDADE</th>
-                                <th>OBSERVAÇÃO</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="listaFerramentas">
-                            <tr class="os-table-empty">
-                                <td colspan="4">
-                                    Nenhuma ferramenta adicionada à ordem.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
             <!-- ================ FINANCEIRO ================ -->
 
             <div class="os-block">
@@ -2052,35 +1992,6 @@
                         placeholder="Adicione observações, recomendações ou informações complementares...">
                     </textarea>
                 </div>
-            </div>
-
-            <!-- ================ ANEXOS ================ -->
-
-            <div class="os-block">
-                <div class="os-block-header">
-                    <div>
-                        <span>
-                            ● DOCUMENTAÇÃO
-                        </span>
-                        <h3>
-                            Anexos
-                        </h3>
-                    </div>
-                </div>
-                <div class="os-upload-area">
-                    <ion-icon name="cloud-upload-outline"></ion-icon>
-                    <strong>
-                        Adicionar documentos
-                    </strong>
-                    <span>
-                        Desenhos técnicos, fotos, projetos ou outros arquivos.
-                    </span>
-                    <label for="anexosOS" class="secondary-button">
-                        SELECIONAR ARQUIVOS
-                    </label>
-                    <input type="file" id="anexosOS" multiple hidden>
-                </div>
-                <div class="os-file-list" id="listaAnexos"></div>
             </div>
 
             <!-- ================ RODAPÉ ================ -->
@@ -2638,15 +2549,6 @@
                             </label>
                             <input type="text" id="funcionarioCpf" placeholder="000.000.000-00">
                         </div>
-
-                        <!-- DATA NASCIMENTO -->
-
-                        <div class="material-form-group">
-                            <label for="funcionarioNascimento">
-                                DATA DE NASCIMENTO
-                            </label>
-                            <input type="date" id="funcionarioNascimento">
-                        </div>
                     </div>
                 </div>
 
@@ -2682,10 +2584,7 @@
                                 </option>
                                 <option value="usinagem">
                                     Usinagem
-                                </option>
-                                <option value="manutencao">
-                                    Manutenção
-                                </option>
+                                </option>                        
                                 <option value="qualidade">
                                     Qualidade
                                 </option>
@@ -2846,14 +2745,6 @@
                                 CPF
                             </span>
                             <strong id="detalhesFuncionarioCpf">
-                                -
-                            </strong>
-                        </div>
-                        <div class="funcionario-info">
-                            <span>
-                                DATA DE NASCIMENTO
-                            </span>
-                            <strong id="detalhesFuncionarioNascimento">
                                 -
                             </strong>
                         </div>
