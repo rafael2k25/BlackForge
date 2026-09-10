@@ -8,6 +8,7 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style2.css">
     <title>Black Forge</title>
 </head>
 
@@ -50,58 +51,37 @@
                         </ion-icon>
                     </button>
                     <div class="submenu" data-submenu="servicos">
-
                         <button class="menu-item submenu-item" data-section="ordens" data-title="Ordens de Serviço">
-
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
-
                             <span>Ordens de Serviço</span>
-
-                        </button>                      
-                      
+                        </button>
                         <button class="menu-item submenu-item" data-section="maquinas"
                             data-title="Máquinas e Equipamentos">
-
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
-
                             <span>Máquinas e Equipamentos</span>
-
                         </button>
-
                     </div>
-
                 </div>
-
 
                 <!-- =====================================================
                      ESTOQUE
                 ====================================================== -->
 
                 <div class="menu-category">
-
                     <button type="button" class="menu-category-button" data-category="estoque">
-
                         <span class="category-left">
-
                             <ion-icon name="cube-outline"></ion-icon>
-
                             <span>ESTOQUE</span>
-
                         </span>
-
                         <ion-icon class="category-arrow" name="chevron-forward-sharp">
                         </ion-icon>
-
                     </button>
 
-
                     <div class="submenu" data-submenu="estoque">
-
                         <button class="menu-item submenu-item" data-section="materiais" data-title="Materiais">
-
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
                             <span>Materiais</span>
-                        </button>                      
+                        </button>
                         <button class="menu-item submenu-item" data-section="lotes" data-title="Lotes">
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
                             <span>Lotes</span>
@@ -109,44 +89,27 @@
                     </div>
                 </div>
 
-                
-                           
                 <!-- =====================================================
                      GESTÃO
                 ====================================================== -->
 
                 <div class="menu-category">
-
                     <button type="button" class="menu-category-button" data-category="gestao">
-
                         <span class="category-left">
-
                             <ion-icon name="people-outline"></ion-icon>
-
                             <span>GESTÃO</span>
-
                         </span>
-
                         <ion-icon class="category-arrow" name="chevron-forward-sharp">
                         </ion-icon>
-
                     </button>
 
-
                     <div class="submenu" data-submenu="gestao">
-
                         <button class="menu-item submenu-item" data-section="funcionarios" data-title="Funcionários">
-
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
-
                             <span>Funcionários</span>
-
-                        </button>                                            
-
+                        </button>
                     </div>
-
                 </div>
-
 
                 <!-- =====================================================
                      RELATÓRIOS
@@ -217,8 +180,6 @@
 
     <!-- ======================== FIM CATEGORIA  ======================== -->
 
-   
-
     <!-- ======================================= INÍCIO CATEGORIA CONTEÚDO PRINCIPAL ======================================= -->
 
     <main class="main-content">
@@ -280,7 +241,7 @@
                         <span class="card-status active">
                             STATUS #1
                         </span>
-                    </div>                    
+                    </div>
                     <strong>
                         0
                     </strong>
@@ -294,7 +255,7 @@
                         <span class="card-status active">
                             STATUS #2
                         </span>
-                    </div>                   
+                    </div>
                     <strong>
                         0
                     </strong>
@@ -308,7 +269,7 @@
                         <span class="card-status active">
                             STATUS #3
                         </span>
-                    </div>                   
+                    </div>
                     <strong>
                         0
                     </strong>
@@ -322,7 +283,7 @@
                         <span class="card-status warning">
                             STATUS #4
                         </span>
-                    </div>                   
+                    </div>
                     <strong>
                         0
                     </strong>
@@ -436,7 +397,7 @@
         <!-- ======================== INÍCIO CATEGORIA MATERIAIS ======================== -->
 
         <section id="materiais" class="page-section">
-            <div class="section-header">       
+            <div class="section-header">
                 <div>
                     <span class="section-label">
                         <!-- CAMPO VAZIO -->
@@ -446,16 +407,12 @@
                     </h1>
                     <p>
                         Gerenciamento de materiais e estoque industrial.
-                    </p>      
-                </div>      
-                <button
-                    type="button"
-                    class="primary-button"
-                    id="abrirModalMaterial"
-                >
+                    </p>
+                </div>
+                <button type="button" class="primary-button" id="abrirModalMaterial">
                     + NOVO MATERIAL
-                </button>       
-            </div>              
+                </button>
+            </div>
             <div class="industrial-panel empty-panel">
                 <h3>
                     O estoque ainda não possui materiais registrados.
@@ -463,14 +420,10 @@
                 <p>
                     <!-- CAMPO VAZIO -->
                 </p>
-                <button
-                    type="button"
-                    class="secondary-button"
-                    id="cadastrarMaterialVazio"
-                >
+                <button type="button" class="secondary-button" id="cadastrarMaterialVazio">
                     CADASTRAR MATERIAL
-                </button>      
-            </div>      
+                </button>
+            </div>
         </section>
 
         <!-- ======================== FIM CATEGORIA MATERIAIS ======================== -->
@@ -507,179 +460,1279 @@
             </div>
         </section>
 
-        <!-- ======================== FIM CATEGORIA MÁQUINAS ======================== --> 
-        
+        <!-- ======================== FIM CATEGORIA MÁQUINAS ======================== -->
+
         <!-- ======================== INÍCIO LOTES ======================== -->
 
-         <!-- =========================================================
+        <!-- =========================================================
      LOTES
      ========================================================= -->
 
-<section id="lotes" class="page-section">
+        <section id="lotes" class="page-section">
 
-    <!-- CABEÇALHO -->
-    <div class="section-header">
+            <!-- CABEÇALHO -->
+            <div class="section-header">
 
-        <div>
+                <div>
 
-            <span class="section-label"></span>
+                    <span class="section-label"></span>
 
-            <h1>Lotes</h1>
+                    <h1>Lotes</h1>
 
-            <p>
-                Controle e rastreamento dos lotes de materiais industriais.
-            </p>
+                    <p>
+                        Controle e rastreamento dos lotes de materiais industriais.
+                    </p>
 
-        </div>
+                </div>
 
-        <button
-            class="primary-button"
-            id="abrirModalLote"
-            type="button"
-        >
-            + NOVO LOTE
-        </button>
+                <button class="primary-button" id="abrirModalLote" type="button">
+                    + NOVO LOTE
+                </button>
 
-    </div>
+            </div>
 
 
-    <!-- =====================================================
+            <!-- =====================================================
          PAINEL DE LOTES
          ===================================================== -->
 
-    <div class="industrial-panel lotes-panel">
+            <div class="industrial-panel lotes-panel">
 
-        <!-- BARRA DE CONTROLES -->
-        <div class="lotes-toolbar">
+                <!-- BARRA DE CONTROLES -->
+                <div class="lotes-toolbar">
 
-            <!-- BUSCA -->
-            <div class="lotes-search">
+                    <!-- BUSCA -->
+                    <div class="lotes-search">
 
-                <ion-icon name="search-outline"></ion-icon>
+                        <ion-icon name="search-outline"></ion-icon>
 
-                <input
-                    type="text"
-                    id="buscarLote"
-                    placeholder="Buscar por lote ou material..."
-                    autocomplete="off"
-                >
+                        <input type="text" id="buscarLote" placeholder="Buscar por lote ou material..."
+                            autocomplete="off">
 
-            </div>
+                    </div>
 
 
-            <!-- FILTRO -->
-            <div class="lotes-filter">
-                <select id="filtroLote">
-                    <option value="todos">
-                        Todos os lotes
-                    </option>
-                    <option value="normal">
-                        Dentro da validade
-                    </option>
-                    <option value="proximo">
-                        Próximos da validade
-                    </option>
-                    <option value="vencido">
-                        Vencidos
-                    </option>
-                </select>
-            </div>
-        </div>
+                    <!-- FILTRO -->
+                    <div class="lotes-filter">
+
+                        <select id="filtroLote">
+
+                            <option value="todos">
+                                Todos os lotes
+                            </option>
+
+                            <option value="normal">
+                                Dentro da validade
+                            </option>
+
+                            <option value="proximo">
+                                Próximos da validade
+                            </option>
+
+                            <option value="vencido">
+                                Vencidos
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
 
 
-        <!-- =================================================
+                <!-- =================================================
              RESUMO DOS LOTES
              ================================================= -->
 
-        <div class="lotes-summary">
+                <div class="lotes-summary">
 
-            <!-- TOTAL -->
-            <div class="lote-summary-card">
-                <span class="lote-summary-label">
-                    TOTAL DE LOTES
-                </span>
-                <strong id="totalLotes">
-                    0
-                </strong>
-            </div>
+                    <!-- TOTAL -->
+                    <div class="lote-summary-card">
+                        <span class="lote-summary-label">
+                            TOTAL DE LOTES
+                        </span>
+                        <strong id="totalLotes">
+                            0
+                        </strong>
+                    </div>
 
-            <!-- PRÓXIMOS DO VENCIMENTO -->
-            <div class="lote-summary-card">
-                <span class="lote-summary-label">
-                    PRÓXIMOS DO VENCIMENTO
-                </span>
-                <strong id="lotesProximos">
-                    0
-                </strong>
-            </div>
+                    <!-- PRÓXIMOS DO VENCIMENTO -->
+                    <div class="lote-summary-card">
+                        <span class="lote-summary-label">
+                            PRÓXIMOS DO VENCIMENTO
+                        </span>
+                        <strong id="lotesProximos">
+                            0
+                        </strong>
+                    </div>
 
-            <!-- VENCIDOS -->
-            <div class="lote-summary-card">
-                <span class="lote-summary-label">
-                    VENCIDOS
-                </span>
-                <strong id="lotesVencidos">
-                    0
-                </strong>
-            </div>
-        </div>
+                    <!-- VENCIDOS -->
+                    <div class="lote-summary-card">
+                        <span class="lote-summary-label">
+                            VENCIDOS
+                        </span>
+                        <strong id="lotesVencidos">
+                            0
+                        </strong>
+                    </div>
+                </div>
 
-        <!-- =================================================
+                <!-- =================================================
              TABELA DE LOTES
              ================================================= -->
 
-        <div class="lotes-table-wrapper">
-            <table class="lotes-table">
-                <thead>
-                    <tr>
-                        <th>
-                            LOTE
-                        </th>
-                        <th>
-                            MATERIAL
-                        </th>
-                        <th>
-                            QUANTIDADE
-                        </th>
-                        <th>
-                            FABRICAÇÃO
-                        </th>
-                        <th>
-                            VALIDADE
-                        </th>
-                    </tr>
-                </thead>
-                <tbody id="listaLotes">
-                    <tr class="lotes-empty">
-                        <td colspan="5">
-                            <div class="empty-state">
-                                <ion-icon
-                                    name="cube-outline"
-                                ></ion-icon>
-                                <h3>
-                                    Nenhum lote cadastrado
-                                </h3><br>                               
-                                <button
-                                    class="secondary-button"
-                                    id="cadastrarLoteVazio"
-                                    type="button"
-                                >
-                                    CADASTRAR LOTE
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</section>
+                <div class="lotes-table-wrapper">
+                    <table class="lotes-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    LOTE
+                                </th>
+                                <th>
+                                    MATERIAL
+                                </th>
+                                <th>
+                                    QUANTIDADE
+                                </th>
+                                <th>
+                                    FABRICAÇÃO
+                                </th>
+                                <th>
+                                    VALIDADE
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaLotes">
+                            <tr class="lotes-empty">
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <ion-icon name="cube-outline"></ion-icon>
+                                        <h3>
+                                            Nenhum lote cadastrado
+                                        </h3><br>
+                                        <button class="secondary-button" id="cadastrarLoteVazio" type="button">
+                                            CADASTRAR LOTE
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
 
         <!-- ======================== FIM LOTES ======================== -->
 
-    </main>
+        <!-- ======================== INÍCIO CATEGORIA FUNCIONÁRIOS ======================== -->
 
-    <!-- ======================================= FIM CATEGORIA CONTEÚDO PRINCIPAL ======================================= -->
+        <section id="funcionarios" class="page-section">
+            <div class="section-header">
+                <div>
+                    <span class="section-label">
+                        GESTÃO
+                    </span>
+                    <h1>
+                        Funcionários
+                    </h1>
+                    <p>
+                        Cadastro e gerenciamento dos funcionários da empresa.
+                    </p>
+                </div>
+                <button class="primary-button" id="abrirModalFuncionario" type="button">
+                    + NOVO FUNCIONÁRIO
+                </button>
+            </div>
+
+            <!-- ======================== QUADRO DE FUNCIONÁRIOS ======================== -->
+
+            <div class="funcionarios-panel">
+                <div class="funcionarios-header">
+                    <div>
+                        <span class="funcionarios-label">
+                            QUADRO DE FUNCIONÁRIOS
+                        </span>
+                        <h2>
+                            EQUIPE
+                        </h2>
+                    </div>
+                    <span class="funcionarios-count">
+                        0 FUNCIONÁRIOS
+                    </span>
+                </div>
+
+                <!-- ESTADO VAZIO -->
+
+                <div class="funcionarios-empty" id="funcionariosEmpty">
+                    <div class="funcionarios-empty-icon">
+                        <ion-icon name="people-outline"></ion-icon>
+                    </div>
+                    <h3>
+                        NENHUM FUNCIONÁRIO CADASTRADO
+                    </h3>
+                    <button class="secondary-button" id="cadastrarPrimeiroFuncionario" type="button">
+                        CADASTRAR FUNCIONÁRIO
+                    </button>
+                </div>
+                <div class="funcionarios-grid" id="funcionariosGrid"></div>
+            </div>
+        </section>
+
+        <!-- ======================== FIM CATEGORIA FUNCIONÁRIOS ======================== -->
+
+        <!-- ======================== INÍCIO RELATÓRIOS DE SERVIÇOS ======================== -->
+
+        <section id="relatorios-servicos" class="page-section">
+            <div class="section-header">
+                <div>
+                    <span class="section-label">
+                        RELATÓRIOS
+                    </span>
+
+                    <h1>
+                        Relatórios de Serviços
+                    </h1>
+
+                    <p>
+                        Análise e acompanhamento das ordens de serviço.
+                    </p>
+                </div>
+                <div class="relatorio-header-actions">
+                    <button class="secondary-button" id="limparFiltrosServicos" type="button">
+                        LIMPAR FILTROS
+                    </button>
+                    <button class="primary-button" id="gerarRelatorioServicos" type="button">
+                        GERAR RELATÓRIO
+                    </button>
+                </div>
+            </div>
+
+            <!-- ======================== FILTROS ======================== -->
+
+            <div class="relatorio-filtros">
+                <div class="relatorio-filtros-header">
+                    <div>
+                        <span class="relatorio-filtros-label">
+                            FILTROS
+                        </span>
+                        <h2>
+                            PARÂMETROS DO RELATÓRIO
+                        </h2>
+                    </div>
+                    <ion-icon name="options-outline"></ion-icon>
+                </div>
+                <div class="relatorio-filtros-grid">
+                    <div class="material-form-group">
+                        <label for="servicosDataInicio">
+                            DATA INICIAL
+                        </label>
+                        <input type="date" id="servicosDataInicio">
+                    </div>
+                    <div class="material-form-group">
+                        <label for="servicosDataFim">
+                            DATA FINAL
+                        </label>
+                        <input type="date" id="servicosDataFim">
+                    </div>
+                    <div class="material-form-group">
+                        <label for="servicosStatus">
+                            STATUS
+                        </label>
+                        <select id="servicosStatus">
+                            <option value="">
+                                TODOS OS STATUS
+                            </option>
+                            <option value="aberta">
+                                ABERTA
+                            </option>
+                            <option value="concluida">
+                                CONCLUÍDA
+                            </option>
+                            <option value="cancelada">
+                                CANCELADA
+                            </option>
+                        </select>
+                    </div>
+                    <div class="material-form-group">
+                        <label for="servicosResponsavel">
+                            RESPONSÁVEL
+                        </label>
+                        <select id="servicosResponsavel">
+                            <option value="">
+                                TODOS OS RESPONSÁVEIS
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================== INDICADORES ======================== -->
+
+            <div class="relatorio-indicadores">
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="document-text-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>
+                            ORDENS DE SERVIÇO
+                        </span>
+                        <strong id="totalServicos">
+                            -
+                        </strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="checkmark-circle-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>
+                            CONCLUÍDAS
+                        </span>
+                        <strong id="servicosConcluidos">
+                            -
+                        </strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="time-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>
+                            TEMPO MÉDIO
+                        </span>
+                        <strong id="tempoMedioServicos">
+                            -
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================== ÁREA DE ANÁLISE ======================== -->
+
+            <div class="relatorio-analise-grid">
+                <div class="relatorio-card">
+                    <div class="relatorio-card-header">
+                        <div>
+                            <span class="relatorio-card-label">
+                                DISTRIBUIÇÃO
+                            </span>
+                            <h3>
+                                STATUS DAS ORDENS
+                            </h3>
+                        </div>
+                        <ion-icon name="pie-chart-outline"></ion-icon>
+                    </div>
+                    <div class="relatorio-grafico" id="graficoStatusServicos">
+                        <div class="relatorio-sem-dados">
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+                            <span>
+                                SEM DADOS DISPONÍVEIS
+                            </span>
+                            <small>
+                                Os dados serão exibidos quando houver
+                                ordens de serviço registradas.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="relatorio-card">
+                    <div class="relatorio-card-header">
+                        <div>
+                            <span class="relatorio-card-label">
+                                EVOLUÇÃO
+                            </span>
+                            <h3>
+                                SERVIÇOS POR PERÍODO
+                            </h3>
+                        </div>
+                        <ion-icon name="trending-up-outline"></ion-icon>
+                    </div>
+                    <div class="relatorio-grafico" id="graficoEvolucaoServicos">
+                        <div class="relatorio-sem-dados">
+                            <ion-icon name="analytics-outline"></ion-icon>
+                            <span>
+                                SEM DADOS DISPONÍVEIS
+                            </span>
+                            <small>
+                                Selecione um período para visualizar
+                                a evolução dos serviços.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </section>
+
+        <!-- ======================== FIM RELATÓRIOS DE SERVIÇOS ======================== -->
+
+        <!-- ======================================= FIM CATEGORIA RELATÓRIO DO ESTOQUE ======================================= -->
+
+        <section id="relatorios-estoque" class="page-section">
+
+            <div class="section-header">
+
+                <div>
+                    <span class="section-label">
+                        RELATÓRIOS
+                    </span>
+
+                    <h1>
+                        Relatórios de Estoque
+                    </h1>
+
+                    <p>
+                        Análise e acompanhamento das movimentações e níveis de estoque.
+                    </p>
+                </div>
+
+                <div class="relatorio-header-actions">
+
+                    <button class="secondary-button" id="limparFiltrosEstoque" type="button">
+                        LIMPAR FILTROS
+                    </button>
+
+                    <button class="primary-button" id="gerarRelatorioEstoque" type="button">
+                        GERAR RELATÓRIO
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================================================
+                 FILTROS
+            ========================================================== -->
+
+            <div class="relatorio-filtros">
+
+                <div class="relatorio-filtros-header">
+
+                    <div>
+                        <span class="relatorio-filtros-label">
+                            FILTROS
+                        </span>
+
+                        <h2>
+                            PARÂMETROS DO RELATÓRIO
+                        </h2>
+                    </div>
+
+                    <ion-icon name="options-outline"></ion-icon>
+
+                </div>
+
+
+                <div class="relatorio-filtros-grid">
+
+                    <div class="material-form-group">
+
+                        <label for="estoqueDataInicio">
+                            DATA INICIAL
+                        </label>
+
+                        <input type="date" id="estoqueDataInicio">
+
+                    </div>
+
+
+                    <div class="material-form-group">
+
+                        <label for="estoqueDataFim">
+                            DATA FINAL
+                        </label>
+
+                        <input type="date" id="estoqueDataFim">
+
+                    </div>
+
+
+                    <div class="material-form-group">
+
+                        <label for="estoqueTipoMovimentacao">
+                            TIPO DE MOVIMENTAÇÃO
+                        </label>
+
+                        <select id="estoqueTipoMovimentacao">
+
+                            <option value="">
+                                TODAS AS MOVIMENTAÇÕES
+                            </option>
+
+                            <option value="entrada">
+                                ENTRADA
+                            </option>
+
+                            <option value="saida">
+                                SAÍDA
+                            </option>
+
+                            <option value="ajuste">
+                                AJUSTE
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="material-form-group">
+
+                        <label for="estoqueMaterial">
+                            MATERIAL
+                        </label>
+
+                        <select id="estoqueMaterial">
+
+                            <option value="">
+                                TODOS OS MATERIAIS
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================================================
+                 INDICADORES
+            ========================================================== -->
+
+            <div class="relatorio-indicadores">
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="arrow-down-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>
+                            ENTRADAS
+                        </span>
+                        <strong id="totalEntradasEstoque">
+                            -
+                        </strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="arrow-up-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>
+                            SAÍDAS
+                        </span>
+                        <strong id="totalSaidasEstoque">
+                            -
+                        </strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="swap-vertical-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>
+                            SALDO MOVIMENTADO
+                        </span>
+                        <strong id="saldoMovimentadoEstoque">
+                            -
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 ANÁLISES
+            ========================================================== -->
+
+            <div class="relatorio-analise-grid">
+
+
+                <!-- MOVIMENTAÇÕES POR PERÍODO -->
+
+                <div class="relatorio-card">
+
+                    <div class="relatorio-card-header">
+
+                        <div>
+
+                            <span class="relatorio-card-label">
+                                EVOLUÇÃO
+                            </span>
+
+                            <h3>
+                                MOVIMENTAÇÕES POR PERÍODO
+                            </h3>
+
+                        </div>
+
+                        <ion-icon name="trending-up-outline"></ion-icon>
+
+                    </div>
+
+
+                    <div class="relatorio-grafico" id="graficoMovimentacoesEstoque">
+
+                        <div class="relatorio-sem-dados">
+
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+
+                            <span>
+                                SEM DADOS DISPONÍVEIS
+                            </span>
+
+                            <small>
+                                Os dados serão exibidos quando houver
+                                movimentações de estoque registradas.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- ENTRADAS X SAÍDAS -->
+
+                <div class="relatorio-card">
+
+                    <div class="relatorio-card-header">
+
+                        <div>
+
+                            <span class="relatorio-card-label">
+                                DISTRIBUIÇÃO
+                            </span>
+
+                            <h3>
+                                ENTRADAS × SAÍDAS
+                            </h3>
+
+                        </div>
+
+                        <ion-icon name="stats-chart-outline"></ion-icon>
+
+                    </div>
+
+
+                    <div class="relatorio-grafico" id="graficoEntradasSaidasEstoque">
+
+                        <div class="relatorio-sem-dados">
+
+                            <ion-icon name="analytics-outline"></ion-icon>
+
+                            <span>
+                                SEM DADOS DISPONÍVEIS
+                            </span>
+
+                            <small>
+                                Os dados serão exibidos após a geração
+                                do relatório.
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =========================================================
+                 TABELA
+            ========================================================== -->
+
+            <div class="relatorio-card relatorio-tabela-card">
+
+                <div class="relatorio-card-header">
+
+                    <div>
+
+                        <span class="relatorio-card-label">
+                            DETALHAMENTO
+                        </span>
+
+                        <h3>
+                            MOVIMENTAÇÕES DE ESTOQUE
+                        </h3>
+
+                    </div>
+
+
+                    <span class="relatorio-registros" id="totalRegistrosEstoque">
+                        0 REGISTROS
+                    </span>
+
+                </div>
+
+
+                <div class="relatorio-tabela-container">
+
+                    <table class="relatorio-tabela">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    DATA
+                                </th>
+
+                                <th>
+                                    MATERIAL
+                                </th>
+
+                                <th>
+                                    LOTE
+                                </th>
+
+                                <th>
+                                    TIPO
+                                </th>
+
+                                <th>
+                                    QUANTIDADE
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="tabelaRelatorioEstoque">
+
+                            <tr>
+
+                                <td colspan="6" class="relatorio-tabela-vazia">
+
+                                    <ion-icon name="cube-outline"></ion-icon>
+
+                                    <span>
+                                        NENHUM REGISTRO ENCONTRADO
+                                    </span>
+
+                                    <small>
+                                        As movimentações de estoque
+                                        aparecerão aqui.
+                                    </small>
+
+                                </td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- ======================================= FIM CATEGORIA RELATÓRIO DO ESTOQUE ======================================= -->
+
+        <section id="relatorios-financeiro" class="page-section">
+
+            <div class="section-header">
+        
+                <div>
+                    <span class="section-label">
+                        RELATÓRIOS
+                    </span>
+        
+                    <h1>
+                        Relatórios Financeiros
+                    </h1>
+        
+                    <p>
+                        Análise e acompanhamento das receitas, despesas e resultados.
+                    </p>
+                </div>
+        
+                <div class="relatorio-header-actions">
+        
+                    <button
+                        class="secondary-button"
+                        id="limparFiltrosFinanceiro"
+                        type="button"
+                    >
+                        LIMPAR FILTROS
+                    </button>
+        
+                    <button
+                        class="primary-button"
+                        id="gerarRelatorioFinanceiro"
+                        type="button"
+                    >
+                        GERAR RELATÓRIO
+                    </button>
+        
+                </div>
+        
+            </div>
+        
+        
+            <!-- =========================================================
+                 FILTROS
+            ========================================================== -->
+        
+            <div class="relatorio-filtros">
+        
+                <div class="relatorio-filtros-header">
+        
+                    <div>
+                        <span class="relatorio-filtros-label">
+                            FILTROS
+                        </span>
+        
+                        <h2>
+                            PARÂMETROS DO RELATÓRIO
+                        </h2>
+                    </div>
+        
+                    <ion-icon name="options-outline"></ion-icon>
+        
+                </div>
+        
+        
+                <div class="relatorio-filtros-grid">
+        
+                    <div class="material-form-group">
+        
+                        <label for="financeiroDataInicio">
+                            DATA INICIAL
+                        </label>
+        
+                        <input
+                            type="date"
+                            id="financeiroDataInicio"
+                        >
+        
+                    </div>
+        
+        
+                    <div class="material-form-group">
+        
+                        <label for="financeiroDataFim">
+                            DATA FINAL
+                        </label>
+        
+                        <input
+                            type="date"
+                            id="financeiroDataFim"
+                        >
+        
+                    </div>
+        
+        
+                    <div class="material-form-group">
+        
+                        <label for="financeiroTipo">
+                            TIPO
+                        </label>
+        
+                        <select id="financeiroTipo">
+        
+                            <option value="">
+                                TODAS AS MOVIMENTAÇÕES
+                            </option>
+        
+                            <option value="receita">
+                                RECEITA
+                            </option>
+        
+                            <option value="despesa">
+                                DESPESA
+                            </option>
+        
+                        </select>
+        
+                    </div>
+        
+        
+                    <div class="material-form-group">
+        
+                        <label for="financeiroStatus">
+                            STATUS
+                        </label>
+        
+                        <select id="financeiroStatus">
+        
+                            <option value="">
+                                TODOS OS STATUS
+                            </option>
+        
+                            <option value="pendente">
+                                PENDENTE
+                            </option>
+        
+                            <option value="pago">
+                                PAGO
+                            </option>
+        
+                            <option value="cancelado">
+                                CANCELADO
+                            </option>
+        
+                        </select>
+        
+                    </div>
+        
+        
+                    <div class="material-form-group">
+        
+                        <label for="financeiroPagamento">
+                            FORMA DE PAGAMENTO
+                        </label>
+        
+                        <select id="financeiroPagamento">
+        
+                            <option value="">
+                                TODAS AS FORMAS
+                            </option>
+        
+                            <option value="pix">
+                                PIX
+                            </option>
+        
+                            <option value="dinheiro">
+                                DINHEIRO
+                            </option>
+        
+                            <option value="cartao">
+                                CARTÃO
+                            </option>
+        
+                            <option value="transferencia">
+                                TRANSFERÊNCIA
+                            </option>
+        
+                            <option value="boleto">
+                                BOLETO
+                            </option>
+        
+                        </select>
+        
+                    </div>
+        
+                </div>
+        
+            </div>
+        
+        
+            <!-- =========================================================
+                 INDICADORES
+            ========================================================== -->
+        
+            <div class="relatorio-indicadores">
+        
+        
+                <div class="relatorio-indicador">
+        
+                    <div class="relatorio-indicador-icon">
+        
+                        <ion-icon name="cash-outline"></ion-icon>
+        
+                    </div>
+        
+                    <div>
+        
+                        <span>
+                            FATURAMENTO
+                        </span>
+        
+                        <strong id="faturamentoFinanceiro">
+                            -
+                        </strong>
+        
+                    </div>
+        
+                </div>
+        
+        
+                <div class="relatorio-indicador">
+        
+                    <div class="relatorio-indicador-icon">
+        
+                        <ion-icon name="arrow-down-circle-outline"></ion-icon>
+        
+                    </div>
+        
+                    <div>
+        
+                        <span>
+                            RECEITAS
+                        </span>
+        
+                        <strong id="totalReceitasFinanceiro">
+                            -
+                        </strong>
+        
+                    </div>
+        
+                </div>
+        
+        
+                <div class="relatorio-indicador">
+        
+                    <div class="relatorio-indicador-icon">
+        
+                        <ion-icon name="arrow-up-circle-outline"></ion-icon>
+        
+                    </div>
+        
+                    <div>
+        
+                        <span>
+                            DESPESAS
+                        </span>
+        
+                        <strong id="totalDespesasFinanceiro">
+                            -
+                        </strong>
+        
+                    </div>
+        
+                </div>
+        
+        
+                <div class="relatorio-indicador">
+        
+                    <div class="relatorio-indicador-icon">
+        
+                        <ion-icon name="wallet-outline"></ion-icon>
+        
+                    </div>
+        
+                    <div>
+        
+                        <span>
+                            RESULTADO
+                        </span>
+        
+                        <strong id="resultadoFinanceiro">
+                            -
+                        </strong>
+        
+                    </div>
+        
+                </div>
+        
+        
+            </div>
+        
+        
+            <!-- =========================================================
+                 ANÁLISES
+            ========================================================== -->
+        
+            <div class="relatorio-analise-grid">
+        
+        
+                <!-- RECEITAS X DESPESAS -->
+        
+                <div class="relatorio-card">
+        
+                    <div class="relatorio-card-header">
+        
+                        <div>
+        
+                            <span class="relatorio-card-label">
+                                EVOLUÇÃO
+                            </span>
+        
+                            <h3>
+                                RECEITAS × DESPESAS
+                            </h3>
+        
+                        </div>
+        
+                        <ion-icon name="trending-up-outline"></ion-icon>
+        
+                    </div>
+        
+        
+                    <div
+                        class="relatorio-grafico"
+                        id="graficoReceitasDespesas"
+                    >
+        
+                        <div class="relatorio-sem-dados">
+        
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+        
+                            <span>
+                                SEM DADOS DISPONÍVEIS
+                            </span>
+        
+                            <small>
+                                Os dados serão exibidos quando houver
+                                movimentações financeiras registradas.
+                            </small>
+        
+                        </div>
+        
+                    </div>
+        
+                </div>
+        
+        
+        
+                <!-- DISTRIBUIÇÃO FINANCEIRA -->
+        
+                <div class="relatorio-card">
+        
+                    <div class="relatorio-card-header">
+        
+                        <div>
+        
+                            <span class="relatorio-card-label">
+                                DISTRIBUIÇÃO
+                            </span>
+        
+                            <h3>
+                                DISTRIBUIÇÃO FINANCEIRA
+                            </h3>
+        
+                        </div>
+        
+                        <ion-icon name="pie-chart-outline"></ion-icon>
+        
+                    </div>
+        
+        
+                    <div
+                        class="relatorio-grafico"
+                        id="graficoDistribuicaoFinanceiro"
+                    >
+        
+                        <div class="relatorio-sem-dados">
+        
+                            <ion-icon name="analytics-outline"></ion-icon>
+        
+                            <span>
+                                SEM DADOS DISPONÍVEIS
+                            </span>
+        
+                            <small>
+                                A distribuição será exibida após a
+                                geração do relatório.
+                            </small>
+        
+                        </div>
+        
+                    </div>
+        
+                </div>
+        
+            </div>
+        
+        
+            <!-- =========================================================
+                 TABELA
+            ========================================================== -->
+        
+            <div class="relatorio-card relatorio-tabela-card">
+        
+                <div class="relatorio-card-header">
+        
+                    <div>
+        
+                        <span class="relatorio-card-label">
+                            DETALHAMENTO
+                        </span>
+        
+                        <h3>
+                            MOVIMENTAÇÕES FINANCEIRAS
+                        </h3>
+        
+                    </div>
+        
+        
+                    <span
+                        class="relatorio-registros"
+                        id="totalRegistrosFinanceiro"
+                    >
+                        0 REGISTROS
+                    </span>
+        
+                </div>
+        
+        
+                <div class="relatorio-tabela-container">
+        
+                    <table class="relatorio-tabela">
+        
+                        <thead>
+        
+                            <tr>
+        
+                                <th>
+                                    DATA
+                                </th>
+        
+                                <th>
+                                    DESCRIÇÃO
+                                </th>
+        
+                                <th>
+                                    TIPO
+                                </th>
+        
+                                <th>
+                                    OS
+                                </th>
+        
+                                <th>
+                                    PAGAMENTO
+                                </th>
+        
+                                <th>
+                                    VALOR
+                                </th>
+        
+                                <th>
+                                    STATUS
+                                </th>
+        
+                            </tr>
+        
+                        </thead>
+                        <tbody id="tabelaRelatorioFinanceiro">
+                            <tr>
+                                <td
+                                    colspan="7"
+                                    class="relatorio-tabela-vazia"
+                                >
+                                    <ion-icon name="cash-outline"></ion-icon>      
+                                    <span>
+                                        NENHUM REGISTRO ENCONTRADO
+                                    </span>
+                                    <small>
+                                        As movimentações financeiras
+                                        aparecerão aqui.
+                                    </small>
+                                </td>
+                            </tr>
+                        </tbody>    
+                    </table>       
+                </div>       
+            </div>       
+        </section>
+
+        <!-- ======================================= FIM CATEGORIA CONTEÚDO PRINCIPAL ======================================= -->
+
+    </main>
 
     <!-- ======================== INÍCIO MODAL NOVA ORDEM DE SERVIÇO [508 - 876] ======================== -->
 
@@ -1029,7 +2082,7 @@
                 </div>
                 <div class="os-file-list" id="listaAnexos"></div>
             </div>
-         
+
             <!-- ================ RODAPÉ ================ -->
 
             <div class="modal-os-footer">
@@ -1053,553 +2106,436 @@
 
     <!-- ======================== INÍCIO MODAL NOVA MÁQUINA [880 - 855] ======================== -->
 
-     <div class="modal-overlay" id="modalMaquina">
+    <div class="modal-overlay" id="modalMaquina">
 
         <div class="modal modal-maquina">
-    
+
             <!-- =====================================================
                  CABEÇALHO
                  ===================================================== -->
-    
+
             <div class="modal-header">
-    
+
                 <div>
                     <span class="section-label">
                         CADASTRO
                     </span>
-    
+
                     <h2>
                         Nova Máquina
                     </h2>
-    
+
                     <p>
                         Cadastre um novo equipamento industrial no sistema.
                     </p>
                 </div>
-    
-                <button
-                    class="modal-close"
-                    id="fecharModalMaquina"
-                    type="button"
-                >
+
+                <button class="modal-close" id="fecharModalMaquina" type="button">
                     ×
                 </button>
-    
+
             </div>
-    
-    
+
+
             <!-- =====================================================
                  IDENTIFICAÇÃO
                  ===================================================== -->
-    
+
             <div class="os-block">
-    
+
                 <div class="os-block-header">
-    
+
                     <div>
                         <span>
                             ● IDENTIFICAÇÃO
                         </span>
-    
+
                         <h3>
                             Dados do Equipamento
                         </h3>
                     </div>
-    
+
                 </div>
-    
-    
+
+
                 <div class="form-grid form-grid-3">
-    
+
                     <!-- NOME DA MÁQUINA -->
-    
+
                     <div class="form-group">
-    
+
                         <label for="nomeMaquina">
                             Nome da Máquina
                         </label>
-    
-                        <input
-                            type="text"
-                            id="nomeMaquina"
-                            name="nomeMaquina"
-                        >
-    
+
+                        <input type="text" id="nomeMaquina" name="nomeMaquina">
+
                     </div>
-    
-    
+
+
                     <!-- CÓDIGO -->
-    
+
                     <div class="form-group">
                         <label for="codigoMaquina">
                             Código
                         </label>
-    
-                        <input
-                            type="text"
-                            id="codigoMaquina"
-                            name="codigoMaquina"
-                            placeholder="Ex.: MC-001"
-                        >   
+
+                        <input type="text" id="codigoMaquina" name="codigoMaquina" placeholder="Ex.: MC-001">
                     </div>
-    
-    
+
+
                     <!-- TIPO -->
-    
+
                     <div class="form-group">
-    
+
                         <label for="tipoMaquina">
                             Tipo
                         </label>
-    
-                        <select
-                            id="tipoMaquina"
-                            name="tipoMaquina"
-                        >
-    
+
+                        <select id="tipoMaquina" name="tipoMaquina">
+
                             <option value="">
                                 Selecione
                             </option>
-    
+
                             <option value="TORNO_CNC">
                                 Torno CNC
                             </option>
-    
+
                             <option value="TORNO_CONVENCIONAL">
                                 Torno Convencional
                             </option>
-    
+
                             <option value="CENTRO_USINAGEM">
                                 Centro de Usinagem
                             </option>
-    
+
                             <option value="FRESADORA">
                                 Fresadora
                             </option>
-    
+
                             <option value="RETIFICA">
                                 Retífica
                             </option>
-    
+
                             <option value="SERRA">
                                 Serra
                             </option>
-    
+
                             <option value="PRENSA">
                                 Prensa
                             </option>
-    
+
                             <option value="SOLDAGEM">
                                 Equipamento de Soldagem
                             </option>
-    
+
                             <option value="OUTRO">
                                 Outro
                             </option>
-    
+
                         </select>
-    
+
                     </div>
-       
+
                     <!-- FABRICANTE -->
-    
+
                     <div class="form-group">
-    
+
                         <label for="fabricanteMaquina">
                             Fabricante
                         </label>
-    
-                        <input
-                            type="text"
-                            id="fabricanteMaquina"
-                            name="fabricanteMaquina"                           
-                        >
+
+                        <input type="text" id="fabricanteMaquina" name="fabricanteMaquina">
                     </div>
-    
+
                     <!-- MODELO -->
-    
+
                     <div class="form-group">
                         <label for="modeloMaquina">
                             Modelo
-                        </label>   
-                        <input
-                            type="text"
-                            id="modeloMaquina"
-                            name="modeloMaquina"
-                        >   
-                    </div>   
-    
+                        </label>
+                        <input type="text" id="modeloMaquina" name="modeloMaquina">
+                    </div>
+
                     <!-- NÚMERO DE SÉRIE -->
-    
+
                     <div class="form-group">
-    
+
                         <label for="serieMaquina">
                             Nº de Série
                         </label>
-    
-                        <input
-                            type="text"
-                            id="serieMaquina"
-                            name="serieMaquina"
-                            placeholder="Ex.: SN-000123"
-                        >
-    
+
+                        <input type="text" id="serieMaquina" name="serieMaquina" placeholder="Ex.: SN-000123">
+
                     </div>
-    
-    
+
+
                     <!-- DATA DE AQUISIÇÃO -->
-    
+
                     <div class="form-group">
-    
+
                         <label for="dataAquisicaoMaquina">
                             Data de Aquisição
                         </label>
-    
-                        <input
-                            type="date"
-                            id="dataAquisicaoMaquina"
-                            name="dataAquisicaoMaquina"
-                        >
-    
+
+                        <input type="date" id="dataAquisicaoMaquina" name="dataAquisicaoMaquina">
+
                     </div>
-    
+
                 </div>
-    
+
             </div>
-    
-    
+
+
             <!-- =====================================================
                  INFORMAÇÕES ADICIONAIS
                  ===================================================== -->
-    
+
             <div class="os-block">
-    
+
                 <div class="os-block-header">
-    
+
                     <div>
                         <span>
                             ● INFORMAÇÕES ADICIONAIS
                         </span>
-    
+
                         <h3>
                             Observações
                         </h3>
                     </div>
-    
+
                 </div>
-    
-    
+
+
                 <div class="form-group">
-    
+
                     <label for="observacoesMaquina">
                         Observações
-                    </label>   
-                    <textarea
-                        id="observacoesMaquina"
-                        name="observacoesMaquina"
-                        rows="5"
-                        placeholder="Digite informações adicionais sobre o equipamento..."
-                    ></textarea>   
-                </div>   
+                    </label>
+                    <textarea id="observacoesMaquina" name="observacoesMaquina" rows="5"
+                        placeholder="Digite informações adicionais sobre o equipamento..."></textarea>
+                </div>
             </div>
             <!-- =====================================================
                  AÇÕES
                  ===================================================== -->
             <div class="modal-actions">
-                <button
-                    type="button"
-                    class="secondary-button"
-                    id="cancelarModalMaquina"
-                >
+                <button type="button" class="secondary-button" id="cancelarModalMaquina">
                     CANCELAR
                 </button>
-                <button
-                    type="button"
-                    class="primary-button"
-                    id="cadastrarMaquina"
-                >
+                <button type="button" class="primary-button" id="cadastrarMaquina">
                     CADASTRAR MÁQUINA
-                </button>   
+                </button>
             </div>
         </div>
     </div>
 
     <!-- ======================== FIM MODAL NOVA MÁQUINA ======================== -->
 
-<!-- ======================== INÍCIO MODAL NOVO MATERIAL ======================== -->
+    <!-- ======================== INÍCIO MODAL NOVO MATERIAL ======================== -->
 
-<div class="modal-overlay" id="modalNovoMaterial">
-    <div class="modal-material">
-        <!-- CABEÇALHO -->
-        <div class="modal-material-header">
-            <div>
-                <h2>NOVO MATERIAL</h2>
-                <span>Cadastro de material industrial</span>
-            </div>
-            <button
-                class="modal-close"
-                id="fecharModalMaterial"
-                type="button"
-            >
-                <ion-icon name="close-outline"></ion-icon>
-            </button>
-        </div>
-        <!-- CONTEÚDO -->
-        <div class="modal-material-content">
-            <!-- IDENTIFICAÇÃO -->
-            <div class="material-section">
-                <div class="material-section-title">
-                    IDENTIFICAÇÃO
-                </div>
-                <div class="material-form-grid">
-                    <!-- CÓDIGO -->
-                    <div class="material-form-group">
-                        <label for="materialCodigo">
-                            CÓDIGO
-                        </label>
-                        <input
-                            type="text"
-                            id="materialCodigo"
-                            placeholder="MAT-001"
-                        >
-                    </div>
-                    <!-- NOME -->
-                    <div class="material-form-group">
-                        <label for="materialNome">
-                            NOME
-                        </label>
-                        <input
-                            type="text"
-                            id="materialNome"
-                            placeholder="Aço 1020"
-                        >
-                    </div>
-                    <!-- CATEGORIA -->
-                    <div class="material-form-group">
-                        <label for="materialCategoria">
-                            CATEGORIA
-                        </label>
-                        <select id="materialCategoria">
-                            <option value="">
-                                Selecione
-                            </option>
-                            <option value="Metal">
-                                Metal
-                            </option>
-                            <option value="Plástico">
-                                Plástico
-                            </option>
-                            <option value="Ferramenta">
-                                Ferramenta
-                            </option>
-                            <option value="Consumível">
-                                Consumível
-                            </option>
-                            <option value="Elétrico">
-                                Elétrico
-                            </option>
-                            <option value="Lubrificante">
-                                Lubrificante
-                            </option>
-                            <option value="EPI">
-                                EPI
-                            </option>
-                            <option value="Outro">
-                                Outro
-                            </option>
-                        </select>
-                    </div>
-                    <!-- UNIDADE -->
-                    <div class="material-form-group">
-                        <label for="materialUnidade">
-                            UNIDADE
-                        </label>
-                        <select id="materialUnidade">
-                            <option value="">
-                                Selecione
-                            </option>
-                            <option value="Kg">
-                                Kg
-                            </option>
-
-                            <option value="Un">
-                                Un
-                            </option>
-
-                            <option value="L">
-                                L
-                            </option>
-                            <option value="m">
-                                m
-                            </option>
-                            <option value="m²">
-                                m²
-                            </option>
-                            <option value="m³">
-                                m³
-                            </option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <!-- DESCRIÇÃO -->
-            <div class="material-section">
-                <div class="material-section-title">
-                    DESCRIÇÃO
-                </div>
-                <div class="material-form-group">
-                    <textarea
-                        id="materialDescricao"
-                        placeholder="Descrição do material..."
-                    ></textarea>
-                </div>
-            </div>
-        </div>
-        <!-- RODAPÉ -->
-        <div class="modal-material-footer">
-            <button
-                class="btn-secondary"
-                id="cancelarMaterial"
-                type="button"
-            >
-                CANCELAR
-            </button>
-            <button
-                class="btn-primary"
-                id="cadastrarMaterial"
-                type="button"
-            >
-                CADASTRAR
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ======================== FIM MODAL NOVO MATERIAL ======================== -->
-
-<!-- ======================== INÍCIO MODAL NOVO LOTE ======================== -->
-
-     <div class="modal-overlay" id="modalNovoLote">
-
+    <div class="modal-overlay" id="modalNovoMaterial">
         <div class="modal-material">
-    
             <!-- CABEÇALHO -->
             <div class="modal-material-header">
-    
                 <div>
-                    <span class="section-label"></span>
-    
-                    <h2>NOVO LOTE</h2>
-    
-                    <p>Cadastro de lote de material industrial</p>
+                    <h2>NOVO MATERIAL</h2>
+                    <span>Cadastro de material industrial</span>
                 </div>
-    
-                <button
-                    class="modal-close"
-                    id="fecharModalLote"
-                    type="button"
-                    aria-label="Fechar"
-                >
+                <button class="modal-close" id="fecharModalMaterial" type="button">
                     <ion-icon name="close-outline"></ion-icon>
                 </button>
-    
             </div>
-    
-    
             <!-- CONTEÚDO -->
             <div class="modal-material-content">
-    
-                <!-- =====================================================
-                     IDENTIFICAÇÃO
-                     ===================================================== -->
-    
+                <!-- IDENTIFICAÇÃO -->
                 <div class="material-section">
-    
                     <div class="material-section-title">
                         IDENTIFICAÇÃO
                     </div>
-    
-    
                     <div class="material-form-grid">
-    
+                        <!-- CÓDIGO -->
+                        <div class="material-form-group">
+                            <label for="materialCodigo">
+                                CÓDIGO
+                            </label>
+                            <input type="text" id="materialCodigo" placeholder="MAT-001">
+                        </div>
+                        <!-- NOME -->
+                        <div class="material-form-group">
+                            <label for="materialNome">
+                                NOME
+                            </label>
+                            <input type="text" id="materialNome" placeholder="Aço 1020">
+                        </div>
+                        <!-- CATEGORIA -->
+                        <div class="material-form-group">
+                            <label for="materialCategoria">
+                                CATEGORIA
+                            </label>
+                            <select id="materialCategoria">
+                                <option value="">
+                                    Selecione
+                                </option>
+                                <option value="Metal">
+                                    Metal
+                                </option>
+                                <option value="Plástico">
+                                    Plástico
+                                </option>
+                                <option value="Ferramenta">
+                                    Ferramenta
+                                </option>
+                                <option value="Consumível">
+                                    Consumível
+                                </option>
+                                <option value="Elétrico">
+                                    Elétrico
+                                </option>
+                                <option value="Lubrificante">
+                                    Lubrificante
+                                </option>
+                                <option value="EPI">
+                                    EPI
+                                </option>
+                                <option value="Outro">
+                                    Outro
+                                </option>
+                            </select>
+                        </div>
+                        <!-- UNIDADE -->
+                        <div class="material-form-group">
+                            <label for="materialUnidade">
+                                UNIDADE
+                            </label>
+                            <select id="materialUnidade">
+                                <option value="">
+                                    Selecione
+                                </option>
+                                <option value="Kg">
+                                    Kg
+                                </option>
+
+                                <option value="Un">
+                                    Un
+                                </option>
+
+                                <option value="L">
+                                    L
+                                </option>
+                                <option value="m">
+                                    m
+                                </option>
+                                <option value="m²">
+                                    m²
+                                </option>
+                                <option value="m³">
+                                    m³
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- DESCRIÇÃO -->
+                <div class="material-section">
+                    <div class="material-section-title">
+                        DESCRIÇÃO
+                    </div>
+                    <div class="material-form-group">
+                        <textarea id="materialDescricao" placeholder="Descrição do material..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <!-- RODAPÉ -->
+            <div class="modal-material-footer">
+                <button class="btn-secondary" id="cancelarMaterial" type="button">
+                    CANCELAR
+                </button>
+                <button class="btn-primary" id="cadastrarMaterial" type="button">
+                    CADASTRAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== FIM MODAL NOVO MATERIAL ======================== -->
+
+    <!-- ======================== INÍCIO MODAL NOVO LOTE ======================== -->
+    <div class="modal-overlay" id="modalNovoLote">
+        <div class="modal-material">
+            <!-- CABEÇALHO -->
+            <div class="modal-material-header">
+                <div>
+                    <span class="section-label"></span>
+                    <h2>NOVO LOTE</h2>
+                    <p>Cadastro de lote de material industrial</p>
+                </div>
+                <button class="modal-close" id="fecharModalLote" type="button" aria-label="Fechar">
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+            </div>
+            <!-- CONTEÚDO -->
+            <div class="modal-material-content">
+
+                <!-- =====================================================
+                     IDENTIFICAÇÃO
+                     ===================================================== -->
+
+                <div class="material-section">
+                    <div class="material-section-title">
+                        IDENTIFICAÇÃO
+                    </div>
+                    <div class="material-form-grid">
                         <!-- CÓDIGO DO LOTE -->
                         <div class="material-form-group">
-    
                             <label for="loteCodigo">
                                 Código do lote
                             </label>
-    
-                            <input
-                                type="text"
-                                id="loteCodigo"
-                                placeholder="Ex.: LOT-001"
-                                autocomplete="off"
-                            >
-    
+                            <input type="text" id="loteCodigo" placeholder="Ex.: LOT-001" autocomplete="off">
                         </div>
-    
-    
                         <!-- MATERIAL -->
                         <div class="material-form-group">
-    
                             <label for="loteMaterial">
                                 Material
                             </label>
-    
                             <select id="loteMaterial">
-    
                                 <option value="">
                                     Selecione um material
                                 </option>
-    
-                                <!--
-                                    Os materiais serão carregados
-                                    dinamicamente pelo JavaScript
-                                    através da API.
-                                -->
-    
                             </select>
-    
                         </div>
-    
                     </div>
-    
                 </div>
-    
-    
+
                 <!-- =====================================================
                      QUANTIDADE
                      ===================================================== -->
-    
+
                 <div class="material-section">
-    
+
                     <div class="material-section-title">
                         QUANTIDADE
                     </div>
-    
-    
+
+
                     <div class="material-form-grid">
-    
+
                         <div class="material-form-group">
-    
+
                             <label for="loteQuantidade">
                                 Quantidade
                             </label>
-    
-                            <input
-                                type="number"
-                                id="loteQuantidade"
-                                placeholder="Ex.: 500"
-                                min="0"
-                                step="0.01"
-                            >
-    
+
+                            <input type="number" id="loteQuantidade" placeholder="Ex.: 500" min="0" step="0.01">
+
                         </div>
-    
+
                     </div>
-    
+
                 </div>
-    
+
                 <!-- =====================================================
                      DATAS
                      ===================================================== -->
@@ -1614,46 +2550,412 @@
                             <label for="loteDataFabricacao">
                                 Data de fabricação
                             </label>
-                            <input
-                                type="date"
-                                id="loteDataFabricacao"
-                            >
+                            <input type="date" id="loteDataFabricacao">
                         </div>
                         <!-- DATA DE VALIDADE -->
                         <div class="material-form-group">
                             <label for="loteDataValidade">
                                 Data de validade
                             </label>
-                            <input
-                                type="date"
-                                id="loteDataValidade"
-                            >
+                            <input type="date" id="loteDataValidade">
                         </div>
                     </div>
                 </div>
-            </div> 
+            </div>
             <!-- RODAPÉ -->
-            <div class="modal-material-footer">  
-                <button
-                    class="btn-secondary"
-                    id="cancelarLote"
-                    type="button"
-                >
+            <div class="modal-material-footer">
+                <button class="btn-secondary" id="cancelarLote" type="button">
                     CANCELAR
                 </button>
-                <button
-                    class="btn-primary"
-                    id="cadastrarLote"
-                    type="button"
-                >
+                <button class="btn-primary" id="cadastrarLote" type="button">
                     CADASTRAR
                 </button>
             </div>
         </div>
     </div>
 
-<!-- ======================== FIM MODAL NOVO LOTE ======================== -->
+    <!-- ======================== FIM MODAL NOVO LOTE ======================== -->
+
+    <!-- ======================== INÍCIO MODAL NOVO FUNCIONÁRIO ======================== -->
+
+    <div class="modal-overlay" id="modalNovoFuncionario">
+        <div class="modal-material funcionario-modal">
+
+            <!-- ======================== CABEÇALHO ======================== -->
+
+            <div class="modal-material-header">
+                <div>
+                    <span class="section-label">
+                        GESTÃO
+                    </span>
+                    <h2>
+                        NOVO FUNCIONÁRIO
+                    </h2>
+                    <span>
+                        Cadastro de funcionário
+                    </span>
+                </div>
+                <button class="modal-close" id="fecharModalFuncionario" type="button" aria-label="Fechar">
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+            </div>
+
+            <!-- ======================== CONTEÚDO ======================== -->
+
+            <div class="modal-material-content">
+
+                <!-- ================= IDENTIFICAÇÃO ================= -->
+
+                <div class="material-section">
+                    <div class="material-section-title">
+                        IDENTIFICAÇÃO
+                    </div>
+                    <div class="material-form-grid">
+
+                        <!-- NOME -->
+
+                        <div class="material-form-group">
+                            <label for="funcionarioNome">
+                                NOME COMPLETO
+                            </label>
+                            <input type="text" id="funcionarioNome" placeholder="Nome completo">
+                        </div>
+
+                        <!-- MATRÍCULA -->
+
+                        <div class="material-form-group">
+                            <label for="funcionarioMatricula">
+                                MATRÍCULA
+                            </label>
+                            <input type="text" id="funcionarioMatricula" placeholder="Ex.: FUN-001">
+                        </div>
+
+                        <!-- CPF -->
+
+                        <div class="material-form-group">
+                            <label for="funcionarioCpf">
+                                CPF
+                            </label>
+                            <input type="text" id="funcionarioCpf" placeholder="000.000.000-00">
+                        </div>
+
+                        <!-- DATA NASCIMENTO -->
+
+                        <div class="material-form-group">
+                            <label for="funcionarioNascimento">
+                                DATA DE NASCIMENTO
+                            </label>
+                            <input type="date" id="funcionarioNascimento">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= PROFISSIONAL ================= -->
+
+                <div class="material-section">
+                    <div class="material-section-title">
+                        INFORMAÇÕES PROFISSIONAIS
+                    </div>
+                    <div class="material-form-grid">
+
+                        <!-- CARGO -->
+
+                        <div class="material-form-group">
+                            <label for="funcionarioCargo">
+                                CARGO
+                            </label>
+                            <input type="text" id="funcionarioCargo" placeholder="Ex.: Operador CNC">
+                        </div>
+
+                        <!-- SETOR -->
+
+                        <div class="material-form-group">
+                            <label for="funcionarioSetor">
+                                SETOR
+                            </label>
+                            <select id="funcionarioSetor">
+                                <option value="">
+                                    Selecione o setor
+                                </option>
+                                <option value="producao">
+                                    Produção
+                                </option>
+                                <option value="usinagem">
+                                    Usinagem
+                                </option>
+                                <option value="manutencao">
+                                    Manutenção
+                                </option>
+                                <option value="qualidade">
+                                    Qualidade
+                                </option>
+                                <option value="administrativo">
+                                    Administrativo
+                                </option>
+                                <option value="outro">
+                                    Outro
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- DATA ADMISSÃO -->
+
+                        <div class="material-form-group">
+                            <label for="funcionarioAdmissao">
+                                DATA DE ADMISSÃO
+                            </label>
+                            <input type="date" id="funcionarioAdmissao">
+                        </div>
+
+                        <!-- STATUS -->
+
+                        <div class="material-form-group">
+                            <label for="funcionarioStatus">
+                                STATUS
+                            </label>
+                            <select id="funcionarioStatus">
+                                <option value="ativo">
+                                    ATIVO
+                                </option>
+                                <option value="afastado">
+                                    AFASTADO
+                                </option>
+                                <option value="ferias">
+                                    FÉRIAS
+                                </option>
+                                <option value="inativo">
+                                    INATIVO
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= CONTATO ================= -->
+
+                <div class="material-section">
+                    <div class="material-section-title">
+                        CONTATO
+                    </div>
+                    <div class="material-form-grid">
+
+                        <!-- TELEFONE -->
+
+                        <div class="material-form-group">
+                            <label for="funcionarioTelefone">
+                                TELEFONE
+                            </label>
+                            <input type="tel" id="funcionarioTelefone" placeholder="(00) 00000-0000">
+                        </div>
+
+                        <!-- EMAIL -->
+
+                        <div class="material-form-group">
+                            <label for="funcionarioEmail">
+                                E-MAIL
+                            </label>
+                            <input type="email" id="funcionarioEmail" placeholder="funcionario@empresa.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= OBSERVAÇÕES ================= -->
+
+                <div class="material-section">
+                    <div class="material-section-title">
+                        OBSERVAÇÕES
+                    </div>
+                    <div class="material-form-group">
+                        <textarea id="funcionarioObservacoes" rows="4"
+                            placeholder="Informações adicionais sobre o funcionário..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================== AÇÕES ======================== -->
+
+            <div class="modal-material-footer">
+                <button class="btn-secondary" id="cancelarFuncionario" type="button">
+                    CANCELAR
+                </button>
+                <button class="btn-primary" id="cadastrarFuncionario" type="button">
+                    CADASTRAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== FIM MODAL NOVO FUNCIONÁRIO ======================== -->
+
+    <!-- ======================== INÍCIO MODAL DETALHES FUNCIONÁRIO ======================== -->
+
+    <div class="modal-overlay" id="modalDetalhesFuncionario">
+
+        <div class="modal-material funcionario-modal">
+
+
+            <!-- ======================== CABEÇALHO ======================== -->
+
+            <div class="modal-material-header">
+
+                <div>
+
+                    <span class="section-label">
+                        GESTÃO
+                    </span>
+
+                    <h2 id="detalhesFuncionarioNome">
+                        FUNCIONÁRIO
+                    </h2>
+
+                    <span id="detalhesFuncionarioCargo">
+                        Informações do funcionário
+                    </span>
+
+                </div>
+
+
+                <button class="modal-close" id="fecharDetalhesFuncionario" type="button" aria-label="Fechar">
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+
+            </div>
+
+
+            <!-- ======================== CONTEÚDO ======================== -->
+
+            <div class="modal-material-content">
+
+                <!-- IDENTIFICAÇÃO -->
+
+                <div class="material-section">
+                    <div class="material-section-title">
+                        IDENTIFICAÇÃO
+                    </div>
+                    <div class="funcionario-detalhes-grid">
+                        <div class="funcionario-info">
+                            <span>
+                                MATRÍCULA
+                            </span>
+                            <strong id="detalhesFuncionarioMatricula">
+                                -
+                            </strong>
+                        </div>
+                        <div class="funcionario-info">
+                            <span>
+                                CPF
+                            </span>
+                            <strong id="detalhesFuncionarioCpf">
+                                -
+                            </strong>
+                        </div>
+                        <div class="funcionario-info">
+                            <span>
+                                DATA DE NASCIMENTO
+                            </span>
+                            <strong id="detalhesFuncionarioNascimento">
+                                -
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROFISSIONAL -->
+
+                <div class="material-section">
+                    <div class="material-section-title">
+                        INFORMAÇÕES PROFISSIONAIS
+                    </div>
+                    <div class="funcionario-detalhes-grid">
+                        <div class="funcionario-info">
+                            <span>
+                                CARGO
+                            </span>
+                            <strong id="detalhesFuncionarioCargoInfo">
+                                -
+                            </strong>
+                        </div>
+                        <div class="funcionario-info">
+                            <span>
+                                SETOR
+                            </span>
+                            <strong id="detalhesFuncionarioSetor">
+                                -
+                            </strong>
+                        </div>
+                        <div class="funcionario-info">
+                            <span>
+                                DATA DE ADMISSÃO
+                            </span>
+                            <strong id="detalhesFuncionarioAdmissao">
+                                -
+                            </strong>
+                        </div>
+                        <div class="funcionario-info">
+                            <span>
+                                STATUS
+                            </span>
+                            <strong id="detalhesFuncionarioStatus" class="funcionario-status ativo">
+                                ATIVO
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTATO -->
+
+                <div class="material-section">
+                    <div class="material-section-title">
+                        CONTATO
+                    </div>
+                    <div class="funcionario-detalhes-grid">
+                        <div class="funcionario-info">
+                            <span>
+                                TELEFONE
+                            </span>
+                            <strong id="detalhesFuncionarioTelefone">
+                                -
+                            </strong>
+                        </div>
+                        <div class="funcionario-info">
+                            <span>
+                                E-MAIL
+                            </span>
+                            <strong id="detalhesFuncionarioEmail">
+                                -
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- OBSERVAÇÕES -->
+
+                <div class="material-section">
+                    <div class="material-section-title">
+                        OBSERVAÇÕES
+                    </div>
+                    <div class="funcionario-observacoes">
+                        <p id="detalhesFuncionarioObservacoes">
+                            Nenhuma observação registrada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ======================== AÇÕES ======================== -->
+
+            <div class="modal-material-footer">
+                <button class="btn-secondary" id="fecharDetalhesFuncionarioBotao" type="button">
+                    FECHAR
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================== FIM MODAL DETALHES FUNCIONÁRIO ======================== -->
 
     <script src="script.js"></script>
 </body>
+
 </html>
