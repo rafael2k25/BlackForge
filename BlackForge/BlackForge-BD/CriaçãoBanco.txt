@@ -1,0 +1,187 @@
+CREATE DATABASE BlackForgeBD;
+GO
+
+USE BlackForgeBD;
+GO
+
+-- =========================================================
+-- MATERIAL
+-- =========================================================
+
+CREATE TABLE Materiais
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+    Codigo NVARCHAR(50) NOT NULL,
+    Nome NVARCHAR(150) NOT NULL,
+    Categoria NVARCHAR(50) NOT NULL,
+    Unidade NVARCHAR(20) NOT NULL,
+    Descricao NVARCHAR(MAX) NULL,
+
+    CONSTRAINT PK_Materiais
+        PRIMARY KEY (Id)
+);
+GO
+
+
+-- =========================================================
+-- LOTE
+-- =========================================================
+
+CREATE TABLE Lotes
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+    Codigo NVARCHAR(50) NOT NULL,
+    Quantidade DECIMAL(18,2) NOT NULL,
+    DataFabricacao DATETIME2 NULL,
+    DataValidade DATETIME2 NULL,
+    MaterialId INT NOT NULL,
+
+    CONSTRAINT PK_Lotes
+        PRIMARY KEY (Id),
+
+    CONSTRAINT FK_Lotes_Materiais
+        FOREIGN KEY (MaterialId)
+        REFERENCES Materiais(Id)
+        ON DELETE NO ACTION
+);
+GO
+
+
+-- =========================================================
+-- MOVIMENTAÇÃO
+-- =========================================================
+
+CREATE TABLE Movimentacoes
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+    Tipo NVARCHAR(20) NOT NULL,
+    Quantidade DECIMAL(18,2) NOT NULL,
+    DataMovimentacao DATETIME2 NOT NULL,
+    Observacoes NVARCHAR(MAX) NULL,
+    MaterialId INT NOT NULL,
+    LoteId INT NULL,
+
+    CONSTRAINT PK_Movimentacoes
+        PRIMARY KEY (Id),
+
+    CONSTRAINT FK_Movimentacoes_Materiais
+        FOREIGN KEY (MaterialId)
+        REFERENCES Materiais(Id)
+        ON DELETE NO ACTION,
+
+    CONSTRAINT FK_Movimentacoes_Lotes
+        FOREIGN KEY (LoteId)
+        REFERENCES Lotes(Id)
+        ON DELETE NO ACTION
+);
+GO
+
+
+-- =========================================================
+-- FUNCIONÁRIO
+-- =========================================================
+
+CREATE TABLE Funcionarios
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+    Nome NVARCHAR(150) NOT NULL,
+    Matricula NVARCHAR(50) NOT NULL,
+    CPF NVARCHAR(14) NOT NULL,
+    Cargo NVARCHAR(100) NOT NULL,
+    Setor NVARCHAR(100) NOT NULL,
+    DataAdmissao DATETIME2 NOT NULL,
+    Email NVARCHAR(MAX) NULL,
+    Observacoes NVARCHAR(MAX) NULL,
+
+    CONSTRAINT PK_Funcionarios
+        PRIMARY KEY (Id)
+);
+GO
+
+
+-- =========================================================
+-- MÁQUINA
+-- =========================================================
+
+CREATE TABLE Maquinas
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+    Nome NVARCHAR(150) NOT NULL,
+    Codigo NVARCHAR(50) NOT NULL,
+    Fabricante NVARCHAR(100) NOT NULL,
+    Modelo NVARCHAR(100) NOT NULL,
+    NumeroSerie NVARCHAR(100) NOT NULL,
+    DataAquisicao DATETIME2 NOT NULL,
+    Observacoes NVARCHAR(MAX) NULL,
+
+    CONSTRAINT PK_Maquinas
+        PRIMARY KEY (Id)
+);
+GO
+
+
+-- =========================================================
+-- ORDEM DE SERVIÇO
+-- =========================================================
+
+CREATE TABLE OrdensServico
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+    NumeroOS NVARCHAR(50) NOT NULL,
+    Cliente NVARCHAR(150) NOT NULL,
+    Contato NVARCHAR(MAX) NULL,
+    Endereco NVARCHAR(MAX) NULL,
+    DataAbertura DATETIME2 NOT NULL,
+    DescricaoServico NVARCHAR(MAX) NOT NULL,
+    TipoServico NVARCHAR(50) NOT NULL,
+    DataInicio DATETIME2 NULL,
+    DataEntrega DATETIME2 NULL,
+    FuncionarioId INT NULL,
+
+    ValorMateriais DECIMAL(18,2) NOT NULL,
+    ValorMaoObra DECIMAL(18,2) NOT NULL,
+    Desconto DECIMAL(18,2) NOT NULL,
+    ValorTotal DECIMAL(18,2) NOT NULL,
+
+    CondicaoPagamento NVARCHAR(MAX) NULL,
+    Observacoes NVARCHAR(MAX) NULL,
+
+    CONSTRAINT PK_OrdensServico
+        PRIMARY KEY (Id),
+
+    CONSTRAINT FK_OrdensServico_Funcionarios
+        FOREIGN KEY (FuncionarioId)
+        REFERENCES Funcionarios(Id)
+        ON DELETE SET NULL
+);
+GO
+
+
+-- =========================================================
+-- ORDEM DE SERVIÇO - MATERIAIS
+-- =========================================================
+
+CREATE TABLE OrdensServicoMateriais
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+    OrdemServicoId INT NOT NULL,
+    MaterialId INT NOT NULL,
+    Quantidade DECIMAL(18,2) NOT NULL,
+    Unidade NVARCHAR(20) NOT NULL,
+    ValorUnitario DECIMAL(18,2) NOT NULL,
+    Subtotal DECIMAL(18,2) NOT NULL,
+
+    CONSTRAINT PK_OrdensServicoMateriais
+        PRIMARY KEY (Id),
+
+    CONSTRAINT FK_OrdensServicoMateriais_OrdensServico
+        FOREIGN KEY (OrdemServicoId)
+        REFERENCES OrdensServico(Id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT FK_OrdensServicoMateriais_Materiais
+        FOREIGN KEY (MaterialId)
+        REFERENCES Materiais(Id)
+        ON DELETE NO ACTION
+);
+GO

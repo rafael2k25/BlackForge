@@ -1,0 +1,85 @@
+USE BlackForgeBD;
+GO
+
+-- =========================================================
+-- 1. INSERINDO MATERIAIS
+-- =========================================================
+INSERT INTO Materiais (Codigo, Nome, Categoria, Unidade, Descricao)
+VALUES 
+('MAT-001', 'Barra de Aço Carbono 1045', 'Metalurgia', 'KG', 'Barra redonda de aço carbono de 2 polegadas'),
+('MAT-002', 'Chapa de Alumínio Lisa 2mm', 'Metalurgia', 'Unidade', 'Chapa lisa de alumínio 1x2 metros'),
+('MAT-003', 'Eletrodo Revestido E7018', 'Soldagem', 'Caixa', 'Caixa de 5kg de eletrodos para solda de responsabilidade'),
+('MAT-004', 'Óleo Solúvel de Corte', 'Insumos', 'Litro', 'Óleo para refrigeração em usinagem'),
+('MAT-005', 'Parafuso Sextavado M8', 'Fixação', 'Centena', 'Parafuso em aço inox M8x30mm');
+GO
+
+-- =========================================================
+-- 2. INSERINDO LOTES
+-- =========================================================
+-- Obs: MaterialId 1 (Aço), 2 (Alumínio), 3 (Eletrodo), 4 (Óleo)
+INSERT INTO Lotes (Codigo, Quantidade, DataFabricacao, DataValidade, MaterialId)
+VALUES 
+('LOT-2023-A', 500.00, '2023-01-15', NULL, 1),
+('LOT-2023-B', 150.00, '2023-02-10', NULL, 2),
+('LOT-2023-C', 20.00, '2023-05-01', '2026-05-01', 3),
+('LOT-2023-D', 50.00, '2023-08-20', '2025-08-20', 4);
+GO
+
+-- =========================================================
+-- 3. INSERINDO MOVIMENTAÇÕES
+-- =========================================================
+INSERT INTO Movimentacoes (Tipo, Quantidade, DataMovimentacao, Observacoes, MaterialId, LoteId)
+VALUES 
+('Entrada', 500.00, '2023-01-20 08:30:00', 'Recebimento de fornecedor Aços Brasil', 1, 1),
+('Entrada', 150.00, '2023-02-15 10:00:00', 'Recebimento de chapas', 2, 2),
+('Saída', 50.00, '2023-03-10 14:20:00', 'Envio para a produção (OS-1001)', 1, 1),
+('Entrada', 20.00, '2023-05-05 09:15:00', 'Compra emergencial de eletrodos', 3, 3),
+('Saída', 2.00, '2023-05-06 13:45:00', 'Retirada pelo soldador chefe', 3, 3);
+GO
+
+-- =========================================================
+-- 4. INSERINDO FUNCIONÁRIOS
+-- =========================================================
+INSERT INTO Funcionarios (Nome, Matricula, CPF, Cargo, Setor, DataAdmissao, Email, Observacoes)
+VALUES 
+('Carlos Mendes', 'F-1010', '11122233344', 'Soldador Especialista', 'Produção', '2020-03-15', 'carlos.mendes@blackforge.com.br', 'Certificação TIG/MIG atualizada'),
+('Ana Paula Costa', 'F-1011', '55566677788', 'Engenheira Mecânica', 'Projetos', '2021-07-10', 'ana.costa@blackforge.com.br', 'Responsável pelas ARTs'),
+('Roberto Silva', 'F-1012', '99900011122', 'Operador de Torno CNC', 'Usinagem', '2019-11-01', 'roberto.silva@blackforge.com.br', 'Turno da noite');
+GO
+
+-- =========================================================
+-- 5. INSERINDO MÁQUINAS
+-- =========================================================
+INSERT INTO Maquinas (Nome, Codigo, Fabricante, Modelo, NumeroSerie, DataAquisicao, Observacoes)
+VALUES 
+('Torno CNC 3 Eixos', 'MQ-CNC-01', 'Romi', 'Centur 30D', 'RM987654321', '2018-05-10', 'Manutenção preventiva em dia'),
+('Prensa Hidráulica 100t', 'MQ-PR-02', 'Bovenau', 'P1000', 'BV112233', '2015-08-20', 'Trocar óleo em 3 meses'),
+('Inversora de Solda TIG', 'MQ-SD-01', 'Esab', 'Rogue ET 200i', 'ES00998877', '2022-01-15', 'Uso exclusivo da equipe de soldagem especial');
+GO
+
+-- =========================================================
+-- 6. INSERINDO ORDENS DE SERVIÇO
+-- =========================================================
+-- Obs: FuncionarioId 1 (Carlos), 2 (Ana), 3 (Roberto)
+INSERT INTO OrdensServico (NumeroOS, Cliente, Contato, Endereco, DataAbertura, DescricaoServico, TipoServico, DataInicio, DataEntrega, FuncionarioId, ValorMateriais, ValorMaoObra, Desconto, ValorTotal, CondicaoPagamento, Observacoes)
+VALUES 
+('OS-1001', 'Indústria MetalPesado LTDA', 'João - (11) 98888-7777', 'Rua das Indústrias, 500, Galpão 3', '2023-10-01 08:00:00', 'Fabricação de estrutura metálica para esteira transportadora', 'Fabricação', '2023-10-05 08:00:00', '2023-10-20 17:00:00', 1, 2500.00, 3000.00, 500.00, 5000.00, '30/60 dias via boleto', 'Urgência na entrega'),
+
+('OS-1002', 'Construtora Nova Era', 'Mariana - (11) 97777-6666', 'Av. Paulista, 1000 - Canteiro de Obras', '2023-10-10 09:30:00', 'Usinagem de eixos sob medida para guindaste', 'Usinagem', '2023-10-11 08:00:00', '2023-10-15 17:00:00', 3, 800.00, 1200.00, 0.00, 2000.00, 'À vista no PIX', 'Peças de alta precisão'),
+
+('OS-1003', 'Fazenda Boa Vista', 'Sr. Alceu - (19) 95555-4444', 'Rodovia SP 340, Km 15', '2023-10-15 14:00:00', 'Reparo e solda na caçamba do trator', 'Manutenção', '2023-10-16 08:00:00', '2023-10-18 12:00:00', 1, 300.00, 800.00, 100.00, 1000.00, 'Cartão de Crédito em 2x', 'Serviço externo programado');
+GO
+
+-- =========================================================
+-- 7. INSERINDO MATERIAIS NAS ORDENS DE SERVIÇO
+-- =========================================================
+-- Obs: OrdemServicoId 1 (OS-1001), 2 (OS-1002), 3 (OS-1003)
+-- MaterialId 1 (Aço), 2 (Chapa), 3 (Eletrodo), 4 (Óleo)
+INSERT INTO OrdensServicoMateriais (OrdemServicoId, MaterialId, Quantidade, Unidade, ValorUnitario, Subtotal)
+VALUES 
+(1, 1, 100.00, 'KG', 15.00, 1500.00), -- 100kg de Aço para OS-1001
+(1, 3, 2.00, 'Caixa', 250.00, 500.00), -- 2 Caixas de Eletrodo para OS-1001
+(2, 1, 30.00, 'KG', 15.00, 450.00), -- 30kg de Aço para OS-1002 (Usinagem)
+(2, 4, 5.00, 'Litro', 25.00, 125.00), -- 5 Litros de óleo para OS-1002
+(3, 2, 1.00, 'Unidade', 400.00, 400.00); -- 1 Chapa de alumínio para OS-1003
+GO
