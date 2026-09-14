@@ -15,8 +15,20 @@ builder.Services.AddDbContext<BlackForgeDbContext>(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("BlackForge", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
+
+app.UseCors("BlackForge");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

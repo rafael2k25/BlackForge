@@ -1,4 +1,10 @@
 // =========================================================
+// CONFIGURAÇÃO DA API
+// =========================================================
+
+const API_URL = "https://localhost:7089/api";
+
+// =========================================================
 // MENUS
 // =========================================================
 
@@ -157,8 +163,7 @@ document.addEventListener("keydown", function (event) {
     if (
         event.key === "Escape" &&
         modalOS.classList.contains("active")
-    ) 
-    {
+    ) {
         fecharOS();
     }
 });
@@ -384,24 +389,227 @@ if (modalNovoLote) {
     });
 }
 
+
+
+
 // =========================================================
 // FUNCIONÁRIOS
 // =========================================================
 
-
-// =========================================================
-// ARRAY DE FUNCIONÁRIOS
-// =========================================================
-
-// Por enquanto permanece vazio.
-// Futuramente será substituído pelos dados vindos do backend.
-
 let funcionarios = [];
 
+async function carregarFuncionarios() {
+
+    try {
+
+        const resposta = await fetch(
+            `${API_URL}/funcionarios`
+        );
+
+        if (!resposta.ok) {
+            throw new Error(
+                `Erro HTTP: ${resposta.status}`
+            );
+        }
+
+        funcionarios = await resposta.json();
+
+        console.log(
+            "Funcionários carregados:",
+            funcionarios
+        );
+
+        renderizarFuncionarios();
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao carregar funcionários:",
+            erro
+        );
+    }
+
+}
+
+// =========================================================
+// CADASTRAR FUNCIONÁRIO
+// =========================================================
+
+async function cadastrarNovoFuncionario() {
+
+    const funcionario = {
+        nome:
+            document.getElementById("funcionarioNome").value.trim(),
+        matricula:
+            document.getElementById("funcionarioMatricula").value.trim(),
+        cpf:
+            document.getElementById("funcionarioCpf").value.trim(),
+        cargo:
+            document.getElementById("funcionarioCargo").value.trim(),
+        idade:
+            Number(document.getElementById("funcionarioIdade").value),
+        telefone:
+            document.getElementById("funcionarioTelefone").value.trim(),
+        setor:
+            document.getElementById("funcionarioSetor").value,
+        admissao:
+            document.getElementById("funcionarioAdmissao").value,
+        email:
+            document.getElementById("funcionarioEmail").value.trim(),
+        observacoes:
+            document.getElementById("funcionarioObservacoes").value.trim()
+    };
+
+
+
+
+    // =====================================================
+    // VALIDAÇÕES
+    // =====================================================
+
+    if (!funcionario.nome) {
+
+        alert("Informe o nome do funcionário.");
+        return;
+
+    }
+
+    if (!funcionario.matricula) {
+
+        alert("Informe a matrícula do funcionário.");
+        return;
+
+    }
+
+    if (!funcionario.cpf) {
+
+        alert("Informe o CPF do funcionário.");
+        return;
+
+    }
+
+    if (!funcionario.cargo) {
+
+        alert("Informe o cargo do funcionário.");
+        return;
+
+    }
+
+    if (!funcionario.idade) {
+
+        alert("Informe a idade do funcionário.");
+        return;
+
+    }
+
+    if (!funcionario.setor) {
+
+        alert("Selecione o setor do funcionário.");
+        return;
+
+    }
+
+    if (!funcionario.admissao) {
+
+        alert("Informe a data de admissão.");
+        return;
+
+    }
+
+
+    try {
+
+        const resposta = await fetch(
+            `${API_URL}/funcionarios`,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(funcionario)
+            }
+        );
+
+
+        if (!resposta.ok) {
+
+            const mensagem =
+                await resposta.text();
+
+            throw new Error(
+                mensagem ||
+                `Erro HTTP: ${resposta.status}`
+            );
+
+        }
+
+
+        const funcionarioCriado =
+            await resposta.json();
+
+
+        console.log(
+            "Funcionário cadastrado:",
+            funcionarioCriado
+        );
+
+
+        // Atualiza a lista
+        await carregarFuncionarios();
+
+
+        // Fecha o modal
+        fecharCadastroFuncionario();
+
+
+        // Limpa formulário
+        limparFormularioFuncionario();
+
+
+        alert(
+            "Funcionário cadastrado com sucesso!"
+        );
+
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao cadastrar funcionário:",
+            erro
+        );
+
+        alert(
+            `Não foi possível cadastrar o funcionário.\n\n${erro.message}`
+        );
+
+    }
+
+
+
+}
+
+function limparFormularioFuncionario() {
+
+    document.getElementById("funcionarioNome").value = "";
+    document.getElementById("funcionarioMatricula").value = "";
+    document.getElementById("funcionarioCpf").value = "";
+    document.getElementById("funcionarioCargo").value = "";
+    document.getElementById("funcionarioIdade").value = "";
+    document.getElementById("funcionarioSetor").value = "";
+    document.getElementById("funcionarioAdmissao").value = "";
+    document.getElementById("funcionarioTelefone").value = "";
+    document.getElementById("funcionarioEmail").value = "";
+    document.getElementById("funcionarioObservacoes").value = "";
+}
 
 // =========================================================
 // ELEMENTOS
 // =========================================================
+
+const cadastrarFuncionario =
+    document.getElementById("cadastrarFuncionario");
 
 const modalNovoFuncionario =
     document.getElementById("modalNovoFuncionario");
@@ -427,7 +635,12 @@ const fecharDetalhesFuncionario =
 const fecharDetalhesFuncionarioBotao =
     document.getElementById("fecharDetalhesFuncionarioBotao");
 
-
+if (cadastrarFuncionario) {
+    cadastrarFuncionario.addEventListener(
+        "click",
+        cadastrarNovoFuncionario
+    );
+}
 // =========================================================
 // ABRIR MODAL DE CADASTRO
 // =========================================================
@@ -803,16 +1016,9 @@ function abrirDetalhesFuncionario(funcionario) {
 
 
     document.getElementById(
-        "detalhesFuncionarioNascimento"
+        "detalhesFuncionarioIdade"
     ).textContent =
-        funcionario.nascimento;
-
-
-    document.getElementById(
-        "detalhesFuncionarioCargoInfo"
-    ).textContent =
-        funcionario.cargo;
-
+        funcionario.idade;
 
     document.getElementById(
         "detalhesFuncionarioSetor"
@@ -824,23 +1030,6 @@ function abrirDetalhesFuncionario(funcionario) {
         "detalhesFuncionarioAdmissao"
     ).textContent =
         funcionario.admissao;
-
-
-    const status =
-        document.getElementById(
-            "detalhesFuncionarioStatus"
-        );
-
-
-    status.textContent =
-        funcionario.status;
-
-
-    status.className =
-        "funcionario-status " +
-        funcionario.status
-            .toLowerCase();
-
 
     document.getElementById(
         "detalhesFuncionarioTelefone"
@@ -873,7 +1062,7 @@ function abrirDetalhesFuncionario(funcionario) {
 // INICIALIZAÇÃO
 // =========================================================
 
-renderizarFuncionarios();
+carregarFuncionarios();
 
 // =========================================================
 // RELATÓRIOS DE SERVIÇOS

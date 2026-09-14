@@ -46,6 +46,7 @@ namespace BlackForge.Controllers
         public async Task<ActionResult<Funcionario>> CriarFuncionario(
             Funcionario funcionario)
         {
+            
             if (string.IsNullOrWhiteSpace(funcionario.Nome))
             {
                 return BadRequest("O nome do funcionário é obrigatório.");
@@ -61,12 +62,24 @@ namespace BlackForge.Controllers
                 return BadRequest("O CPF do funcionário é obrigatório.");
             }
 
+            if (funcionario.Idade <= 0)
+            {
+                return BadRequest("A idade do funcionário deve ser maior que zero.");
+            }
+
+            if (funcionario.DataAdmissao == default)
+            {
+                return BadRequest("A data de admissão é obrigatória.");
+            }
+
             var matriculaExiste = await _context.Funcionarios
                 .AnyAsync(f => f.Matricula == funcionario.Matricula);
 
             if (matriculaExiste)
             {
-                return Conflict("Já existe um funcionário com essa matrícula.");
+                return Conflict(
+                    "Já existe um funcionário com essa matrícula."
+                );
             }
 
             var cpfExiste = await _context.Funcionarios
@@ -74,7 +87,9 @@ namespace BlackForge.Controllers
 
             if (cpfExiste)
             {
-                return Conflict("Já existe um funcionário com esse CPF.");
+                return Conflict(
+                    "Já existe um funcionário com esse CPF."
+                );
             }
 
             _context.Funcionarios.Add(funcionario);
@@ -87,15 +102,18 @@ namespace BlackForge.Controllers
                 funcionario
             );
         }
-
+     
         [HttpPut("{id}")]
         public async Task<IActionResult> AtualizarFuncionario(
             int id,
             Funcionario funcionario)
         {
+
             if (id != funcionario.Id)
             {
-                return BadRequest();
+                return BadRequest(
+                    "O ID da URL não corresponde ao ID do funcionário."
+                );
             }
 
             if (string.IsNullOrWhiteSpace(funcionario.Nome))
@@ -111,6 +129,16 @@ namespace BlackForge.Controllers
             if (string.IsNullOrWhiteSpace(funcionario.CPF))
             {
                 return BadRequest("O CPF do funcionário é obrigatório.");
+            }
+
+            if (funcionario.Idade <= 0)
+            {
+                return BadRequest("A idade do funcionário deve ser maior que zero.");
+            }
+
+            if (funcionario.DataAdmissao == default)
+            {
+                return BadRequest("A data de admissão é obrigatória.");
             }
 
             var funcionarioExiste = await _context.Funcionarios
@@ -128,7 +156,9 @@ namespace BlackForge.Controllers
 
             if (matriculaEmUso)
             {
-                return Conflict("Já existe outro funcionário com essa matrícula.");
+                return Conflict(
+                    "Já existe outro funcionário com essa matrícula."
+                );
             }
 
             var cpfEmUso = await _context.Funcionarios
@@ -138,7 +168,9 @@ namespace BlackForge.Controllers
 
             if (cpfEmUso)
             {
-                return Conflict("Já existe outro funcionário com esse CPF.");
+                return Conflict(
+                    "Já existe outro funcionário com esse CPF."
+                );
             }
 
             _context.Entry(funcionario).State = EntityState.Modified;
@@ -177,7 +209,6 @@ namespace BlackForge.Controllers
 
             return NoContent();
         }
-
         private bool FuncionarioExiste(int id)
         {
             return _context.Funcionarios

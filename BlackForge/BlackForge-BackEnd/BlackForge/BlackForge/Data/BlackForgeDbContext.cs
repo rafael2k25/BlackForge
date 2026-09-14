@@ -96,9 +96,33 @@ namespace BlackForge.Data
                 .HasMaxLength(100)
                 .IsRequired();
             modelBuilder.Entity<Funcionario>()
+                .Property(f => f.Idade)
+                .IsRequired();
+            modelBuilder.Entity<Funcionario>()
+                .Property(f => f.Telefone)
+                .HasMaxLength(20)
+                .IsRequired(false);
+            modelBuilder.Entity<Funcionario>()
                 .Property(f => f.Setor)
                 .HasMaxLength(100)
                 .IsRequired();
+            modelBuilder.Entity<Funcionario>()
+                .Property(f => f.DataAdmissao)
+                .IsRequired();
+            modelBuilder.Entity<Funcionario>()
+                .Property(f => f.Email)
+                .HasMaxLength(150)
+                .IsRequired(false);
+            modelBuilder.Entity<Funcionario>()
+                .Property(f => f.Observacoes)
+                .HasMaxLength(500)
+                .IsRequired(false);
+            modelBuilder.Entity<Funcionario>()
+                .HasIndex(f => f.Matricula)
+                .IsUnique();
+            modelBuilder.Entity<Funcionario>()
+                .HasIndex(f => f.CPF)
+                .IsUnique();
 
             // ================= MÁQUINA =================
             modelBuilder.Entity<Maquina>()

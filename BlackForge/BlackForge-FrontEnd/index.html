@@ -304,7 +304,7 @@
                             <div>
                                 <span>MÁQUINAS</span>
                                 <strong>0 ATIVAS</strong>
-                            </div>            
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1222,477 +1222,451 @@
         <section id="relatorios-financeiro" class="page-section">
 
             <div class="section-header">
-        
+
                 <div>
                     <span class="section-label">
                         RELATÓRIOS
                     </span>
-        
+
                     <h1>
                         Relatórios Financeiros
                     </h1>
-        
+
                     <p>
                         Análise e acompanhamento das receitas, despesas e resultados.
                     </p>
                 </div>
-        
+
                 <div class="relatorio-header-actions">
-        
-                    <button
-                        class="secondary-button"
-                        id="limparFiltrosFinanceiro"
-                        type="button"
-                    >
+
+                    <button class="secondary-button" id="limparFiltrosFinanceiro" type="button">
                         LIMPAR FILTROS
                     </button>
-        
-                    <button
-                        class="primary-button"
-                        id="gerarRelatorioFinanceiro"
-                        type="button"
-                    >
+
+                    <button class="primary-button" id="gerarRelatorioFinanceiro" type="button">
                         GERAR RELATÓRIO
                     </button>
-        
+
                 </div>
-        
+
             </div>
-        
-        
+
+
             <!-- =========================================================
                  FILTROS
             ========================================================== -->
-        
+
             <div class="relatorio-filtros">
-        
+
                 <div class="relatorio-filtros-header">
-        
+
                     <div>
                         <span class="relatorio-filtros-label">
                             FILTROS
                         </span>
-        
+
                         <h2>
                             PARÂMETROS DO RELATÓRIO
                         </h2>
                     </div>
-        
+
                     <ion-icon name="options-outline"></ion-icon>
-        
+
                 </div>
-        
-        
+
+
                 <div class="relatorio-filtros-grid">
-        
+
                     <div class="material-form-group">
-        
+
                         <label for="financeiroDataInicio">
                             DATA INICIAL
                         </label>
-        
-                        <input
-                            type="date"
-                            id="financeiroDataInicio"
-                        >
-        
+
+                        <input type="date" id="financeiroDataInicio">
+
                     </div>
-        
-        
+
+
                     <div class="material-form-group">
-        
+
                         <label for="financeiroDataFim">
                             DATA FINAL
                         </label>
-        
-                        <input
-                            type="date"
-                            id="financeiroDataFim"
-                        >
-        
+
+                        <input type="date" id="financeiroDataFim">
+
                     </div>
-        
-        
+
+
                     <div class="material-form-group">
-        
+
                         <label for="financeiroTipo">
                             TIPO
                         </label>
-        
+
                         <select id="financeiroTipo">
-        
+
                             <option value="">
                                 TODAS AS MOVIMENTAÇÕES
                             </option>
-        
+
                             <option value="receita">
                                 RECEITA
                             </option>
-        
+
                             <option value="despesa">
                                 DESPESA
                             </option>
-        
+
                         </select>
-        
+
                     </div>
-        
-        
+
+
                     <div class="material-form-group">
-        
+
                         <label for="financeiroStatus">
                             STATUS
                         </label>
-        
+
                         <select id="financeiroStatus">
-        
+
                             <option value="">
                                 TODOS OS STATUS
                             </option>
-        
+
                             <option value="pendente">
                                 PENDENTE
                             </option>
-        
+
                             <option value="pago">
                                 PAGO
                             </option>
-        
+
                             <option value="cancelado">
                                 CANCELADO
                             </option>
-        
+
                         </select>
-        
+
                     </div>
-        
-        
+
+
                     <div class="material-form-group">
-        
+
                         <label for="financeiroPagamento">
                             FORMA DE PAGAMENTO
                         </label>
-        
+
                         <select id="financeiroPagamento">
-        
+
                             <option value="">
                                 TODAS AS FORMAS
                             </option>
-        
+
                             <option value="pix">
                                 PIX
                             </option>
-        
+
                             <option value="dinheiro">
                                 DINHEIRO
                             </option>
-        
+
                             <option value="cartao">
                                 CARTÃO
                             </option>
-        
+
                             <option value="transferencia">
                                 TRANSFERÊNCIA
                             </option>
-        
+
                             <option value="boleto">
                                 BOLETO
                             </option>
-        
+
                         </select>
-        
+
                     </div>
-        
+
                 </div>
-        
+
             </div>
-        
-        
+
+
             <!-- =========================================================
                  INDICADORES
             ========================================================== -->
-        
+
             <div class="relatorio-indicadores">
-        
-        
+
+
                 <div class="relatorio-indicador">
-        
+
                     <div class="relatorio-indicador-icon">
-        
+
                         <ion-icon name="cash-outline"></ion-icon>
-        
+
                     </div>
-        
+
                     <div>
-        
+
                         <span>
                             FATURAMENTO
                         </span>
-        
+
                         <strong id="faturamentoFinanceiro">
                             -
                         </strong>
-        
+
                     </div>
-        
+
                 </div>
-        
-        
+
+
                 <div class="relatorio-indicador">
-        
+
                     <div class="relatorio-indicador-icon">
-        
+
                         <ion-icon name="arrow-down-circle-outline"></ion-icon>
-        
+
                     </div>
-        
+
                     <div>
-        
+
                         <span>
                             RECEITAS
                         </span>
-        
+
                         <strong id="totalReceitasFinanceiro">
                             -
                         </strong>
-        
+
                     </div>
-        
+
                 </div>
-        
-        
+
+
                 <div class="relatorio-indicador">
-        
+
                     <div class="relatorio-indicador-icon">
-        
+
                         <ion-icon name="arrow-up-circle-outline"></ion-icon>
-        
+
                     </div>
-        
+
                     <div>
-        
+
                         <span>
                             DESPESAS
                         </span>
-        
+
                         <strong id="totalDespesasFinanceiro">
                             -
                         </strong>
-        
+
                     </div>
-        
+
                 </div>
-        
-        
+
+
                 <div class="relatorio-indicador">
-        
+
                     <div class="relatorio-indicador-icon">
-        
+
                         <ion-icon name="wallet-outline"></ion-icon>
-        
+
                     </div>
-        
+
                     <div>
-        
+
                         <span>
                             RESULTADO
                         </span>
-        
+
                         <strong id="resultadoFinanceiro">
                             -
                         </strong>
-        
+
                     </div>
-        
+
                 </div>
-        
-        
+
+
             </div>
-        
-        
+
+
             <!-- =========================================================
                  ANÁLISES
             ========================================================== -->
-        
+
             <div class="relatorio-analise-grid">
-        
-        
+
+
                 <!-- RECEITAS X DESPESAS -->
-        
+
                 <div class="relatorio-card">
-        
+
                     <div class="relatorio-card-header">
-        
+
                         <div>
-        
+
                             <span class="relatorio-card-label">
                                 EVOLUÇÃO
                             </span>
-        
+
                             <h3>
                                 RECEITAS × DESPESAS
                             </h3>
-        
+
                         </div>
-        
+
                         <ion-icon name="trending-up-outline"></ion-icon>
-        
+
                     </div>
-        
-        
-                    <div
-                        class="relatorio-grafico"
-                        id="graficoReceitasDespesas"
-                    >
-        
+
+
+                    <div class="relatorio-grafico" id="graficoReceitasDespesas">
+
                         <div class="relatorio-sem-dados">
-        
+
                             <ion-icon name="bar-chart-outline"></ion-icon>
-        
+
                             <span>
                                 SEM DADOS DISPONÍVEIS
                             </span>
-        
+
                             <small>
                                 Os dados serão exibidos quando houver
                                 movimentações financeiras registradas.
                             </small>
-        
+
                         </div>
-        
+
                     </div>
-        
+
                 </div>
-        
-        
-        
+
+
+
                 <!-- DISTRIBUIÇÃO FINANCEIRA -->
-        
+
                 <div class="relatorio-card">
-        
+
                     <div class="relatorio-card-header">
-        
+
                         <div>
-        
+
                             <span class="relatorio-card-label">
                                 DISTRIBUIÇÃO
                             </span>
-        
+
                             <h3>
                                 DISTRIBUIÇÃO FINANCEIRA
                             </h3>
-        
+
                         </div>
-        
+
                         <ion-icon name="pie-chart-outline"></ion-icon>
-        
+
                     </div>
-        
-        
-                    <div
-                        class="relatorio-grafico"
-                        id="graficoDistribuicaoFinanceiro"
-                    >
-        
+
+
+                    <div class="relatorio-grafico" id="graficoDistribuicaoFinanceiro">
+
                         <div class="relatorio-sem-dados">
-        
+
                             <ion-icon name="analytics-outline"></ion-icon>
-        
+
                             <span>
                                 SEM DADOS DISPONÍVEIS
                             </span>
-        
+
                             <small>
                                 A distribuição será exibida após a
                                 geração do relatório.
                             </small>
-        
+
                         </div>
-        
+
                     </div>
-        
+
                 </div>
-        
+
             </div>
-        
-        
+
+
             <!-- =========================================================
                  TABELA
             ========================================================== -->
-        
+
             <div class="relatorio-card relatorio-tabela-card">
-        
+
                 <div class="relatorio-card-header">
-        
+
                     <div>
-        
+
                         <span class="relatorio-card-label">
                             DETALHAMENTO
                         </span>
-        
+
                         <h3>
                             MOVIMENTAÇÕES FINANCEIRAS
                         </h3>
-        
+
                     </div>
-        
-        
-                    <span
-                        class="relatorio-registros"
-                        id="totalRegistrosFinanceiro"
-                    >
+
+
+                    <span class="relatorio-registros" id="totalRegistrosFinanceiro">
                         0 REGISTROS
                     </span>
-        
+
                 </div>
-        
-        
+
+
                 <div class="relatorio-tabela-container">
-        
+
                     <table class="relatorio-tabela">
-        
+
                         <thead>
-        
+
                             <tr>
-        
+
                                 <th>
                                     DATA
                                 </th>
-        
+
                                 <th>
                                     DESCRIÇÃO
                                 </th>
-        
+
                                 <th>
                                     TIPO
                                 </th>
-        
+
                                 <th>
                                     OS
                                 </th>
-        
+
                                 <th>
                                     PAGAMENTO
                                 </th>
-        
+
                                 <th>
                                     VALOR
                                 </th>
-        
+
                                 <th>
                                     STATUS
                                 </th>
-        
+
                             </tr>
-        
+
                         </thead>
                         <tbody id="tabelaRelatorioFinanceiro">
                             <tr>
-                                <td
-                                    colspan="7"
-                                    class="relatorio-tabela-vazia"
-                                >
-                                    <ion-icon name="cash-outline"></ion-icon>      
+                                <td colspan="7" class="relatorio-tabela-vazia">
+                                    <ion-icon name="cash-outline"></ion-icon>
                                     <span>
                                         NENHUM REGISTRO ENCONTRADO
                                     </span>
@@ -1702,10 +1676,10 @@
                                     </small>
                                 </td>
                             </tr>
-                        </tbody>    
-                    </table>       
-                </div>       
-            </div>       
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         <!-- ======================================= FIM CATEGORIA CONTEÚDO PRINCIPAL ======================================= -->
@@ -2540,7 +2514,7 @@
                                 </option>
                                 <option value="usinagem">
                                     Usinagem
-                                </option>                        
+                                </option>
                                 <option value="qualidade">
                                     Qualidade
                                 </option>
@@ -2562,26 +2536,13 @@
                             <input type="date" id="funcionarioAdmissao">
                         </div>
 
-                        <!-- STATUS -->
+                        <!-- IDADE -->
 
                         <div class="material-form-group">
-                            <label for="funcionarioStatus">
-                                STATUS
+                            <label for="funcionarioIdade">
+                                IDADE
                             </label>
-                            <select id="funcionarioStatus">
-                                <option value="ativo">
-                                    ATIVO
-                                </option>
-                                <option value="afastado">
-                                    AFASTADO
-                                </option>
-                                <option value="ferias">
-                                    FÉRIAS
-                                </option>
-                                <option value="inativo">
-                                    INATIVO
-                                </option>
-                            </select>
+                            <input type="number" id="funcionarioIdade" placeholder="Ex.: 25" min="1" max="120">
                         </div>
                     </div>
                 </div>
@@ -2736,14 +2697,6 @@
                             </span>
                             <strong id="detalhesFuncionarioAdmissao">
                                 -
-                            </strong>
-                        </div>
-                        <div class="funcionario-info">
-                            <span>
-                                STATUS
-                            </span>
-                            <strong id="detalhesFuncionarioStatus" class="funcionario-status ativo">
-                                ATIVO
                             </strong>
                         </div>
                     </div>

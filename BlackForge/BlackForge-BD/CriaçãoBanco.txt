@@ -4,10 +4,6 @@ GO
 USE BlackForgeBD;
 GO
 
--- =========================================================
--- MATERIAL
--- =========================================================
-
 CREATE TABLE Materiais
 (
     Id INT IDENTITY(1,1) NOT NULL,
@@ -21,11 +17,6 @@ CREATE TABLE Materiais
         PRIMARY KEY (Id)
 );
 GO
-
-
--- =========================================================
--- LOTE
--- =========================================================
 
 CREATE TABLE Lotes
 (
@@ -45,11 +36,6 @@ CREATE TABLE Lotes
         ON DELETE NO ACTION
 );
 GO
-
-
--- =========================================================
--- MOVIMENTAÇÃO
--- =========================================================
 
 CREATE TABLE Movimentacoes
 (
@@ -76,11 +62,6 @@ CREATE TABLE Movimentacoes
 );
 GO
 
-
--- =========================================================
--- FUNCIONÁRIO
--- =========================================================
-
 CREATE TABLE Funcionarios
 (
     Id INT IDENTITY(1,1) NOT NULL,
@@ -88,20 +69,23 @@ CREATE TABLE Funcionarios
     Matricula NVARCHAR(50) NOT NULL,
     CPF NVARCHAR(14) NOT NULL,
     Cargo NVARCHAR(100) NOT NULL,
+    Idade INT NOT NULL,
+    Telefone NVARCHAR(20) NULL,
     Setor NVARCHAR(100) NOT NULL,
     DataAdmissao DATETIME2 NOT NULL,
-    Email NVARCHAR(MAX) NULL,
-    Observacoes NVARCHAR(MAX) NULL,
+    Email NVARCHAR(150) NULL,
+    Observacoes NVARCHAR(500) NULL,
 
     CONSTRAINT PK_Funcionarios
-        PRIMARY KEY (Id)
+        PRIMARY KEY (Id),
+
+    CONSTRAINT UQ_Funcionarios_Matricula
+        UNIQUE (Matricula),
+
+    CONSTRAINT UQ_Funcionarios_CPF
+        UNIQUE (CPF)
 );
 GO
-
-
--- =========================================================
--- MÁQUINA
--- =========================================================
 
 CREATE TABLE Maquinas
 (
@@ -119,11 +103,6 @@ CREATE TABLE Maquinas
 );
 GO
 
-
--- =========================================================
--- ORDEM DE SERVIÇO
--- =========================================================
-
 CREATE TABLE OrdensServico
 (
     Id INT IDENTITY(1,1) NOT NULL,
@@ -137,12 +116,10 @@ CREATE TABLE OrdensServico
     DataInicio DATETIME2 NULL,
     DataEntrega DATETIME2 NULL,
     FuncionarioId INT NULL,
-
     ValorMateriais DECIMAL(18,2) NOT NULL,
     ValorMaoObra DECIMAL(18,2) NOT NULL,
     Desconto DECIMAL(18,2) NOT NULL,
     ValorTotal DECIMAL(18,2) NOT NULL,
-
     CondicaoPagamento NVARCHAR(MAX) NULL,
     Observacoes NVARCHAR(MAX) NULL,
 
@@ -155,11 +132,6 @@ CREATE TABLE OrdensServico
         ON DELETE SET NULL
 );
 GO
-
-
--- =========================================================
--- ORDEM DE SERVIÇO - MATERIAIS
--- =========================================================
 
 CREATE TABLE OrdensServicoMateriais
 (
