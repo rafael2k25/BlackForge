@@ -397,6 +397,8 @@ if (modalNovoLote) {
 // =========================================================
 
 let funcionarios = [];
+let funcionarioSelecionado = null;
+let modoEdicaoFuncionario = false;
 
 async function carregarFuncionarios() {
 
@@ -419,6 +421,14 @@ async function carregarFuncionarios() {
             funcionarios
         );
 
+        const funcionariosCount =
+            document.getElementById("funcionariosCount");
+
+        if (funcionariosCount) {
+            funcionariosCount.textContent =
+                `${funcionarios.length} FUNCIONÁRIOS`;
+        }
+
         renderizarFuncionarios();
 
     } catch (erro) {
@@ -438,29 +448,37 @@ async function carregarFuncionarios() {
 async function cadastrarNovoFuncionario() {
 
     const funcionario = {
+
         nome:
             document.getElementById("funcionarioNome").value.trim(),
+
         matricula:
             document.getElementById("funcionarioMatricula").value.trim(),
+
         cpf:
             document.getElementById("funcionarioCpf").value.trim(),
+
         cargo:
             document.getElementById("funcionarioCargo").value.trim(),
+
         idade:
             Number(document.getElementById("funcionarioIdade").value),
+
         telefone:
             document.getElementById("funcionarioTelefone").value.trim(),
+
         setor:
             document.getElementById("funcionarioSetor").value,
+
         admissao:
             document.getElementById("funcionarioAdmissao").value,
+
         email:
             document.getElementById("funcionarioEmail").value.trim(),
+
         observacoes:
             document.getElementById("funcionarioObservacoes").value.trim()
     };
-
-
 
 
     // =====================================================
@@ -468,126 +486,109 @@ async function cadastrarNovoFuncionario() {
     // =====================================================
 
     if (!funcionario.nome) {
-
         alert("Informe o nome do funcionário.");
         return;
-
     }
 
     if (!funcionario.matricula) {
-
         alert("Informe a matrícula do funcionário.");
         return;
-
     }
 
     if (!funcionario.cpf) {
-
         alert("Informe o CPF do funcionário.");
         return;
-
     }
 
     if (!funcionario.cargo) {
-
         alert("Informe o cargo do funcionário.");
         return;
-
     }
 
     if (!funcionario.idade) {
-
         alert("Informe a idade do funcionário.");
         return;
-
     }
 
     if (!funcionario.setor) {
-
         alert("Selecione o setor do funcionário.");
         return;
-
     }
 
     if (!funcionario.admissao) {
-
         alert("Informe a data de admissão.");
         return;
-
     }
 
-
     try {
+        let resposta;
+        if (modoEdicaoFuncionario) {
 
-        const resposta = await fetch(
-            `${API_URL}/funcionarios`,
-            {
-                method: "POST",
+            funcionario.id = funcionarioSelecionado.id;
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+            resposta = await fetch(
+                `${API_URL}/funcionarios/${funcionario.id}`,
+                {
+                    method: "PUT",
 
-                body: JSON.stringify(funcionario)
-            }
-        );
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
 
+                    body: JSON.stringify(funcionario)
+                }
+            );
+        }
+        else {
+            resposta = await fetch(
+                `${API_URL}/funcionarios`,
+                {
+                    method: "POST",
 
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(funcionario)
+                }
+            );
+        }
         if (!resposta.ok) {
 
-            const mensagem =
-                await resposta.text();
+            const mensagem = await resposta.text();
 
             throw new Error(
                 mensagem ||
                 `Erro HTTP: ${resposta.status}`
             );
-
         }
 
-
-        const funcionarioCriado =
-            await resposta.json();
-
-
-        console.log(
-            "Funcionário cadastrado:",
-            funcionarioCriado
-        );
-
-
-        // Atualiza a lista
         await carregarFuncionarios();
-
-
-        // Fecha o modal
         fecharCadastroFuncionario();
-
-
-        // Limpa formulário
         limparFormularioFuncionario();
 
+        if (modoEdicaoFuncionario) {
 
-        alert(
-            "Funcionário cadastrado com sucesso!"
-        );
+            alert(
+                "Funcionário atualizado com sucesso!"
+            );
+        } else {
 
-
-    } catch (erro) {
+            alert(
+                "Funcionário cadastrado com sucesso!"
+            );
+        }
+    }
+    catch (erro) {
 
         console.error(
-            "Erro ao cadastrar funcionário:",
+            "Erro ao salvar funcionário:",
             erro
         );
-
         alert(
-            `Não foi possível cadastrar o funcionário.\n\n${erro.message}`
+            `Não foi possível salvar o funcionário.\n\n${erro.message}`
         );
-
     }
-
-
-
 }
 
 function limparFormularioFuncionario() {
@@ -635,12 +636,35 @@ const fecharDetalhesFuncionario =
 const fecharDetalhesFuncionarioBotao =
     document.getElementById("fecharDetalhesFuncionarioBotao");
 
+const editarFuncionario =
+    document.getElementById("editarFuncionario");
+
+const removerFuncionario =
+    document.getElementById("removerFuncionario");
+
 if (cadastrarFuncionario) {
     cadastrarFuncionario.addEventListener(
         "click",
         cadastrarNovoFuncionario
     );
 }
+
+if (editarFuncionario) {
+
+    editarFuncionario.addEventListener(
+        "click",
+        editarFuncionarioSelecionado
+    );
+
+}
+
+if (removerFuncionario) {
+    removerFuncionario.addEventListener(
+        "click",
+        removerFuncionarioSelecionado
+    );
+}
+
 // =========================================================
 // ABRIR MODAL DE CADASTRO
 // =========================================================
@@ -651,10 +675,13 @@ function abrirCadastroFuncionario() {
         return;
     }
 
+    modoEdicaoFuncionario = false;
+    funcionarioSelecionado = null;
+
+    document.getElementById("cadastrarFuncionario").textContent = "CADASTRAR FUNCIONÁRIO";
+
     modalNovoFuncionario.classList.add("active");
-
 }
-
 
 // =========================================================
 // FECHAR MODAL DE CADASTRO
@@ -899,21 +926,15 @@ function renderizarFuncionarios() {
 
                 <div class="funcionario-card-info">
 
-                    <span>
-                        MATRÍCULA
-                    </span>
+                    <div>
+                        <span>MATRÍCULA:</span>
+                        <strong>${funcionario.matricula}</strong>
+                    </div>
 
-                    <strong>
-                        ${funcionario.matricula}
-                    </strong>
-
-                    <span>
-                        SETOR
-                    </span>
-
-                    <strong>
-                        ${funcionario.setor}
-                    </strong>
+                    <div>
+                        <span>SETOR:</span>
+                        <strong>${funcionario.setor}</strong>
+                    </div>
 
                 </div>
 
@@ -938,6 +959,54 @@ function renderizarFuncionarios() {
 
 }
 
+async function removerFuncionarioSelecionado() {
+    if (!funcionarioSelecionado) {
+        return;
+    }
+
+    const confirmar = confirm(
+        `Deseja realmente remover o funcionário "${funcionarioSelecionado.nome}"?`
+    );
+
+    if (!confirmar) {
+        return;
+    }
+
+    try {
+        const resposta = await fetch(
+            `${API_URL}/funcionarios/${funcionarioSelecionado.id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        if (!resposta.ok) {
+            const mensagem = await resposta.text();
+
+            throw new Error(
+                mensagem || `Erro HTTP: ${resposta.status}`
+            );
+        }
+
+        fecharModalDetalhesFuncionario();
+
+        funcionarioSelecionado = null;
+        modoEdicaoFuncionario = false;
+
+        await carregarFuncionarios();
+
+        alert("Funcionário removido com sucesso!");
+    } catch (erro) {
+        console.error(
+            "Erro ao remover funcionário:",
+            erro
+        );
+
+        alert(
+            `Não foi possível remover o funcionário.\n\n${erro.message}`
+        );
+    }
+}
 
 // =========================================================
 // EVENTOS DOS BOTÕES DE DETALHES
@@ -989,7 +1058,7 @@ function abrirDetalhesFuncionario(funcionario) {
     ) {
         return;
     }
-
+    funcionarioSelecionado = funcionario;
 
     document.getElementById(
         "detalhesFuncionarioNome"
@@ -998,7 +1067,7 @@ function abrirDetalhesFuncionario(funcionario) {
 
 
     document.getElementById(
-        "detalhesFuncionarioCargo"
+        "detalhesFuncionarioCargoInfo"
     ).textContent =
         funcionario.cargo;
 
@@ -1026,10 +1095,10 @@ function abrirDetalhesFuncionario(funcionario) {
         funcionario.setor;
 
 
-    document.getElementById(
-        "detalhesFuncionarioAdmissao"
-    ).textContent =
-        funcionario.admissao;
+    document.getElementById("detalhesFuncionarioAdmissao").textContent =
+        funcionario.admissao
+            ? funcionario.admissao.split("T")[0]
+            : "-";
 
     document.getElementById(
         "detalhesFuncionarioTelefone"
@@ -1056,6 +1125,40 @@ function abrirDetalhesFuncionario(funcionario) {
         "active"
     );
 
+}
+
+function editarFuncionarioSelecionado() {
+
+    if (!funcionarioSelecionado) {
+        return;
+    }
+
+    modoEdicaoFuncionario = true;
+
+    document.getElementById("funcionarioNome").value = funcionarioSelecionado.nome || "";
+    document.getElementById("funcionarioMatricula").value = funcionarioSelecionado.matricula || "";
+    document.getElementById("funcionarioCpf").value = funcionarioSelecionado.cpf || "";
+    document.getElementById("funcionarioCargo").value = funcionarioSelecionado.cargo || "";
+    document.getElementById("funcionarioIdade").value = funcionarioSelecionado.idade || "";
+
+    const setor = funcionarioSelecionado.setor || "";
+
+    const setores = {
+        producao: "Produção",
+        usinagem: "Usinagem",
+        manutencao: "Manutenção"
+    };
+
+    document.getElementById("funcionarioSetor").value = setores[setor.toLowerCase()] || setor;
+    document.getElementById("funcionarioAdmissao").value = funcionarioSelecionado.admissao
+        ? funcionarioSelecionado.admissao.split("T")[0] : "";
+    document.getElementById("funcionarioTelefone").value = funcionarioSelecionado.telefone || "";
+    document.getElementById("funcionarioEmail").value = funcionarioSelecionado.email || "";
+    document.getElementById("funcionarioObservacoes").value = funcionarioSelecionado.observacoes || "";
+
+    fecharModalDetalhesFuncionario();
+    modalNovoFuncionario.classList.add("active");
+    document.getElementById("cadastrarFuncionario").textContent = "SALVAR ALTERAÇÕES";
 }
 
 // =========================================================

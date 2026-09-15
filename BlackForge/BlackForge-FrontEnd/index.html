@@ -34,6 +34,7 @@
                 <!-- DASHBOARD -->
                 <button class="menu-item active" data-section="dashboard" data-title="Dashboard">
                     <src name="arrow-forward-sharp"></src>
+                    <ion-icon name="menu-outline"></ion-icon>
                     <span>Início</span>
                 </button>
 
@@ -362,7 +363,7 @@
                     Não existem ordens de serviço cadastradas no sistema.
                 </h3>
                 <p>
-                    Crie uma nova ordem para iniciar uma operação.
+                    <!-- CAMPO VAZIO -->
                 </p>
                 <button type="button" class="secondary-button" id="criarOS">
                     CRIAR OS
@@ -634,8 +635,8 @@
                             EQUIPE
                         </h2>
                     </div>
-                    <span class="funcionarios-count">
-                        0 FUNCIONÁRIOS
+                    <span class="funcionarios-count" id="funcionariosCount">
+                        FUNCIONÁRIOS
                     </span>
                 </div>
 
@@ -2466,7 +2467,7 @@
 
                         <div class="material-form-group">
                             <label for="funcionarioMatricula">
-                                MATRÍCULA
+                                MATRÍCULA :
                             </label>
                             <input type="text" id="funcionarioMatricula" placeholder="Ex.: FUN-001">
                         </div>
@@ -2475,7 +2476,7 @@
 
                         <div class="material-form-group">
                             <label for="funcionarioCpf">
-                                CPF
+                                CPF :
                             </label>
                             <input type="text" id="funcionarioCpf" placeholder="000.000.000-00">
                         </div>
@@ -2509,19 +2510,19 @@
                                 <option value="">
                                     Selecione o setor
                                 </option>
-                                <option value="producao">
+                                <option value="Produção">
                                     Produção
                                 </option>
-                                <option value="usinagem">
+                                <option value="Usinagem">
                                     Usinagem
                                 </option>
-                                <option value="qualidade">
+                                <option value="Qualidade">
                                     Qualidade
                                 </option>
-                                <option value="administrativo">
+                                <option value="Administrativo">
                                     Administrativo
                                 </option>
-                                <option value="outro">
+                                <option value="Outro">
                                     Outro
                                 </option>
                             </select>
@@ -2651,7 +2652,7 @@
                     <div class="funcionario-detalhes-grid">
                         <div class="funcionario-info">
                             <span>
-                                MATRÍCULA
+                                MATRÍCULA :
                             </span>
                             <strong id="detalhesFuncionarioMatricula">
                                 -
@@ -2659,7 +2660,7 @@
                         </div>
                         <div class="funcionario-info">
                             <span>
-                                CPF
+                                CPF :
                             </span>
                             <strong id="detalhesFuncionarioCpf">
                                 -
@@ -2696,6 +2697,14 @@
                                 DATA DE ADMISSÃO
                             </span>
                             <strong id="detalhesFuncionarioAdmissao">
+                                -
+                            </strong>
+                        </div>
+                        <div class="funcionario-info">
+                            <span>
+                                IDADE
+                            </span>
+                            <strong id="detalhesFuncionarioIdade">
                                 -
                             </strong>
                         </div>
@@ -2745,10 +2754,36 @@
 
             <!-- ======================== AÇÕES ======================== -->
 
-            <div class="modal-material-footer">
-                <button class="btn-secondary" id="fecharDetalhesFuncionarioBotao" type="button">
+            <div class="modal-footer funcionario-detalhes-footer">
+
+                <div class="funcionario-detalhes-acoes">
+                    <button
+                        type="button"
+                        id="editarFuncionario"
+                        class="btn-editar-funcionario"
+                    >
+                        <ion-icon name="create-outline"></ion-icon>
+                        EDITAR
+                    </button>
+            
+                    <button
+                        type="button"
+                        id="removerFuncionario"
+                        class="btn-remover-funcionario"
+                    >
+                        <ion-icon name="trash-outline"></ion-icon>
+                        REMOVER
+                    </button>
+                </div>
+            
+                <button
+                    type="button"
+                    id="fecharDetalhesFuncionarioBotao"
+                    class="btn-secondary"
+                >
                     FECHAR
                 </button>
+            
             </div>
         </div>
     </div>

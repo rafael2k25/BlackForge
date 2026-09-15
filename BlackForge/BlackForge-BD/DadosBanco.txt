@@ -38,10 +38,10 @@ GO
 -- 4. Inserindo Funcionários
 -- ==========================================
 INSERT INTO Funcionarios (Nome, Matricula, CPF, Cargo, Idade, Telefone, Setor, DataAdmissao, Email, Observacoes) VALUES
-('Carlos Ferreiro', 'MAT-1001', '111.222.333-44', 'Mestre Forjador', 45, '(11) 99999-1111', 'Produção', '2015-03-10', 'carlos@blackforge.com', 'Especialista em aço damasco e ligas especiais.'),
-('Ana Soldadora', 'MAT-1002', '222.333.444-55', 'Soldadora TIG/MIG', 32, '(11) 98888-2222', 'Montagem', '2018-07-22', 'ana@blackforge.com', 'Possui certificação industrial.'),
-('Roberto Torneiro', 'MAT-1003', '333.444.555-66', 'Operador de Torno CNC', 28, '(11) 97777-3333', 'Usinagem', '2020-01-15', 'roberto@blackforge.com', NULL),
-('Julia Gerente', 'MAT-1004', '444.555.666-77', 'Engenheira de Produção', 38, '(11) 96666-4444', 'Administração', '2012-11-01', 'julia@blackforge.com', 'Supervisora geral do chão de fábrica.');
+('Carlos da Silva', 'MAT-4829103756', '111.222.333-44', 'Mestre Forjador', 45, '(79) 99999-1111', 'Produção', '2015-03-10', 'carlos@gmail.com', 'Especialista em aço damasco e ligas especiais.'),
+('Ana Carneiro', 'MAT-9173648205', '222.333.444-55', 'Soldadora TIG/MIG', 32, '(79) 98888-2222', 'Montagem', '2018-07-22', 'ana@gmail.com', 'Possui certificação industrial.'),
+('Roberto Gonsalves', 'MAT-3058274916', '333.444.555-66', 'Operador de Torno CNC', 28, '(79) 97777-3333', 'Usinagem', '2020-01-15', 'roberto@gmail.com', NULL),
+('Julia Santana', 'MAT-7641092835', '444.555.666-77', 'Engenheira de Produção', 38, '(79) 96666-4444', 'Administração', '2012-11-01', 'julia@gmail.com', 'Supervisora geral do chão de fábrica.');
 GO
 
 -- ==========================================

@@ -7,7 +7,7 @@
    PAINEL PRINCIPAL
    ========================================================= */
 
-   .funcionarios-panel {
+.funcionarios-panel {
 
     position: relative;
 
@@ -122,7 +122,7 @@
 
     border: 1px solid var(--border);
 
-    color: var(--text-secondary);
+    color: var(--text-primary);
 
     font-family: 'Share Tech Mono', monospace;
 
@@ -191,204 +191,191 @@
    GRID
    ========================================================= */
 
-.funcionarios-grid {
+   .funcionarios-grid {
     display: grid;
-    grid-template-columns:
-        repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
 }
-
 
 /* =========================================================
    CARD DO FUNCIONÁRIO
    ========================================================= */
 
 .funcionario-card {
-
     position: relative;
-
-    min-height: 260px;
-
-    padding: 22px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #313338,
-            #292b2f
-        );
-
+    min-height: 280px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(145deg, #32343a 0%, #2b2d31 55%, #26282c 100%);
     border: 1px solid var(--border);
-
     overflow: hidden;
-
-    transition:
-        transform 0.2s ease,
-        border-color 0.2s ease,
-        background 0.2s ease;
-
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-
 
 .funcionario-card::before {
-
     content: "";
-
     position: absolute;
-
     top: 0;
     left: 0;
-
     width: 100%;
     height: 2px;
-
-    background:
-        var(--yellow-dark);
-
+    background: linear-gradient(90deg, var(--yellow-dark), var(--yellow), transparent);
+    opacity: 0.9;
 }
 
+.funcionario-card::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 28px;
+    height: 28px;
+    border-right: 1px solid var(--yellow-dark);
+    border-bottom: 1px solid var(--yellow-dark);
+    opacity: 0.7;
+}
 
 .funcionario-card:hover {
-
-    transform: translateY(-3px);
-
-    background: var(--panel-hover);
-
+    transform: translateY(-4px);
+    background: linear-gradient(145deg, #36383e 0%, #2d2f34 55%, #282a2e 100%);
     border-color: var(--border-yellow);
-
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22), 0 0 18px rgba(240, 200, 8, 0.05);
 }
-
 
 /* =========================================================
    AVATAR
    ========================================================= */
 
 .funcionario-avatar {
-    width: 64px;
-    height: 64px;
-    margin-bottom: 16px;
+    width: 58px;
+    height: 58px;
+    margin: 22px 22px 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--bg-tertiary);
+    flex-shrink: 0;
+    background: linear-gradient(135deg, var(--bg-tertiary), var(--panel-dark));
     border: 1px solid var(--border);
-    border-radius: 50%;
+    border-radius: 8px;
     color: var(--yellow);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.015);
+    position: relative;
 }
 
+.funcionario-avatar::after {
+    content: "";
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    width: 6px;
+    height: 6px;
+    background: var(--success);
+    border-radius: 50%;
+    box-shadow: 0 0 7px rgba(87, 199, 108, 0.45);
+}
 
 .funcionario-card h3 {
-
-    margin-bottom: 3px;
-
+    margin: 0 22px 4px;
     color: var(--text-primary);
-
-    font-size: 20px;
-
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 21px;
     font-weight: 600;
-
+    letter-spacing: 0.5px;
+    line-height: 1.1;
 }
 
 
 .funcionario-card-cargo {
-
-    display: block;
-
-    margin-bottom: 18px;
-
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0 22px 18px;
     color: var(--yellow);
-
     font-family: 'Share Tech Mono', monospace;
-
-    font-size: 10px;
-
-    letter-spacing: 1px;
-
+    font-size: 9px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
-
 }
 
+.funcionario-card-cargo::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    flex-shrink: 0;
+    background: var(--yellow);
+    box-shadow: 0 0 6px rgba(240, 200, 8, 0.35);
+}
 
 .funcionario-card-info {
-
     display: flex;
-
     flex-direction: column;
+    gap: 8px;
 
-    gap: 7px;
+    margin: 0 18px 14px;
+    padding: 12px 0;
 
-    margin-bottom: 20px;
-
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
 }
 
+.funcionario-card-info > div {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 
 .funcionario-card-info span {
-
     color: var(--text-secondary);
-
     font-family: 'Share Tech Mono', monospace;
-
-    font-size: 10px;
-
+    font-size: 9px;
+    letter-spacing: 1px;
 }
-
 
 .funcionario-card-info strong {
-
-    color: var(--text-secondary);
-
-    font-size: 13px;
-
-    font-weight: 500;
-
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
 }
 
+.funcionario-card-info span,
+.funcionario-card-info strong {
+    display: inline;
+}
 
 /* =========================================================
    BOTÃO DO CARD
    ========================================================= */
 
 .funcionario-card-button {
-
-    width: 100%;
-
-    padding: 9px 12px;
-
-    background: transparent;
-
+    width: calc(100% - 44px);
+    margin: auto 22px 18px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(240, 200, 8, 0.025);
     border: 1px solid var(--border);
-
-    color: var(--text-secondary);
-
+    color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
-
-    font-size: 13px;
-
+    font-size: 12px;
     font-weight: 600;
-
-    letter-spacing: 0.7px;
-
+    letter-spacing: 1px;
     cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease;
-
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 
 .funcionario-card-button:hover {
-
     background: rgba(240, 200, 8, 0.08);
-
     border-color: var(--border-yellow);
-
     color: var(--yellow-bright);
-
+    box-shadow: inset 0 0 12px rgba(240, 200, 8, 0.025);
 }
 
 
@@ -397,44 +384,28 @@
    ========================================================= */
 
 .funcionario-detalhes-grid {
-
     display: grid;
-
     grid-template-columns:
         repeat(2, minmax(0, 1fr));
-
     gap: 12px;
-
 }
 
 
 .funcionario-info {
-
     min-height: 70px;
-
     padding: 13px 15px;
-
     background: var(--bg-tertiary);
-
     border: 1px solid var(--border);
-
 }
 
 
 .funcionario-info span {
-
     display: block;
-
     margin-bottom: 7px;
-
     color: var(--text-secondary);
-
     font-family: 'Share Tech Mono', monospace;
-
     font-size: 9px;
-
     letter-spacing: 1px;
-
 }
 
 
@@ -517,6 +488,125 @@
 
 }
 
+/* =========================================================
+   BOTÕES - DETALHES DO FUNCIONÁRIO
+   ========================================================= */
+
+.funcionario-detalhes-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.funcionario-detalhes-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    transform: translate(-9px, -9px);
+}
+
+.funcionario-detalhes-acoes {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-editar-funcionario {
+    height: 40px;
+    padding: 0 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid var(--yellow);
+    border-radius: 5px;
+    background: rgba(240, 200, 8, 0.08);
+    color: var(--yellow);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-editar-funcionario ion-icon {
+    font-size: 17px;
+}
+
+.btn-editar-funcionario:hover {
+    background: var(--yellow);
+    color: var(--bg-primary);
+    box-shadow: 0 0 14px rgba(240, 200, 8, 0.25);
+}
+
+.btn-editar-funcionario:active {
+    transform: scale(0.97);
+}
+
+.btn-remover-funcionario {
+    height: 40px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid var(--danger);
+    border-radius: 5px;
+    background: rgba(237, 66, 69, 0.08);
+    color: var(--danger);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-remover-funcionario ion-icon {
+    font-size: 17px;
+}
+
+.btn-remover-funcionario:hover {
+    background: var(--danger);
+    color: var(--text-primary);
+    box-shadow: 0 0 14px rgba(237, 66, 69, 0.25);
+}
+
+.btn-remover-funcionario:active {
+    transform: scale(0.97);
+}
+
+.funcionario-detalhes-footer .btn-secondary {
+    height: 40px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--panel-light);
+    color: var(--text-secondary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.funcionario-detalhes-footer .btn-secondary:hover {
+    border-color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.funcionario-detalhes-footer .btn-secondary:active {
+    transform: scale(0.97);
+}
 
 /* =========================================================
    RESPONSIVIDADE
@@ -525,10 +615,8 @@
 @media (max-width: 1100px) {
 
     .funcionarios-grid {
-
         grid-template-columns:
             repeat(2, minmax(0, 1fr));
-
     }
 
 }
@@ -537,27 +625,21 @@
 @media (max-width: 700px) {
 
     .funcionarios-header {
-
         align-items: flex-start;
-
         flex-direction: column;
-
         gap: 12px;
 
     }
 
 
     .funcionarios-grid {
-
         grid-template-columns: 1fr;
 
     }
 
 
     .funcionario-detalhes-grid {
-
         grid-template-columns: 1fr;
-
     }
 
 }
@@ -623,7 +705,7 @@
     letter-spacing: 1px;
 }
 
-.relatorio-filtros-header > ion-icon {
+.relatorio-filtros-header>ion-icon {
     color: var(--yellow);
     font-size: 20px;
 }
@@ -746,7 +828,7 @@
     letter-spacing: 0.8px;
 }
 
-.relatorio-card-header > ion-icon {
+.relatorio-card-header>ion-icon {
     color: var(--yellow);
     font-size: 20px;
 }
