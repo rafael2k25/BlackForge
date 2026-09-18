@@ -246,10 +246,10 @@
                         ORDENS EM PROCESSAMENTO
                     </div>
                 </div>
-                <div class="dashboard-card">
+                <div class="dashboard-card warning-card">
                     <div class="card-top">
                         <span>03</span>
-                        <span class="card-status active">
+                        <span class="card-status warning">
                             STATUS #3
                         </span>
                     </div>
@@ -257,21 +257,7 @@
                         0
                     </strong>
                     <div class="card-footer">
-                        EQUIPAMENTOS OPERACIONAIS
-                    </div>
-                </div>
-                <div class="dashboard-card warning-card">
-                    <div class="card-top">
-                        <span>04</span>
-                        <span class="card-status warning">
-                            STATUS #4
-                        </span>
-                    </div>
-                    <strong>
-                        0
-                    </strong>
-                    <div class="card-footer">
-                        MATERIAIS EM NÍVEL CRÍTICO
+                        ESTOQUE
                     </div>
                 </div>
             </div>
@@ -1805,12 +1791,6 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="dataInicioOS">
-                            DATA DE INÍCIO
-                        </label>
-                        <input type="date" id="dataInicioOS">
-                    </div>
-                    <div class="form-group">
                         <label for="dataEntregaOS">
                             PREVISÃO DE ENTREGA
                         </label>
@@ -1822,46 +1802,6 @@
                         </label>
                         <input type="text" id="responsavelOS" placeholder="Responsável pela OS">
                     </div>
-                </div>
-            </div>
-
-            <!-- ================ MATERIAIS ================ -->
-
-            <div class="os-block">
-                <div class="os-block-header">
-                    <div>
-                        <span>
-                            ● MATERIAIS
-                        </span>
-                        <h3>
-                            Materiais Utilizados
-                        </h3>
-                    </div>
-                    <button type="button" class="os-add-button" id="adicionarMaterial">
-                        <ion-icon name="add-sharp"></ion-icon>
-                        ADICIONAR
-                    </button>
-                </div>
-                <div class="os-table-wrapper">
-                    <table class="os-table">
-                        <thead>
-                            <tr>
-                                <th>MATERIAL</th>
-                                <th>QUANTIDADE</th>
-                                <th>UNIDADE</th>
-                                <th>VALOR UNIT.</th>
-                                <th>SUBTOTAL</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="listaMateriais">
-                            <tr class="os-table-empty">
-                                <td colspan="6">
-                                    Nenhum material adicionado à ordem.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 </div>
             </div>
 

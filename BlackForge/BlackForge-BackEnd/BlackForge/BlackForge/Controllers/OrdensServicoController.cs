@@ -235,8 +235,7 @@ namespace BlackForge.Controllers
             ordemExistente.Endereco = ordem.Endereco;
             ordemExistente.DataAbertura = ordem.DataAbertura;
             ordemExistente.DescricaoServico = ordem.DescricaoServico;
-            ordemExistente.TipoServico = ordem.TipoServico;
-            ordemExistente.DataInicio = ordem.DataInicio;
+            ordemExistente.TipoServico = ordem.TipoServico;           
             ordemExistente.DataEntrega = ordem.DataEntrega;
             ordemExistente.FuncionarioId = ordem.FuncionarioId;
             ordemExistente.ValorMateriais = ordem.ValorMateriais;

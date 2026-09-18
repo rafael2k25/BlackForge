@@ -106,9 +106,7 @@ function atualizarDataHora() {
 atualizarDataHora();
 setInterval(atualizarDataHora, 1000);
 
-// =========================================================
-// MODAL - ORDEM DE SERVIÇO
-// =========================================================
+// ORDEM DE SERVIÇO
 
 const modalOS = document.getElementById("modalOS");
 const novaOS = document.getElementById("novaOS");
@@ -116,49 +114,23 @@ const criarOS = document.getElementById("criarOS");
 const fecharModalOS = document.getElementById("fecharModalOS");
 const cancelarOS = document.getElementById("cancelarOS");
 
-// =========================================================
-// ABRIR MODAL
-// =========================================================
-
 function abrirModalOS() {
     modalOS.classList.add("active");
     document.body.style.overflow = "hidden";
 }
-
-// =========================================================
-// FECHAR MODAL
-// =========================================================
-
 function fecharOS() {
     modalOS.classList.remove("active");
     document.body.style.overflow = "";
 }
-
-
-// =========================================================
-// BOTÕES
-// =========================================================
-
 novaOS.addEventListener("click", abrirModalOS);
 criarOS.addEventListener("click", abrirModalOS);
 fecharModalOS.addEventListener("click", fecharOS);
 cancelarOS.addEventListener("click", fecharOS);
-
-// =========================================================
-// FECHAR CLICANDO FORA DO MODAL
-// =========================================================
-
 modalOS.addEventListener("click", function (event) {
     if (event.target === modalOS) {
         fecharOS();
     }
 });
-
-
-// =========================================================
-// FECHAR COM ESC
-// =========================================================
-
 document.addEventListener("keydown", function (event) {
     if (
         event.key === "Escape" &&
@@ -168,9 +140,148 @@ document.addEventListener("keydown", function (event) {
     }
 });
 
-// =========================================================
-// GRÁFICOS DASHBOARD
-// =========================================================
+// ORDEM DE SERVIÇO
+
+const salvarOS = document.getElementById("salvarOS");
+const salvarImprimirOS = document.getElementById("salvarImprimirOS");
+
+async function cadastrarOrdemServico() {
+    const ordem = {
+        numeroOS:
+            document.getElementById("numeroOS").value.trim(),
+        cliente:
+            document.getElementById("clienteOS").value.trim(),
+        contato:
+            document.getElementById("contatoOS").value.trim(),
+        endereco:
+            document.getElementById("enderecoOS").value.trim(),
+        dataAbertura:
+            document.getElementById("dataOS").value,
+        descricaoServico:
+            document.getElementById("descricaoOS").value.trim(),
+        tipoServico:
+            document.getElementById("tipoServico").value,
+        dataInicio:
+            document.getElementById("dataInicioOS").value,
+        dataEntrega:
+            document.getElementById("dataEntregaOS").value,
+        funcionarioId:
+            null,
+        valorMaoObra:
+            Number(document.getElementById("valorMaoObra").value) || 0,
+        desconto:
+            Number(document.getElementById("descontoOS").value) || 0,
+        condicaoPagamento:
+            document.getElementById("condicaoPagamento").value,
+        observacoes:
+            document.getElementById("observacoesOS").value.trim(),
+        materiais: []
+    };
+    if (!ordem.numeroOS) {
+        alert("Informe o número da OS.");
+        return;
+    }
+    if (!ordem.cliente) {
+        alert("Informe o cliente.");
+        return;
+    }
+    if (!ordem.descricaoServico) {
+        alert("Informe a descrição do serviço.");
+        return;
+    }
+    if (!ordem.tipoServico) {
+        alert("Selecione o tipo de serviço.");
+        return;
+    }
+    try {
+        const resposta = await fetch(
+            `${API_URL}/OrdensServico`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(ordem)
+            }
+        );
+        if (!resposta.ok) {
+            const mensagem = await resposta.text();
+            throw new Error(
+                mensagem ||
+                `Erro HTTP: ${resposta.status}`
+            );
+        }
+        const ordemCriada = await resposta.json();
+        console.log(
+            "Ordem de serviço criada:",
+            ordemCriada
+        );
+        alert(
+            `Ordem de serviço ${ordemCriada.numeroOS} criada com sucesso!`
+        );
+        fecharOS();
+        limparFormularioOS();
+    }
+    catch (erro) {
+        console.error(
+            "Erro ao cadastrar ordem de serviço:",
+            erro
+        );
+        alert(
+            `Não foi possível cadastrar a ordem de serviço.\n\n${erro.message}`
+        );
+    }
+}
+
+// LIMPAR FORMULÁRIO
+
+function limparFormularioOS() {
+
+    document.getElementById("clienteOS").value = "";
+    document.getElementById("contatoOS").value = "";
+    document.getElementById("enderecoOS").value = "";
+    document.getElementById("numeroOS").value = "";
+    document.getElementById("dataOS").value = "";
+
+    document.getElementById("descricaoOS").value = "";
+
+    document.getElementById("tipoServico").value = "";
+    document.getElementById("dataInicioOS").value = "";
+    document.getElementById("dataEntregaOS").value = "";
+    document.getElementById("responsavelOS").value = "";
+
+    document.getElementById("valorMaoObra").value = "0.00";
+    document.getElementById("descontoOS").value = "0.00";
+
+    document.getElementById("condicaoPagamento").value = "";
+    document.getElementById("observacoesOS").value = "";
+
+    document.getElementById("valorMateriais").value = "0.00";
+    document.getElementById("valorTotalOS").textContent = "R$ 0,00";
+
+    const listaMateriais =
+        document.getElementById("listaMateriais");
+
+    if (listaMateriais) {
+
+        listaMateriais.innerHTML = `
+            <tr class="os-table-empty">
+                <td colspan="6">
+                    Nenhum material adicionado à ordem.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+if (salvarOS) {
+
+    salvarOS.addEventListener(
+        "click",
+        cadastrarOrdemServico
+    );
+
+}
 
 const ctx = document.getElementById("productionChart");
 const productionChart = new Chart(ctx, {
@@ -236,107 +347,57 @@ const productionChart = new Chart(ctx, {
     }
 });
 
-// =========================================================
-// MODAL NOVA MÁQUINA
-// =========================================================
+// NOVA MÁQUINA
 
 const abrirModalMaquina = document.getElementById("abrirModalMaquina");
 const modalMaquina = document.getElementById("modalMaquina");
 const fecharModalMaquina = document.getElementById("fecharModalMaquina");
 const cancelarModalMaquina = document.getElementById("cancelarModalMaquina");
-
-// ABRIR MODAL
-
 abrirModalMaquina.addEventListener("click", () => {
     modalMaquina.classList.add("active");
 });
-
-// FECHAR PELO X
-
 fecharModalMaquina.addEventListener("click", () => {
     modalMaquina.classList.remove("active");
 });
-
-// FECHAR PELO CANCELAR
-
 cancelarModalMaquina.addEventListener("click", () => {
     modalMaquina.classList.remove("active");
 });
-
-// FECHAR CLICANDO FORA DO MODAL
-
 modalMaquina.addEventListener("click", (event) => {
     if (event.target === modalMaquina) {
         modalMaquina.classList.remove("active");
     }
 });
 
-// =========================================================
-// MODAL - NOVO MATERIAL
-// =========================================================
+// NOVO MATERIAL
 
 const modalNovoMaterial = document.getElementById("modalNovoMaterial");
-
 const abrirModalMaterial = document.getElementById("abrirModalMaterial");
-
 const cadastrarMaterialVazio = document.getElementById("cadastrarMaterialVazio");
-
 const fecharModalMaterial = document.getElementById("fecharModalMaterial");
-
 const cancelarMaterial = document.getElementById("cancelarMaterial");
 
-// =========================================================
-// ABRIR MODAL
-// =========================================================
-
 function abrirModalNovoMaterial() {
-
     modalNovoMaterial.classList.add("active");
-
 }
-
-// =========================================================
-// FECHAR MODAL
-// =========================================================
-
 function fecharModalNovoMaterial() {
-
     modalNovoMaterial.classList.remove("active");
-
 }
-
-// =========================================================
-// BOTÕES DE ABERTURA
-// =========================================================
-
 abrirModalMaterial.addEventListener(
     "click",
     abrirModalNovoMaterial
 );
-
 cadastrarMaterialVazio.addEventListener(
     "click",
     abrirModalNovoMaterial
 );
-
-// =========================================================
-// BOTÕES DE FECHAMENTO
-// =========================================================
-
 fecharModalMaterial.addEventListener(
     "click",
     fecharModalNovoMaterial
 );
-
 cancelarMaterial.addEventListener(
     "click",
     fecharModalNovoMaterial
 );
-
-// =========================================================
-// FECHAR CLICANDO FORA
-// =========================================================
-
 modalNovoMaterial.addEventListener("click", (event) => {
 
     if (event.target === modalNovoMaterial) {
@@ -347,40 +408,31 @@ modalNovoMaterial.addEventListener("click", (event) => {
 
 });
 
-// =========================================================
-// MODAL NOVO LOTE
-// =========================================================
+// NOVO LOTE
 
 const modalNovoLote = document.getElementById("modalNovoLote");
 const abrirModalLote = document.getElementById("abrirModalLote");
 const cadastrarLoteVazio = document.getElementById("cadastrarLoteVazio");
 const fecharModalLote = document.getElementById("fecharModalLote");
 const cancelarLote = document.getElementById("cancelarLote");
-
 function abrirModalNovoLote() {
     modalNovoLote.classList.add("active");
 }
-
 function fecharModalNovoLote() {
     modalNovoLote.classList.remove("active");
 }
-
 if (abrirModalLote) {
     abrirModalLote.addEventListener("click", abrirModalNovoLote);
 }
-
 if (cadastrarLoteVazio) {
     cadastrarLoteVazio.addEventListener("click", abrirModalNovoLote);
 }
-
 if (fecharModalLote) {
     fecharModalLote.addEventListener("click", fecharModalNovoLote);
 }
-
 if (cancelarLote) {
     cancelarLote.addEventListener("click", fecharModalNovoLote);
 }
-
 if (modalNovoLote) {
     modalNovoLote.addEventListener("click", (event) => {
         if (event.target === modalNovoLote) {
@@ -389,137 +441,98 @@ if (modalNovoLote) {
     });
 }
 
-
-
-
-// =========================================================
 // FUNCIONÁRIOS
-// =========================================================
 
 let funcionarios = [];
 let funcionarioSelecionado = null;
 let modoEdicaoFuncionario = false;
 
 async function carregarFuncionarios() {
-
     try {
-
         const resposta = await fetch(
             `${API_URL}/funcionarios`
         );
-
         if (!resposta.ok) {
             throw new Error(
                 `Erro HTTP: ${resposta.status}`
             );
         }
-
         funcionarios = await resposta.json();
-
         console.log(
             "Funcionários carregados:",
             funcionarios
         );
-
         const funcionariosCount =
             document.getElementById("funcionariosCount");
-
         if (funcionariosCount) {
             funcionariosCount.textContent =
                 `${funcionarios.length} FUNCIONÁRIOS`;
         }
-
         renderizarFuncionarios();
-
     } catch (erro) {
-
         console.error(
             "Erro ao carregar funcionários:",
             erro
         );
     }
-
 }
 
-// =========================================================
 // CADASTRAR FUNCIONÁRIO
-// =========================================================
 
 async function cadastrarNovoFuncionario() {
-
     const funcionario = {
-
         nome:
             document.getElementById("funcionarioNome").value.trim(),
-
         matricula:
             document.getElementById("funcionarioMatricula").value.trim(),
-
         cpf:
             document.getElementById("funcionarioCpf").value.trim(),
-
         cargo:
             document.getElementById("funcionarioCargo").value.trim(),
-
         idade:
             Number(document.getElementById("funcionarioIdade").value),
-
         telefone:
             document.getElementById("funcionarioTelefone").value.trim(),
-
         setor:
             document.getElementById("funcionarioSetor").value,
-
         admissao:
             document.getElementById("funcionarioAdmissao").value,
-
         email:
             document.getElementById("funcionarioEmail").value.trim(),
-
         observacoes:
             document.getElementById("funcionarioObservacoes").value.trim()
     };
 
-
-    // =====================================================
-    // VALIDAÇÕES
-    // =====================================================
+// VALIDAÇÕES
 
     if (!funcionario.nome) {
         alert("Informe o nome do funcionário.");
         return;
     }
-
     if (!funcionario.matricula) {
         alert("Informe a matrícula do funcionário.");
         return;
     }
-
     if (!funcionario.cpf) {
         alert("Informe o CPF do funcionário.");
         return;
     }
-
     if (!funcionario.cargo) {
         alert("Informe o cargo do funcionário.");
         return;
     }
-
     if (!funcionario.idade) {
         alert("Informe a idade do funcionário.");
         return;
     }
-
     if (!funcionario.setor) {
         alert("Selecione o setor do funcionário.");
         return;
     }
-
     if (!funcionario.admissao) {
         alert("Informe a data de admissão.");
         return;
     }
-
     try {
         let resposta;
         if (modoEdicaoFuncionario) {
@@ -544,43 +557,34 @@ async function cadastrarNovoFuncionario() {
                 `${API_URL}/funcionarios`,
                 {
                     method: "POST",
-
                     headers: {
                         "Content-Type": "application/json"
                     },
-
                     body: JSON.stringify(funcionario)
                 }
             );
         }
         if (!resposta.ok) {
-
             const mensagem = await resposta.text();
-
             throw new Error(
                 mensagem ||
                 `Erro HTTP: ${resposta.status}`
             );
         }
-
         await carregarFuncionarios();
         fecharCadastroFuncionario();
         limparFormularioFuncionario();
-
         if (modoEdicaoFuncionario) {
-
             alert(
                 "Funcionário atualizado com sucesso!"
             );
         } else {
-
             alert(
                 "Funcionário cadastrado com sucesso!"
             );
         }
     }
     catch (erro) {
-
         console.error(
             "Erro ao salvar funcionário:",
             erro
@@ -590,9 +594,7 @@ async function cadastrarNovoFuncionario() {
         );
     }
 }
-
 function limparFormularioFuncionario() {
-
     document.getElementById("funcionarioNome").value = "";
     document.getElementById("funcionarioMatricula").value = "";
     document.getElementById("funcionarioCpf").value = "";
@@ -605,300 +607,168 @@ function limparFormularioFuncionario() {
     document.getElementById("funcionarioObservacoes").value = "";
 }
 
-// =========================================================
 // ELEMENTOS
-// =========================================================
 
 const cadastrarFuncionario =
     document.getElementById("cadastrarFuncionario");
-
 const modalNovoFuncionario =
     document.getElementById("modalNovoFuncionario");
-
 const modalDetalhesFuncionario =
     document.getElementById("modalDetalhesFuncionario");
-
 const abrirModalFuncionario =
     document.getElementById("abrirModalFuncionario");
-
 const cadastrarPrimeiroFuncionario =
     document.getElementById("cadastrarPrimeiroFuncionario");
-
 const fecharModalFuncionario =
     document.getElementById("fecharModalFuncionario");
-
 const cancelarFuncionario =
     document.getElementById("cancelarFuncionario");
-
 const fecharDetalhesFuncionario =
     document.getElementById("fecharDetalhesFuncionario");
-
 const fecharDetalhesFuncionarioBotao =
     document.getElementById("fecharDetalhesFuncionarioBotao");
-
 const editarFuncionario =
     document.getElementById("editarFuncionario");
-
 const removerFuncionario =
     document.getElementById("removerFuncionario");
-
 if (cadastrarFuncionario) {
     cadastrarFuncionario.addEventListener(
         "click",
         cadastrarNovoFuncionario
     );
 }
-
 if (editarFuncionario) {
 
     editarFuncionario.addEventListener(
         "click",
         editarFuncionarioSelecionado
     );
-
 }
-
 if (removerFuncionario) {
     removerFuncionario.addEventListener(
         "click",
         removerFuncionarioSelecionado
     );
 }
-
-// =========================================================
-// ABRIR MODAL DE CADASTRO
-// =========================================================
-
 function abrirCadastroFuncionario() {
-
     if (!modalNovoFuncionario) {
         return;
     }
-
     modoEdicaoFuncionario = false;
     funcionarioSelecionado = null;
-
     document.getElementById("cadastrarFuncionario").textContent = "CADASTRAR FUNCIONÁRIO";
-
     modalNovoFuncionario.classList.add("active");
 }
-
-// =========================================================
-// FECHAR MODAL DE CADASTRO
-// =========================================================
-
 function fecharCadastroFuncionario() {
 
     if (!modalNovoFuncionario) {
         return;
     }
-
     modalNovoFuncionario.classList.remove("active");
-
 }
-
-
-// =========================================================
-// ABRIR MODAL
-// =========================================================
-
 if (abrirModalFuncionario) {
-
     abrirModalFuncionario.addEventListener(
         "click",
         abrirCadastroFuncionario
     );
-
 }
-
-
 if (cadastrarPrimeiroFuncionario) {
-
     cadastrarPrimeiroFuncionario.addEventListener(
         "click",
         abrirCadastroFuncionario
     );
-
 }
-
-
-// =========================================================
-// FECHAR MODAL
-// =========================================================
-
 if (fecharModalFuncionario) {
-
     fecharModalFuncionario.addEventListener(
         "click",
         fecharCadastroFuncionario
     );
-
 }
-
-
 if (cancelarFuncionario) {
-
     cancelarFuncionario.addEventListener(
         "click",
         fecharCadastroFuncionario
     );
-
 }
-
-
-// =========================================================
-// FECHAR AO CLICAR NO FUNDO
-// =========================================================
-
 if (modalNovoFuncionario) {
-
     modalNovoFuncionario.addEventListener(
         "click",
         function (event) {
-
             if (
                 event.target === modalNovoFuncionario
             ) {
-
                 fecharCadastroFuncionario();
-
             }
-
         }
     );
-
 }
-
-
-// =========================================================
-// FECHAR MODAL DE DETALHES
-// =========================================================
-
 function fecharModalDetalhesFuncionario() {
-
     if (!modalDetalhesFuncionario) {
         return;
     }
-
     modalDetalhesFuncionario.classList.remove("active");
-
 }
-
-
 if (fecharDetalhesFuncionario) {
-
     fecharDetalhesFuncionario.addEventListener(
         "click",
         fecharModalDetalhesFuncionario
     );
-
 }
-
-
 if (fecharDetalhesFuncionarioBotao) {
-
     fecharDetalhesFuncionarioBotao.addEventListener(
         "click",
         fecharModalDetalhesFuncionario
     );
-
 }
-
-
 if (modalDetalhesFuncionario) {
-
     modalDetalhesFuncionario.addEventListener(
         "click",
         function (event) {
-
             if (
                 event.target === modalDetalhesFuncionario
             ) {
-
                 fecharModalDetalhesFuncionario();
-
             }
-
         }
     );
-
 }
-
-
-// =========================================================
 // ESC
-// =========================================================
 
 document.addEventListener(
     "keydown",
     function (event) {
-
         if (event.key !== "Escape") {
             return;
         }
-
-
         fecharCadastroFuncionario();
-
         fecharModalDetalhesFuncionario();
-
     }
 );
 
-
-// =========================================================
 // RENDERIZAR FUNCIONÁRIOS
-// =========================================================
 
 function renderizarFuncionarios() {
-
     const grid =
         document.getElementById("funcionariosGrid");
-
     const empty =
         document.getElementById("funcionariosEmpty");
-
-
     if (!grid || !empty) {
         return;
     }
-
-
-    // Limpa o grid
-
     grid.innerHTML = "";
-
-
-    // Nenhum funcionário
-
     if (funcionarios.length === 0) {
-
         empty.style.display = "flex";
-
         grid.style.display = "none";
-
         return;
-
     }
-
-
-    // Existem funcionários
-
     empty.style.display = "none";
-
     grid.style.display = "grid";
-
-
     funcionarios.forEach(
         function (funcionario, index) {
-
             const card =
                 document.createElement("div");
-
             card.className =
                 "funcionario-card";
-
-
             const iniciais =
                 funcionario.nome
                     .split(" ")
@@ -908,36 +778,26 @@ function renderizarFuncionarios() {
                     .slice(0, 2)
                     .join("")
                     .toUpperCase();
-
-
             card.innerHTML = `
-
                 <div class="funcionario-avatar">
                     ${iniciais}
                 </div>
-
                 <h3>
                     ${funcionario.nome}
                 </h3>
-
                 <span class="funcionario-card-cargo">
                     ${funcionario.cargo}
                 </span>
-
                 <div class="funcionario-card-info">
-
                     <div>
                         <span>MATRÍCULA:</span>
                         <strong>${funcionario.matricula}</strong>
                     </div>
-
                     <div>
                         <span>SETOR:</span>
                         <strong>${funcionario.setor}</strong>
                     </div>
-
                 </div>
-
                 <button
                     class="funcionario-card-button"
                     type="button"
@@ -945,33 +805,22 @@ function renderizarFuncionarios() {
                 >
                     VER DETALHES →
                 </button>
-
             `;
-
-
             grid.appendChild(card);
-
         }
     );
-
-
     adicionarEventosDetalhes();
-
 }
-
 async function removerFuncionarioSelecionado() {
     if (!funcionarioSelecionado) {
         return;
     }
-
     const confirmar = confirm(
         `Deseja realmente remover o funcionário "${funcionarioSelecionado.nome}"?`
     );
-
     if (!confirmar) {
         return;
     }
-
     try {
         const resposta = await fetch(
             `${API_URL}/funcionarios/${funcionarioSelecionado.id}`,
@@ -979,10 +828,8 @@ async function removerFuncionarioSelecionado() {
                 method: "DELETE"
             }
         );
-
         if (!resposta.ok) {
             const mensagem = await resposta.text();
-
             throw new Error(
                 mensagem || `Erro HTTP: ${resposta.status}`
             );
