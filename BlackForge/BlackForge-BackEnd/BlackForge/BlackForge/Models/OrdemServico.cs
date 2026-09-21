@@ -13,6 +13,8 @@
         public DateTime? DataEntrega { get; set; }
         public int? FuncionarioId { get; set; }
         public Funcionario? Funcionario { get; set; }
+        public int? MaquinaId { get; set; }
+        public Maquina? Maquina { get; set; }
         public decimal ValorMateriais { get; set; }
         public decimal ValorMaoObra { get; set; }
         public decimal Desconto { get; set; }
@@ -21,5 +23,7 @@
         public string? Observacoes { get; set; }
         public ICollection<OrdemServicoMaterial> Materiais { get; set; }
             = new List<OrdemServicoMaterial>();
+        public ICollection<ProcessoProducao> ProcessosProducao { get; set; }
+            = new List<ProcessoProducao>();
     }
 }

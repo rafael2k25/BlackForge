@@ -10,5 +10,7 @@
         public string NumeroSerie { get; set; } = string.Empty;
         public DateTime DataAquisicao { get; set; }
         public string? Observacoes { get; set; }
+        public ICollection<ProcessoProducao> ProcessosProducao { get; set; }
+            = new List<ProcessoProducao>();
     }
 }

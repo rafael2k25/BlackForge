@@ -16,6 +16,7 @@ namespace BlackForge.Data
         public DbSet<Maquina> Maquinas { get; set; }
         public DbSet<OrdemServico> OrdensServico { get; set; }
         public DbSet<OrdemServicoMaterial> OrdensServicoMateriais { get; set; }
+        public DbSet<ProcessoProducao> ProcessosProducao { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -199,19 +200,27 @@ namespace BlackForge.Data
                 .Property(om => om.Unidade)
                 .HasMaxLength(20)
                 .IsRequired();
-
-            // OS -> Materiais
             modelBuilder.Entity<OrdemServicoMaterial>()
                 .HasOne(om => om.OrdemServico)
                 .WithMany(o => o.Materiais)
                 .HasForeignKey(om => om.OrdemServicoId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // Material -> OS
             modelBuilder.Entity<OrdemServicoMaterial>()
                 .HasOne(om => om.Material)
                 .WithMany()
                 .HasForeignKey(om => om.MaterialId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // ================= PROCESSOS DE PRODUÇÃO =================
+            modelBuilder.Entity<ProcessoProducao>()
+                .HasOne(p => p.Maquina)
+                .WithMany(m => m.ProcessosProducao)
+                .HasForeignKey(p => p.MaquinaId)
+                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ProcessoProducao>()
+                .HasOne(p => p.OrdemServico)
+                .WithMany(o => o.ProcessosProducao)
+                .HasForeignKey(p => p.OrdemServicoId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

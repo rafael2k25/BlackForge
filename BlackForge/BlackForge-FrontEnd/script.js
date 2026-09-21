@@ -72,25 +72,20 @@ const categories = document.querySelectorAll(".menu-category");
 categories.forEach(category => {
     let closeTimer;
     category.addEventListener("mouseenter", () => {
-        // Cancela um fechamento anterior
         clearTimeout(closeTimer);
-        // Fecha as outras categorias
         categories.forEach(otherCategory => {
             if (otherCategory !== category) {
                 otherCategory.classList.remove("open");
             }
         });
-        // Abre a categoria atual
         category.classList.add("open");
     });
     category.addEventListener("mouseleave", () => {
-        // Aguarda 12 segundos para fechar
         closeTimer = setTimeout(() => {
             category.classList.remove("open");
         }, 1000);
     });
 });
-
 
 // DATA E HORA
 function atualizarDataHora() {
@@ -236,51 +231,37 @@ async function cadastrarOrdemServico() {
 // LIMPAR FORMULÁRIO
 
 function limparFormularioOS() {
-
     document.getElementById("clienteOS").value = "";
     document.getElementById("contatoOS").value = "";
     document.getElementById("enderecoOS").value = "";
     document.getElementById("numeroOS").value = "";
     document.getElementById("dataOS").value = "";
-
     document.getElementById("descricaoOS").value = "";
-
     document.getElementById("tipoServico").value = "";
     document.getElementById("dataInicioOS").value = "";
     document.getElementById("dataEntregaOS").value = "";
     document.getElementById("responsavelOS").value = "";
-
     document.getElementById("valorMaoObra").value = "0.00";
     document.getElementById("descontoOS").value = "0.00";
-
     document.getElementById("condicaoPagamento").value = "";
     document.getElementById("observacoesOS").value = "";
-
     document.getElementById("valorMateriais").value = "0.00";
     document.getElementById("valorTotalOS").textContent = "R$ 0,00";
-
     const listaMateriais =
         document.getElementById("listaMateriais");
-
     if (listaMateriais) {
-
         listaMateriais.innerHTML = `
             <tr class="os-table-empty">
-                <td colspan="6">
-                    Nenhum material adicionado à ordem.
-                </td>
+                <td colspan="6">Nenhum material adicionado à ordem.</td>
             </tr>
         `;
     }
 }
-
 if (salvarOS) {
-
     salvarOS.addEventListener(
         "click",
         cadastrarOrdemServico
     );
-
 }
 
 const ctx = document.getElementById("productionChart");
@@ -503,7 +484,7 @@ async function cadastrarNovoFuncionario() {
             document.getElementById("funcionarioObservacoes").value.trim()
     };
 
-// VALIDAÇÕES
+    // VALIDAÇÕES
 
     if (!funcionario.nome) {
         alert("Informe o nome do funcionário.");
