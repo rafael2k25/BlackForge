@@ -17,6 +17,7 @@ namespace BlackForge.Data
         public DbSet<OrdemServico> OrdensServico { get; set; }
         public DbSet<OrdemServicoMaterial> OrdensServicoMateriais { get; set; }
         public DbSet<ProcessoProducao> ProcessosProducao { get; set; }
+        public DbSet<ConfiguracaoMaquina> ConfiguracoesMaquina { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -126,8 +127,8 @@ namespace BlackForge.Data
                 .IsUnique();
 
             // ================= MÁQUINA =================
-            modelBuilder.Entity<Maquina>()
-                .HasKey(m => m.Id);
+
+            modelBuilder.Entity<Maquina>().HasKey(m => m.Id);
             modelBuilder.Entity<Maquina>()
                 .Property(m => m.Nome)
                 .HasMaxLength(150)
@@ -212,16 +213,65 @@ namespace BlackForge.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             // ================= PROCESSOS DE PRODUÇÃO =================
+
+            modelBuilder.Entity<ProcessoProducao>().HasKey(p => p.Id);
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.ProducaoPorMinuto)
+                .HasPrecision(18, 2);
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.ConsumoPorUnidade)
+                .HasPrecision(18, 4);
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.MaterialConsumido)
+                .HasPrecision(18, 4);
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.Status)
+                .HasMaxLength(30)
+                .IsRequired();
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.Observacoes)
+                .HasMaxLength(500)
+                .IsRequired(false);
             modelBuilder.Entity<ProcessoProducao>()
                 .HasOne(p => p.Maquina)
                 .WithMany(m => m.ProcessosProducao)
                 .HasForeignKey(p => p.MaquinaId)
+                .HasPrincipalKey(m => m.Id)
                 .OnDelete(DeleteBehavior.Restrict);
             modelBuilder.Entity<ProcessoProducao>()
                 .HasOne(p => p.OrdemServico)
                 .WithMany(o => o.ProcessosProducao)
                 .HasForeignKey(p => p.OrdemServicoId)
+                .HasPrincipalKey(o => o.Id)
                 .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<OrdemServico>()
+                .HasOne(o => o.Maquina)
+                .WithMany()
+                .HasForeignKey(o => o.MaquinaId)
+                .HasPrincipalKey(m => m.Id)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // ================= CONFIGURAÇÃO DA MÁQUINA =================
+            modelBuilder.Entity<ConfiguracaoMaquina>()
+                .HasKey(c => c.Id);
+            modelBuilder.Entity<ConfiguracaoMaquina>()
+                .Property(c => c.TipoServico)
+                .HasMaxLength(50)
+                .IsRequired();
+            modelBuilder.Entity<ConfiguracaoMaquina>()
+                .Property(c => c.ProducaoPorMinuto)
+                .HasPrecision(18, 2);
+            modelBuilder.Entity<ConfiguracaoMaquina>()
+                .Property(c => c.ConsumoPorUnidade)
+                .HasPrecision(18, 4);
+            modelBuilder.Entity<ConfiguracaoMaquina>()
+                .Property(c => c.Ativa)
+                .IsRequired();
+            modelBuilder.Entity<ConfiguracaoMaquina>()
+                .HasOne(c => c.Maquina)
+                .WithMany(m => m.Configuracoes)
+                .HasForeignKey(c => c.MaquinaId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

@@ -12,9 +12,9 @@
         public decimal ProducaoPorMinuto { get; set; }
         public decimal ConsumoPorUnidade { get; set; }
         public decimal MaterialConsumido { get; set; }
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
         public string? Observacoes { get; set; }
-        public Maquina Maquina { get; set; }
-        public OrdemServico OrdemServico { get; set; }
+        public Maquina Maquina { get; set; } = null!;
+        public OrdemServico OrdemServico { get; set; } = null!;
     }
 }

@@ -136,10 +136,8 @@ document.addEventListener("keydown", function (event) {
 });
 
 // ORDEM DE SERVIÇO
-
 const salvarOS = document.getElementById("salvarOS");
 const salvarImprimirOS = document.getElementById("salvarImprimirOS");
-
 async function cadastrarOrdemServico() {
     const ordem = {
         numeroOS:
@@ -348,6 +346,27 @@ modalMaquina.addEventListener("click", (event) => {
         modalMaquina.classList.remove("active");
     }
 });
+
+async function carregarMaquinas() {
+    try {
+        const resposta = await fetch(`${API_URL}/Maquinas`);
+        if (!resposta.ok) {
+            throw new Error("Erro ao carregar máquinas.");
+        }
+        const maquinas = await resposta.json();
+        console.log("Máquinas:", maquinas);
+    } catch (erro) {
+        console.error("Erro:", erro);
+    }
+}
+
+async function abrirDetalhesMaquina(id) {
+    const resposta = await fetch(
+        `${API_URL}/ProcessosProducao/maquina/${id}`
+    );
+    const processo = await resposta.json();
+    console.log(processo);
+}
 
 // NOVO MATERIAL
 

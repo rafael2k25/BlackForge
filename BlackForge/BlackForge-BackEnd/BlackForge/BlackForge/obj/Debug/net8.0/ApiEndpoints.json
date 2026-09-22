@@ -1,5 +1,140 @@
 [
   {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesMaquinaController",
+    "Method": "GetConfiguracoes",
+    "RelativePath": "api/ConfiguracoesMaquina",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.ConfiguracaoMaquina, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesMaquinaController",
+    "Method": "CriarConfiguracao",
+    "RelativePath": "api/ConfiguracoesMaquina",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "configuracao",
+        "Type": "BlackForge.Models.ConfiguracaoMaquina",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.ConfiguracaoMaquina",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesMaquinaController",
+    "Method": "GetConfiguracao",
+    "RelativePath": "api/ConfiguracoesMaquina/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.ConfiguracaoMaquina",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesMaquinaController",
+    "Method": "AtualizarConfiguracao",
+    "RelativePath": "api/ConfiguracoesMaquina/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "configuracao",
+        "Type": "BlackForge.Models.ConfiguracaoMaquina",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesMaquinaController",
+    "Method": "ExcluirConfiguracao",
+    "RelativePath": "api/ConfiguracoesMaquina/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesMaquinaController",
+    "Method": "GetPorMaquina",
+    "RelativePath": "api/ConfiguracoesMaquina/maquina/{maquinaId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "maquinaId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.ConfiguracaoMaquina, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "BlackForge.Controllers.FuncionariosController",
     "Method": "GetFuncionarios",
     "RelativePath": "api/Funcionarios",
@@ -652,6 +787,129 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ProcessosProducaoController",
+    "Method": "GetProcessos",
+    "RelativePath": "api/ProcessosProducao",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.ProcessoProducao, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ProcessosProducaoController",
+    "Method": "GetProcesso",
+    "RelativePath": "api/ProcessosProducao/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.ProcessoProducao",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ProcessosProducaoController",
+    "Method": "FinalizarProcesso",
+    "RelativePath": "api/ProcessosProducao/{id}/finalizar",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "BlackForge.Controllers.FinalizarProcessoRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ProcessosProducaoController",
+    "Method": "GetProcessosAtivos",
+    "RelativePath": "api/ProcessosProducao/ativos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.ProcessoProducao, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ProcessosProducaoController",
+    "Method": "DebugSql",
+    "RelativePath": "api/ProcessosProducao/debug-sql",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ProcessosProducaoController",
+    "Method": "GetProcessoAtivoDaMaquina",
+    "RelativePath": "api/ProcessosProducao/maquina/{maquinaId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "maquinaId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.ProcessoProducao",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "BlackForge.Controllers.WeatherForecastController",

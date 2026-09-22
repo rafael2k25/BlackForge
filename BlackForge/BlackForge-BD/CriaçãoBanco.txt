@@ -18,6 +18,24 @@ CREATE TABLE Materiais
 );
 GO
 
+CREATE TABLE ConfiguracoesMaquina (
+    Id INT IDENTITY(1,1) NOT NULL,
+    MaquinaId INT NOT NULL,
+    TipoServico NVARCHAR(50) NOT NULL,
+    ProducaoPorMinuto DECIMAL(18,2) NOT NULL,
+    ConsumoPorUnidade DECIMAL(18,4) NOT NULL,
+    Ativa BIT NOT NULL DEFAULT 1,
+
+    CONSTRAINT PK_ConfiguracoesMaquina
+        PRIMARY KEY (Id),
+
+    CONSTRAINT FK_ConfiguracoesMaquina_Maquinas
+        FOREIGN KEY (MaquinaId)
+        REFERENCES Maquinas(Id)
+        ON DELETE CASCADE
+);
+GO
+
 CREATE TABLE Lotes
 (
     Id INT IDENTITY(1,1) NOT NULL,

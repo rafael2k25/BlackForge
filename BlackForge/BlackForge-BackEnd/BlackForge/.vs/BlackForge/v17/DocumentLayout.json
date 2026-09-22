@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\models\\ordemservico.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\models\\ordemservico.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\controllers\\processosproducaocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -15,36 +15,44 @@
       "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\data\\blackforgedbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\controllers\\configuracaomaquinacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\controllers\\configuracaomaquinacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\models\\configuracaomaquina.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\models\\configuracaomaquina.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\models\\maquina.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\models\\maquina.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\models\\funcionario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\models\\funcionario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\models\\processoproducao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\models\\processoproducao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\controllers\\ordensservicocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\controllers\\ordensservicocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\models\\processoproducao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\models\\processoproducao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\models\\ordemservico.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\models\\ordemservico.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\models\\funcionario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\models\\funcionario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\controllers\\funcionarioscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\controllers\\funcionarioscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\controllers\\lotescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\controllers\\lotescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|solutionrelative:blackforge\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{B6735146-DA50-4F89-A721-CFEBC6BECF57}|BlackForge\\BlackForge.csproj|c:\\users\\tarde.cetafaju\\documents\\github\\blackforge\\blackforge\\blackforge-backend\\blackforge\\blackforge\\controllers\\maquinascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -96,48 +104,35 @@
               "RelativeDocumentMoniker": "BlackForge\\Controllers\\ProcessosProducaoController.cs",
               "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\ProcessosProducaoController.cs",
               "RelativeToolTip": "BlackForge\\Controllers\\ProcessosProducaoController.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAABEAAAAeAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-09-21T18:58:47.267Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Maquina.cs",
-              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\Maquina.cs",
-              "RelativeDocumentMoniker": "BlackForge\\Models\\Maquina.cs",
-              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\Maquina.cs",
-              "RelativeToolTip": "BlackForge\\Models\\Maquina.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAMAAAA",
+              "DocumentIndex": 5,
+              "Title": "ConfiguracaoMaquina.cs",
+              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\ConfiguracaoMaquina.cs",
+              "RelativeDocumentMoniker": "BlackForge\\Models\\ConfiguracaoMaquina.cs",
+              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\ConfiguracaoMaquina.cs",
+              "RelativeToolTip": "BlackForge\\Models\\ConfiguracaoMaquina.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAIAAAAkAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-21T18:54:57.457Z",
+              "WhenOpened": "2026-09-22T17:39:17.214Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "OrdemServico.cs",
-              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\OrdemServico.cs",
-              "RelativeDocumentMoniker": "BlackForge\\Models\\OrdemServico.cs",
-              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\OrdemServico.cs",
-              "RelativeToolTip": "BlackForge\\Models\\OrdemServico.cs",
-              "ViewState": "AQIAAAYAAAAAAAAAAAAzwA8AAAArAAAA",
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Program.cs",
+              "RelativeDocumentMoniker": "BlackForge\\Program.cs",
+              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Program.cs",
+              "RelativeToolTip": "BlackForge\\Program.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAeAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-18T19:34:48.332Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Funcionario.cs",
-              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\Funcionario.cs",
-              "RelativeDocumentMoniker": "BlackForge\\Models\\Funcionario.cs",
-              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\Funcionario.cs",
-              "RelativeToolTip": "BlackForge\\Models\\Funcionario.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAA5AAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-14T17:15:17.264Z",
+              "WhenOpened": "2026-09-14T19:30:15.328Z",
               "EditorCaption": ""
             },
             {
@@ -148,51 +143,104 @@
               "RelativeDocumentMoniker": "BlackForge\\Data\\BlackForgeDbContext.cs",
               "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Data\\BlackForgeDbContext.cs",
               "RelativeToolTip": "BlackForge\\Data\\BlackForgeDbContext.cs",
-              "ViewState": "AQIAAMIAAAAAAAAAAAAkwNUAAAAqAAAA",
+              "ViewState": "AQIAAHsAAAAAAAAAAAAIwIoAAAAeAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-09-10T19:43:51.095Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 4,
+              "Title": "ConfiguracaoMaquinaController.cs",
+              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\ConfiguracaoMaquinaController.cs",
+              "RelativeDocumentMoniker": "BlackForge\\Controllers\\ConfiguracaoMaquinaController.cs",
+              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\ConfiguracaoMaquinaController.cs",
+              "RelativeToolTip": "BlackForge\\Controllers\\ConfiguracaoMaquinaController.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABAAAAARAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-22T17:56:40.749Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Maquina.cs",
+              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\Maquina.cs",
+              "RelativeDocumentMoniker": "BlackForge\\Models\\Maquina.cs",
+              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\Maquina.cs",
+              "RelativeToolTip": "BlackForge\\Models\\Maquina.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA8AAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-21T18:54:57.457Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "OrdensServicoController.cs",
+              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\OrdensServicoController.cs",
+              "RelativeDocumentMoniker": "BlackForge\\Controllers\\OrdensServicoController.cs",
+              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\OrdensServicoController.cs",
+              "RelativeToolTip": "BlackForge\\Controllers\\OrdensServicoController.cs",
+              "ViewState": "AQIAAPkAAAAAAAAAAAAswBsBAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-11T17:04:49.966Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "ProcessoProducao.cs",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\ProcessoProducao.cs",
               "RelativeDocumentMoniker": "BlackForge\\Models\\ProcessoProducao.cs",
               "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\ProcessoProducao.cs",
               "RelativeToolTip": "BlackForge\\Models\\ProcessoProducao.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABEAAAA2AAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAEAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-09-21T18:53:50.783Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Program.cs",
-              "RelativeDocumentMoniker": "BlackForge\\Program.cs",
-              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Program.cs",
-              "RelativeToolTip": "BlackForge\\Program.cs",
-              "ViewState": "AQIAAAoAAAAAAAAAAAAIwA8AAAArAAAA",
+              "DocumentIndex": 9,
+              "Title": "OrdemServico.cs",
+              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\OrdemServico.cs",
+              "RelativeDocumentMoniker": "BlackForge\\Models\\OrdemServico.cs",
+              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\OrdemServico.cs",
+              "RelativeToolTip": "BlackForge\\Models\\OrdemServico.cs",
+              "ViewState": "AQIAAAcAAAAAAAAAAAAuwA8AAAArAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-14T19:30:15.328Z"
+              "WhenOpened": "2026-09-18T19:34:48.332Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 10,
+              "Title": "Funcionario.cs",
+              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\Funcionario.cs",
+              "RelativeDocumentMoniker": "BlackForge\\Models\\Funcionario.cs",
+              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\Funcionario.cs",
+              "RelativeToolTip": "BlackForge\\Models\\Funcionario.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAA5AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-14T17:15:17.264Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\appsettings.json",
               "RelativeDocumentMoniker": "BlackForge\\appsettings.json",
               "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\appsettings.json",
               "RelativeToolTip": "BlackForge\\appsettings.json",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAgAAAAFAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAIAAACGAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-09-11T19:12:06.831Z"
+              "WhenOpened": "2026-09-11T19:12:06.831Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 13,
               "Title": "MaquinasController.cs",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\MaquinasController.cs",
               "RelativeDocumentMoniker": "BlackForge\\Controllers\\MaquinasController.cs",
@@ -204,19 +252,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "OrdensServicoController.cs",
-              "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\OrdensServicoController.cs",
-              "RelativeDocumentMoniker": "BlackForge\\Controllers\\OrdensServicoController.cs",
-              "ToolTip": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\OrdensServicoController.cs",
-              "RelativeToolTip": "BlackForge\\Controllers\\OrdensServicoController.cs",
-              "ViewState": "AQIAAO8AAAAAAAAAAAD4v+0AAAA7AAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-11T17:04:49.966Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 11,
               "Title": "FuncionariosController.cs",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\FuncionariosController.cs",
               "RelativeDocumentMoniker": "BlackForge\\Controllers\\FuncionariosController.cs",
@@ -228,7 +264,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 12,
               "Title": "LotesController.cs",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\LotesController.cs",
               "RelativeDocumentMoniker": "BlackForge\\Controllers\\LotesController.cs",
@@ -240,7 +276,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 14,
               "Title": "MovimentacoesController.cs",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\MovimentacoesController.cs",
               "RelativeDocumentMoniker": "BlackForge\\Controllers\\MovimentacoesController.cs",
@@ -252,7 +288,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 15,
               "Title": "MateriaisController.cs",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Controllers\\MateriaisController.cs",
               "RelativeDocumentMoniker": "BlackForge\\Controllers\\MateriaisController.cs",
@@ -264,7 +300,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
+              "DocumentIndex": 17,
               "Title": "Class3.cs",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\Class3.cs",
               "RelativeDocumentMoniker": "BlackForge\\Models\\Class3.cs",
@@ -276,7 +312,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 16,
+              "DocumentIndex": 18,
               "Title": "Class2.cs",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\Class2.cs",
               "RelativeDocumentMoniker": "BlackForge\\Models\\Class2.cs",
@@ -288,7 +324,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
+              "DocumentIndex": 19,
               "Title": "Class1.cs",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Models\\Class1.cs",
               "RelativeDocumentMoniker": "BlackForge\\Models\\Class1.cs",
@@ -300,7 +336,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 18,
+              "DocumentIndex": 20,
               "Title": "BlackForgeDbContext.cs",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\Teste\\BlackForgeDbContext.cs",
               "RelativeDocumentMoniker": "BlackForge\\Teste\\BlackForgeDbContext.cs",
@@ -312,7 +348,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 14,
+              "DocumentIndex": 16,
               "Title": "BlackForge.csproj",
               "DocumentMoniker": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\BlackForge.csproj",
               "RelativeDocumentMoniker": "BlackForge\\BlackForge.csproj",

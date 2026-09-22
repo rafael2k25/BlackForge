@@ -12,5 +12,7 @@
         public string? Observacoes { get; set; }
         public ICollection<ProcessoProducao> ProcessosProducao { get; set; }
             = new List<ProcessoProducao>();
+        public ICollection<ConfiguracaoMaquina> Configuracoes { get; set; }
+            = new List<ConfiguracaoMaquina>();
     }
 }
