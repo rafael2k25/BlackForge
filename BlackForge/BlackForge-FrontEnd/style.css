@@ -1504,15 +1504,7 @@ CATEGORIAS DO MENU
     overflow: hidden;
 }
 
-.industrial-panel::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 3px;
-    height: 40px;
-    background: var(--yellow-dark);
-}
+
 
 .panel-header {
     display: flex;

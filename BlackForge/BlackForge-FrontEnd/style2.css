@@ -8,60 +8,40 @@
    ========================================================= */
 
 .funcionarios-panel {
-
     position: relative;
-
     min-height: 500px;
-
     padding: 25px;
-
     background: var(--panel);
-
     border: 1px solid var(--border);
-
     overflow: hidden;
-
 }
 
 
 .funcionarios-panel::before,
 .funcionarios-panel::after {
-
     content: "";
-
     position: absolute;
-
     width: 14px;
     height: 14px;
-
     border-color: var(--yellow-dark);
-
     border-style: solid;
-
     pointer-events: none;
-
 }
 
 
 .funcionarios-panel::before {
-
     top: -1px;
     left: -1px;
-
     border-width:
         2px 0 0 2px;
-
 }
 
 
 .funcionarios-panel::after {
-
     right: -1px;
     bottom: -1px;
-
     border-width:
         0 2px 2px 0;
-
 }
 
 
@@ -70,66 +50,40 @@
    ========================================================= */
 
 .funcionarios-header {
-
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
-
     padding-bottom: 20px;
-
     margin-bottom: 20px;
-
     border-bottom: 1px solid var(--border);
-
 }
 
 
 .funcionarios-label {
-
     display: block;
-
     margin-bottom: 4px;
-
     color: var(--yellow);
-
     font-family: 'Share Tech Mono', monospace;
-
     font-size: 10px;
-
     letter-spacing: 2px;
-
 }
 
 
 .funcionarios-header h2 {
-
     font-size: 24px;
-
     font-weight: 600;
-
     letter-spacing: 1px;
-
 }
 
 
 .funcionarios-count {
-
     padding: 7px 12px;
-
     background: var(--bg-tertiary);
-
     border: 1px solid var(--border);
-
     color: var(--text-primary);
-
     font-family: 'Share Tech Mono', monospace;
-
     font-size: 10px;
-
     letter-spacing: 1px;
-
 }
 
 
@@ -138,19 +92,12 @@
    ========================================================= */
 
 .funcionarios-empty {
-
     min-height: 390px;
-
     display: flex;
-
     flex-direction: column;
-
     align-items: center;
-
     justify-content: center;
-
     text-align: center;
-
 }
 
 
@@ -191,7 +138,7 @@
    GRID
    ========================================================= */
 
-   .funcionarios-grid {
+.funcionarios-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
@@ -322,7 +269,7 @@
     border-bottom: 1px solid var(--border);
 }
 
-.funcionario-card-info > div {
+.funcionario-card-info>div {
     display: flex;
     align-items: center;
     gap: 5px;
@@ -410,87 +357,48 @@
 
 
 .funcionario-info strong {
-
     display: block;
-
     color: var(--text-primary);
-
     font-size: 14px;
-
     font-weight: 500;
-
 }
 
 
 .funcionario-status.ativo {
-
     color: var(--success);
-
 }
 
 
 .funcionario-status.afastado {
-
     color: var(--warning);
-
 }
 
 
 .funcionario-status.ferias {
-
     color: var(--info);
-
 }
 
 
 .funcionario-status.inativo {
-
     color: var(--danger);
-
 }
-
-
-/* =========================================================
-   OBSERVAÇÕES
-   ========================================================= */
 
 .funcionario-observacoes {
-
     padding: 15px;
-
     background: var(--bg-tertiary);
-
     border: 1px solid var(--border);
-
 }
-
 
 .funcionario-observacoes p {
-
     color: var(--text-secondary);
-
     font-family: 'Share Tech Mono', monospace;
-
     font-size: 11px;
-
     line-height: 1.7;
-
 }
-
-
-/* =========================================================
-   MODAL FUNCIONÁRIO
-   ========================================================= */
 
 .funcionario-modal {
-
     width: min(850px, calc(100vw - 40px));
-
 }
-
-/* =========================================================
-   BOTÕES - DETALHES DO FUNCIONÁRIO
-   ========================================================= */
 
 .funcionario-detalhes-actions {
     display: flex;
@@ -516,7 +424,6 @@
 .btn-editar-funcionario {
     height: 40px;
     padding: 0 18px;
-
     display: flex;
     align-items: center;
     justify-content: center;
@@ -996,4 +903,792 @@
         grid-template-columns: 1fr;
     }
 
+}
+
+/* MONITORAMENTO MÁQUINAS */
+
+.maquinas-panel {
+    position: relative;
+    width: 100%;
+    min-height: 500px;
+    padding: 0;
+    background:
+        linear-gradient(180deg,
+            rgba(255, 255, 255, 0.015),
+            transparent 35%),
+        var(--panel);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow:
+        0 12px 35px rgba(0, 0, 0, 0.12);
+}
+
+/* TOOLBAR */
+
+.maquinas-toolbar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 18px 22px;
+    background:
+        linear-gradient(90deg,
+            rgba(255, 255, 255, 0.025),
+            rgba(255, 255, 255, 0));
+    border-bottom: 1px solid var(--border);
+}
+
+/* pequena linha industrial */
+
+.maquinas-toolbar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 110px;
+    height: 2px;
+    background:
+        linear-gradient(90deg,
+            var(--yellow),
+            transparent);
+}
+
+/* TÍTULO */
+
+.maquinas-titulo {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.maquinas-titulo h2 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+}
+
+.maquinas-live-dot {
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    background: var(--success);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 3px rgba(80, 200, 120, 0.08),
+        0 0 9px rgba(80, 200, 120, 0.55);
+    animation:
+        maquinaStatusPulse 2s ease-in-out infinite;
+}
+
+.maquinas-timestamp {
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.2px;
+}
+
+
+/* ESTATÍSTICAS */
+
+.maquinas-stats {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stat-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 30px;
+    padding: 5px 10px;
+    background:
+        rgba(255, 255, 255, 0.018);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.6px;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+.stat-chip::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow:
+        0 0 5px currentColor;
+}
+.stat-chip strong {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+.stat-chip.produzindo {
+    color: var(--yellow);
+}
+.stat-chip.operacional {
+    color: var(--success);
+}
+.stat-chip.manutencao {
+    color: var(--warning);
+}
+.stat-chip.erro {
+    color: var(--danger, #ff3b3b);
+}
+
+/* CONTROLES */
+
+.maquinas-controles {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* BUSCA */
+
+.maquinas-busca {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.maquinas-busca ion-icon {
+    position: absolute;
+    left: 10px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    pointer-events: none;
+}
+.maquinas-busca input {
+    width: 190px;
+    height: 32px;
+    padding: 0 10px 0 30px;
+    background:
+        rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+.maquinas-busca input:hover {
+    background:
+        rgba(255, 255, 255, 0.015);
+}
+.maquinas-busca input:focus {
+    outline: none;
+    background:
+        rgba(240, 200, 8, 0.02);
+    border-color: var(--border-yellow);
+    box-shadow:
+        0 0 0 2px rgba(240, 200, 8, 0.06);
+}
+.maquinas-busca input::placeholder {
+    color: var(--text-secondary);
+}
+
+/* FILTROS */
+
+.maquinas-filtros {
+    display: flex;
+    gap: 5px;
+}
+.filtro-btn {
+    height: 32px;
+    padding: 0 11px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.7px;
+    cursor: pointer;
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+}
+.filtro-btn:hover {
+    color: var(--text-primary);
+    border-color:
+        rgba(240, 200, 8, 0.35);
+}
+.filtro-btn.ativo {
+    color: var(--yellow);
+    background:
+        rgba(240, 200, 8, 0.055);
+    border-color:
+        var(--border-yellow);
+    box-shadow:
+        inset 0 -2px 0 var(--yellow);
+}
+.filtro-btn:focus-visible {
+    outline: 2px solid var(--yellow);
+    outline-offset: 2px;
+}
+
+/* LINHA DA MÁQUINA */
+
+.maquina-row {
+    position: relative;
+    min-height: 96px;
+    display: grid;
+    grid-template-columns:
+        minmax(240px, 1.7fr) minmax(110px, 0.65fr) minmax(145px, 0.8fr) minmax(210px, 1.1fr) 115px;
+    align-items: center;
+    gap: 22px;
+    padding: 16px 22px;
+    background:
+        linear-gradient(90deg,
+            var(--row-bg-1) 0%,
+            var(--row-bg-2) 60%,
+            var(--row-bg-3) 100%);
+    border-bottom: 1px solid var(--border);
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        transform 0.25s ease;
+}
+
+/* barra superior */
+
+.maquina-row::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background:
+        linear-gradient(90deg,
+            var(--yellow-dark),
+            rgba(240, 200, 8, 0.25),
+            transparent 70%);
+    opacity: 0.45;
+    transition:
+        opacity 0.25s ease;
+}
+
+/* indicador lateral */
+
+.maquina-row::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 15px;
+    width: 2px;
+    height: calc(100% - 30px);
+    background: transparent;
+    transition:
+        background 0.25s ease,
+        box-shadow 0.25s ease;
+}
+
+/* hover */
+
+.maquina-row:hover {
+    background:
+        linear-gradient(90deg,
+            var(--row-bg-1-hover),
+            var(--row-bg-2-hover) 60%,
+            var(--row-bg-3-hover));
+    border-color:
+        rgba(240, 200, 8, 0.18);
+}
+.maquina-row:hover::before {
+    opacity: 1;
+}
+.maquina-row:hover::after {
+    background: var(--yellow);
+    box-shadow:
+        0 0 10px rgba(240, 200, 8, 0.35);
+}
+
+/* IDENTIFICAÇÃO */
+
+.maquina-identificacao {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.maquina-icon {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        linear-gradient(145deg,
+            #35373d,
+            #292b2f);
+    border: 1px solid var(--border);
+    color: var(--yellow);
+    font-size: 21px;
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
+}
+
+.maquina-icon::after {
+    content: "";
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    width: 7px;
+    height: 7px;
+    border-right: 1px solid var(--yellow-dark);
+    border-bottom: 1px solid var(--yellow-dark);
+}
+.maquina-row:hover .maquina-icon {
+    border-color:
+        rgba(240, 200, 8, 0.4);
+    box-shadow:
+        0 0 16px rgba(240, 200, 8, 0.08);
+    transform: translateY(-1px);
+}
+
+
+/* NOME */
+
+.maquina-info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.maquina-nome {
+    overflow: hidden;
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.maquina-descricao {
+    overflow: hidden;
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* CÓDIGO */
+
+.maquina-codigo {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-left: 14px;
+    border-left: 1px solid var(--border);
+}
+
+.maquina-codigo span {
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 1.4px;
+}
+.maquina-codigo strong {
+    color: var(--text-primary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+
+/* STATUS */
+
+.maquina-status {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    padding: 6px 10px;
+    background:
+        rgba(255, 255, 255, 0.018);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+.maquina-status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow:
+        0 0 5px currentColor;
+}
+
+/* PRODUZINDO */
+
+.maquina-status.produzindo {
+    color: var(--yellow);
+    background:
+        rgba(240, 200, 8, 0.045);
+    border-color:
+        rgba(240, 200, 8, 0.28);
+}
+.maquina-status.produzindo::before {
+    animation:
+        maquinaStatusPulse 1.5s ease-in-out infinite;
+}
+
+/* OPERACIONAL */
+
+.maquina-status.operacional {
+    color: var(--success);
+    background:
+        rgba(80, 200, 120, 0.025);
+    border-color:
+        rgba(80, 200, 120, 0.18);
+}
+
+/* MANUTENÇÃO */
+
+.maquina-status.manutencao {
+    color: var(--warning);
+    background:
+        rgba(255, 170, 0, 0.035);
+    border-color:
+        rgba(255, 170, 0, 0.2);
+}
+.maquina-status.erro {
+    color: var(--danger, #ff3b3b);
+    background:
+        rgba(255, 59, 59, 0.035);
+    border-color:
+        rgba(255, 59, 59, 0.22);
+}
+.maquina-status.erro::before {
+    animation:
+        maquinaStatusPulse 1s ease-in-out infinite;
+}
+
+
+/* PROCESSO */
+
+.maquina-processo {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-left: 14px;
+    border-left: 1px solid var(--border);
+}
+.maquina-processo-label {
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+}
+
+.maquina-processo-os {
+    overflow: hidden;
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.maquina-processo-producao {
+    color: var(--yellow);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.6px;
+}
+.maquina-eficiencia {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+.maquina-eficiencia-barra {
+    width: 90px;
+    height: 3px;
+    overflow: hidden;
+    background:
+        rgba(255, 255, 255, 0.07);
+}
+.maquina-eficiencia-fill {
+    height: 100%;
+    background:
+        linear-gradient(90deg,
+            var(--yellow-dark),
+            var(--yellow));
+    box-shadow:
+        0 0 6px rgba(240, 200, 8, 0.2);
+}
+.maquina-eficiencia-valor {
+    color: var(--yellow);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+}
+.maquina-detalhes-btn {
+    width: 115px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    background:
+        transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+.maquina-detalhes-btn ion-icon {
+    font-size: 14px;
+    transition:
+        transform 0.2s ease;
+}
+
+.maquina-detalhes-btn:hover {
+    color: var(--yellow);
+    background:
+        rgba(240, 200, 8, 0.045);
+    border-color:
+        var(--border-yellow);
+    box-shadow:
+        0 0 12px rgba(240, 200, 8, 0.05);
+}
+.maquina-detalhes-btn:hover ion-icon {
+    transform: translateX(3px);
+}
+.maquina-detalhes-btn:focus-visible {
+    outline: 2px solid var(--yellow);
+    outline-offset: 2px;
+}
+.maquina-detalhes-btn:active {
+    transform: scale(0.97);
+}
+
+
+/* EMPTY STATE */
+
+.maquinas-empty {
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+.maquinas-empty-icon {
+    width: 68px;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+    background:
+        rgba(240, 200, 8, 0.025);
+    border: 1px solid var(--border);
+    color: var(--yellow-dark);
+    font-size: 28px;
+    box-shadow:
+        0 0 25px rgba(240, 200, 8, 0.025);
+}
+.maquinas-empty h3 {
+    margin: 0 0 8px;
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+}
+.maquinas-empty p {
+    max-width: 420px;
+    margin: 0 0 20px;
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    line-height: 1.7;
+}
+.maquina-detalhes-button {
+    width: 115px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    padding: 0 14px;
+    background: #292b2f;
+    color: #d8d8d8;
+    border: 1px solid #4a4d52;
+    font-family: "Share Tech Mono", monospace;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+.maquina-detalhes-button:hover {
+    background: #34363b;
+    color: var(--yellow);
+    border-color: var(--yellow-dark);
+    box-shadow:
+        0 0 8px rgba(240, 200, 8, 0.15);
+    transform: translateY(-1px);
+}
+.maquina-detalhes-button:active {
+    transform: translateY(0);
+    background: #24262a;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 1150px) {
+    .maquina-row {
+        grid-template-columns:
+            minmax(220px, 1.5fr) minmax(100px, 0.6fr) minmax(150px, 0.8fr) 105px;
+        gap: 15px;
+    }
+    .maquina-processo {
+        display: none;
+    }
+}
+
+@media (max-width: 850px) {
+    .maquinas-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .maquinas-stats {
+        width: 100%;
+    }
+    .maquinas-controles {
+        width: 100%;
+    }
+    .maquinas-busca {
+        flex: 1;
+    }
+    .maquinas-busca input {
+        width: 100%;
+    }
+    .maquina-row {
+        grid-template-columns:
+            1fr auto;
+        gap: 12px;
+        padding: 17px 18px;
+    }
+    .maquina-codigo {
+        display: none;
+    }
+    .maquina-status {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    .maquina-detalhes-btn {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+    }
+}
+
+@media (max-width: 560px) {
+    .maquinas-toolbar {
+        padding: 16px;
+    }
+    .maquinas-stats {
+        flex-wrap: wrap;
+    }
+    .maquinas-controles {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .maquinas-busca,
+    .maquinas-busca input {
+        width: 100%;
+    }
+    .maquinas-filtros {
+        width: 100%;
+    }
+    .filtro-btn {
+        flex: 1;
+    }
+    .maquina-row {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+    .maquina-identificacao {
+        grid-column: 1;
+    }
+    .maquina-status {
+        grid-column: 1;
+        grid-row: auto;
+        width: fit-content;
+    }
+    .maquina-detalhes-btn {
+        grid-column: 1;
+        grid-row: auto;
+        width: 100%;
+    }
+}
+
+/* REDUÇÃO DE MOVIMENTO */
+
+@media (prefers-reduced-motion: reduce) {
+    .maquina-status.produzindo::before,
+    .maquina-status.erro::before,
+    .maquinas-live-dot,
+    .skeleton-bar {
+        animation: none;
+    }
+    .maquina-row,
+    .maquina-icon,
+    .maquina-detalhes-btn,
+    .maquina-detalhes-btn ion-icon,
+    .maquinas-busca input,
+    .filtro-btn {
+        transition: none;
+    }
 }

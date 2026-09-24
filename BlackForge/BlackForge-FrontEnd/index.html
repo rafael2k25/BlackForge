@@ -35,7 +35,7 @@
                 <button class="menu-item active" data-section="dashboard" data-title="Dashboard">
                     <src name="arrow-forward-sharp"></src>
                     <ion-icon name="menu-outline"></ion-icon>
-                    <span>Início</span>
+                    <span>INÍCIO</span>
                 </button>
 
                 <!-- =====================================================
@@ -367,7 +367,7 @@
             <div class="section-header">
                 <div>
                     <span class="section-label">
-                        <!-- CAMPO VAZIO -->
+                        MONITORAMENTO
                     </span>
                     <h1>
                         Máquinas
@@ -380,26 +380,18 @@
                     + NOVA MÁQUINA
                 </button>
             </div>
-            <div class="industrial-panel empty-panel">
-                <h3>
-                    Nenhum equipamento foi registrado no sistema.
-                </h3>
-                <p>
-                    <!-- CAMPO VAZIO -->
-                </p>
-                <button class="secondary-button">
-                    CADASTRAR MÁQUINA
-                </button>
+            <div class="industrial-panel maquinas-panel" id="maquinasGrid">
+                <div class="maquinas-loading">
+                    <span>
+                        CARREGANDO EQUIPAMENTOS...
+                    </span>
+                </div>
             </div>
         </section>
 
         <!-- ======================== FIM CATEGORIA MÁQUINAS ======================== -->
 
         <!-- ======================== INÍCIO LOTES ======================== -->
-
-        <!-- =========================================================
-     LOTES
-     ========================================================= -->
 
         <section id="lotes" class="page-section">
 
@@ -612,8 +604,8 @@
         </section>
 
         <!-- ======================== FIM CATEGORIA FUNCIONÁRIOS ======================== -->
-        
-      <!-- ======================================= FIM CATEGORIA CONTEÚDO PRINCIPAL ======================================= -->
+
+        <!-- ======================================= FIM CATEGORIA CONTEÚDO PRINCIPAL ======================================= -->
 
     </main>
 
@@ -900,6 +892,8 @@
                 </button>
             </div>
 
+            
+
             <!-- =====================================================
                  IDENTIFICAÇÃO
                  ===================================================== -->
@@ -1052,6 +1046,259 @@
             </div>
         </div>
     </div>
+
+    <!-- ======================== INÍCIO MODAL DETALHES MÁQUINA ======================== -->
+
+<div class="modal-overlay" id="modalDetalhesMaquina">
+
+    <div class="modal modal-detalhes-maquina">
+
+        <!-- =====================================================
+             CABEÇALHO
+             ===================================================== -->
+
+        <div class="modal-header">
+
+            <div>
+
+                <span class="section-label">
+                    MONITORAMENTO
+                </span>
+
+                <h2 id="detalhesMaquinaNome">
+                    Máquina
+                </h2>
+
+                <p id="detalhesMaquinaIdentificacao">
+                    Código da máquina • Fabricante • Modelo
+                </p>
+
+            </div>
+
+            <button
+                class="modal-close"
+                id="fecharDetalhesMaquina"
+                type="button"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <!-- =====================================================
+             STATUS DA MÁQUINA
+             ===================================================== -->
+
+        <div class="maquina-detalhes-status">
+
+            <div class="maquina-detalhes-status-label">
+                <span class="status-indicator"></span>
+                STATUS DA MÁQUINA
+            </div>
+
+            <strong id="detalhesMaquinaStatus">
+                OPERACIONAL
+            </strong>
+
+        </div>
+
+
+        <!-- =====================================================
+             PROCESSO EM EXECUÇÃO
+             ===================================================== -->
+
+        <div class="os-block">
+
+            <div class="os-block-header">
+
+                <div>
+
+                    <span>
+                        ● PROCESSO EM EXECUÇÃO
+                    </span>
+
+                    <h3>
+                        Produção Atual
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <!-- INFORMAÇÕES DA OS -->
+
+            <div class="maquina-detalhes-grid">
+
+                <div class="maquina-detalhes-info">
+
+                    <span>
+                        ORDEM DE SERVIÇO
+                    </span>
+
+                    <strong id="detalhesMaquinaOS">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="maquina-detalhes-info">
+
+                    <span>
+                        CLIENTE
+                    </span>
+
+                    <strong id="detalhesMaquinaCliente">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="maquina-detalhes-info">
+
+                    <span>
+                        PROCESSO
+                    </span>
+
+                    <strong id="detalhesMaquinaProcesso">
+                        -
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 PRODUÇÃO
+                 ================================================= -->
+
+            <div class="maquina-producao">
+
+                <div class="maquina-producao-header">
+
+                    <span>
+                        PRODUÇÃO
+                    </span>
+
+                    <strong id="detalhesMaquinaProgressoTexto">
+                        0 / 0
+                    </strong>
+
+                </div>
+
+
+                <div class="maquina-progresso">
+
+                    <div
+                        class="maquina-progresso-fill"
+                        id="detalhesMaquinaProgresso"
+                    ></div>
+
+                </div>
+
+
+                <div class="maquina-producao-percentual">
+
+                    <span>
+                        PROGRESSO
+                    </span>
+
+                    <strong id="detalhesMaquinaPercentual">
+                        0%
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 INDICADORES
+                 ================================================= -->
+
+            <div class="maquina-indicadores">
+
+                <div class="maquina-indicador">
+
+                    <span>
+                        PRODUÇÃO / MIN
+                    </span>
+
+                    <strong id="detalhesMaquinaProducaoMinuto">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="maquina-indicador">
+
+                    <span>
+                        TEMPO DE OPERAÇÃO
+                    </span>
+
+                    <strong id="detalhesMaquinaTempo">
+                        -
+                    </strong>
+
+                </div>
+
+
+                <div class="maquina-indicador">
+
+                    <span>
+                        MATERIAL CONSUMIDO
+                    </span>
+
+                    <strong id="detalhesMaquinaMaterial">
+                        -
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             OBSERVAÇÕES
+             ===================================================== -->
+
+        <div class="material-section">
+
+            <div class="material-section-title">
+                OBSERVAÇÕES
+            </div>
+
+            <div class="maquina-detalhes-observacoes">
+
+                <p id="detalhesMaquinaObservacoes">
+                    Nenhuma observação registrada.
+                </p>
+            </div>
+        </div>
+
+
+        <!-- RODAPÉ -->
+
+        <div class="modal-footer">
+            <button
+                type="button"
+                id="fecharDetalhesMaquinaBotao"
+                class="btn-secondary"
+            >
+                FECHAR
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======================== FIM MODAL DETALHES MÁQUINA ======================== -->
 
     <!-- ======================== FIM MODAL NOVA MÁQUINA ======================== -->
 
@@ -1447,7 +1694,8 @@
                 <div class="material-section">
                     <div class="material-section-title">OBSERVAÇÕES</div>
                     <div class="material-form-group">
-                        <textarea id="funcionarioObservacoes" rows="4"placeholder="Informações adicionais sobre o funcionário..."></textarea>
+                        <textarea id="funcionarioObservacoes" rows="4"
+                            placeholder="Informações adicionais sobre o funcionário..."></textarea>
                     </div>
                 </div>
             </div>
@@ -1559,26 +1807,17 @@
 
             <div class="modal-footer funcionario-detalhes-footer">
                 <div class="funcionario-detalhes-acoes">
-                    <button
-                        type="button"
-                        id="editarFuncionario"
-                        class="btn-editar-funcionario">
+                    <button type="button" id="editarFuncionario" class="btn-editar-funcionario">
                         <ion-icon name="create-outline"></ion-icon>
                         EDITAR
                     </button>
-            
-                    <button
-                        type="button"
-                        id="removerFuncionario"
-                        class="btn-remover-funcionario">
+
+                    <button type="button" id="removerFuncionario" class="btn-remover-funcionario">
                         <ion-icon name="trash-outline"></ion-icon>
                         REMOVER
                     </button>
-                </div>           
-                <button
-                    type="button"
-                    id="fecharDetalhesFuncionarioBotao"
-                    class="btn-secondary">
+                </div>
+                <button type="button" id="fecharDetalhesFuncionarioBotao" class="btn-secondary">
                     FECHAR
                 </button>
             </div>

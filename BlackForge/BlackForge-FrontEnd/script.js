@@ -328,45 +328,257 @@ const productionChart = new Chart(ctx, {
 
 // NOVA MÁQUINA
 
-const abrirModalMaquina = document.getElementById("abrirModalMaquina");
-const modalMaquina = document.getElementById("modalMaquina");
-const fecharModalMaquina = document.getElementById("fecharModalMaquina");
-const cancelarModalMaquina = document.getElementById("cancelarModalMaquina");
-abrirModalMaquina.addEventListener("click", () => {
-    modalMaquina.classList.add("active");
-});
-fecharModalMaquina.addEventListener("click", () => {
-    modalMaquina.classList.remove("active");
-});
-cancelarModalMaquina.addEventListener("click", () => {
-    modalMaquina.classList.remove("active");
-});
-modalMaquina.addEventListener("click", (event) => {
-    if (event.target === modalMaquina) {
+const abrirModalMaquina =
+    document.getElementById("abrirModalMaquina");
+const modalMaquina =
+    document.getElementById("modalMaquina");
+const fecharModalMaquina =
+    document.getElementById("fecharModalMaquina");
+const cancelarModalMaquina =
+    document.getElementById("cancelarModalMaquina");
+
+// MODAL NOVA MÁQUINA
+
+if (abrirModalMaquina) {
+    abrirModalMaquina.addEventListener("click", () => {
+        modalMaquina.classList.add("active");
+    });
+}
+if (fecharModalMaquina) {
+    fecharModalMaquina.addEventListener("click", () => {
         modalMaquina.classList.remove("active");
-    }
-});
+    });
+}
+if (cancelarModalMaquina) {
+    cancelarModalMaquina.addEventListener("click", () => {
+        modalMaquina.classList.remove("active");
+    });
+}
+if (modalMaquina) {
+    modalMaquina.addEventListener("click", (event) => {
+        if (event.target === modalMaquina) {
+            modalMaquina.classList.remove("active");
+        }
+    });
+}
+
+// VARIÁVEIS DAS MÁQUINAS
+
+let maquinas = [];
+let processosAtivos = [];
+
+// CARREGAR MÁQUINAS
 
 async function carregarMaquinas() {
     try {
-        const resposta = await fetch(`${API_URL}/Maquinas`);
+        const resposta = await fetch(
+            `${API_URL}/Maquinas`
+        );
         if (!resposta.ok) {
-            throw new Error("Erro ao carregar máquinas.");
+            throw new Error(
+                `Erro HTTP: ${resposta.status}`
+            );
         }
-        const maquinas = await resposta.json();
-        console.log("Máquinas:", maquinas);
+        maquinas = await resposta.json();
+        console.log(
+            "Máquinas carregadas:",
+            maquinas
+        );
+        await carregarProcessosAtivos();
+        renderizarMaquinas();
     } catch (erro) {
-        console.error("Erro:", erro);
+        console.error(
+            "Erro ao carregar máquinas:",
+            erro
+        );
     }
 }
 
-async function abrirDetalhesMaquina(id) {
-    const resposta = await fetch(
-        `${API_URL}/ProcessosProducao/maquina/${id}`
-    );
-    const processo = await resposta.json();
-    console.log(processo);
+// CARREGAR PROCESSOS ATIVOS
+
+async function carregarProcessosAtivos() {
+    try {
+        const resposta = await fetch(
+            `${API_URL}/ProcessosProducao/ativos`
+        );
+        if (!resposta.ok) {
+            throw new Error(
+                `Erro HTTP: ${resposta.status}`
+            );
+        }
+        processosAtivos = await resposta.json();
+        console.log(
+            "Processos ativos:",
+            processosAtivos
+        );
+    } catch (erro) {
+        console.error(
+            "Erro ao carregar processos ativos:",
+            erro
+        );
+        processosAtivos = [];
+    }
 }
+
+// ENCONTRAR PROCESSO DA MÁQUINA
+
+function encontrarProcessoDaMaquina(maquinaId) {
+    return processosAtivos.find(
+        processo =>
+            processo.maquinaId === maquinaId
+    );
+}
+
+// RENDERIZAR MÁQUINAS
+
+function renderizarMaquinas() {
+    const container =
+        document.getElementById("maquinasGrid");
+    if (!container) {
+        console.warn(
+            "Elemento #maquinasGrid não encontrado."
+        );
+        return;
+    }
+    container.innerHTML = "";
+
+    if (maquinas.length === 0) {
+        container.innerHTML = `
+            <div class="maquinas-empty">
+                <span>NENHUMA MÁQUINA CADASTRADA</span>
+            </div>
+        `;
+        return;
+    }
+    maquinas.forEach(maquina => {
+        const processo =
+            encontrarProcessoDaMaquina(maquina.id);
+        const produzindo =
+            processo &&
+            processo.status === "EM_EXECUCAO";
+        const statusTexto =
+            produzindo
+                ? "PRODUZINDO"
+                : "OPERACIONAL";
+        const statusClasse =
+            produzindo
+                ? "produzindo"
+                : "operacional";
+        const maquinaElement =
+            document.createElement("div");
+        maquinaElement.className =
+            "maquina-row";
+        maquinaElement.innerHTML = `
+            <div class="maquina-identificacao">
+                <div class="maquina-icone">
+                    ⚙
+                </div>
+                <div class="maquina-nome">
+                    <strong>
+                        ${maquina.nome}
+                    </strong>
+                    <span>
+                        ${maquina.codigo}
+                    </span>
+                </div>
+            </div>
+            <div class="maquina-status ${statusClasse}">         
+                ${statusTexto}
+            </div>
+            <div class="maquina-processo">
+                ${
+                    produzindo
+                    ? `
+                        <strong>
+                            ${processo.numeroOS}
+                        </strong>
+                        <span>
+                            ${processo.quantidadeProduzida}
+                            /
+                            ${processo.quantidadePlanejada}
+                        </span>
+                    `
+                    : `
+                        <span>
+                            NENHUM PROCESSO EM EXECUÇÃO
+                        </span>
+                    `
+                }
+            </div>
+            <button
+                type="button"
+                class="maquina-detalhes-button"
+                data-maquina-id="${maquina.id}"
+            >
+                DETALHES →
+            </button>
+        `;
+        container.appendChild(
+            maquinaElement
+        );
+    });
+    adicionarEventosDetalhesMaquinas();
+}
+function adicionarEventosDetalhesMaquinas() {
+    const botoes =
+        document.querySelectorAll(
+            ".maquina-detalhes-button"
+        );
+    botoes.forEach(botao => {
+        botao.addEventListener(
+            "click",
+            () => {
+                const maquinaId =
+                    Number(
+                        botao.dataset.maquinaId
+                    );
+                abrirDetalhesMaquina(
+                    maquinaId
+                );
+            }
+        );
+    });
+}
+async function abrirDetalhesMaquina(id) {
+    try {
+        const resposta = await fetch(
+            `${API_URL}/ProcessosProducao/maquina/${id}`
+        );
+        if (resposta.status === 404) {
+            console.log(
+                "Nenhum processo ativo nesta máquina."
+            );
+            return;
+        }
+        if (!resposta.ok) {
+            throw new Error(
+                `Erro HTTP: ${resposta.status}`
+            );
+        }
+        const processo =
+            await resposta.json();
+        console.log(
+            "Processo da máquina:",
+            processo
+        );     
+        alert(
+            `Máquina: ${processo.maquinaNome}\n\n` +
+            `OS: ${processo.numeroOS}\n` +
+            `Cliente: ${processo.cliente}\n` +
+            `Processo: ${processo.tipoServico}\n\n` +
+            `Produção: ${processo.quantidadeProduzida} / ${processo.quantidadePlanejada}\n` +
+            `Produção por minuto: ${processo.producaoPorMinuto}\n` +
+            `Material consumido: ${processo.materialConsumido}`
+        );
+    } catch (erro) {
+        console.error(
+            "Erro ao carregar detalhes da máquina:",
+            erro
+        );
+    }
+}
+
+carregarMaquinas();
 
 // NOVO MATERIAL
 
@@ -399,13 +611,9 @@ cancelarMaterial.addEventListener(
     fecharModalNovoMaterial
 );
 modalNovoMaterial.addEventListener("click", (event) => {
-
     if (event.target === modalNovoMaterial) {
-
         fecharModalNovoMaterial();
-
     }
-
 });
 
 // NOVO LOTE

@@ -798,7 +798,7 @@
     "Parameters": [],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.ProcessoProducao, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.ProcessoProducaoDTO, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -824,7 +824,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "BlackForge.Models.ProcessoProducao",
+        "Type": "BlackForge.Models.ProcessoProducaoDTO",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -865,7 +865,7 @@
     "Parameters": [],
     "ReturnTypes": [
       {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.ProcessoProducao, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.ProcessoProducaoDTO, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -874,16 +874,6 @@
         "StatusCode": 200
       }
     ]
-  },
-  {
-    "ContainingType": "BlackForge.Controllers.ProcessosProducaoController",
-    "Method": "DebugSql",
-    "RelativePath": "api/ProcessosProducao/debug-sql",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
   },
   {
     "ContainingType": "BlackForge.Controllers.ProcessosProducaoController",
@@ -901,7 +891,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "BlackForge.Models.ProcessoProducao",
+        "Type": "BlackForge.Models.ProcessoProducaoDTO",
         "MediaTypes": [
           "text/plain",
           "application/json",
