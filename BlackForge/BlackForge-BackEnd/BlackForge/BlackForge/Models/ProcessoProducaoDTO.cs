@@ -18,6 +18,5 @@
         public decimal ConsumoPorUnidade { get; set; }
         public decimal MaterialConsumido { get; set; }
         public string Status { get; set; } = string.Empty;
-        public string? Observacoes { get; set; }
     }
 }

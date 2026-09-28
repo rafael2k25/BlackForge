@@ -1432,6 +1432,65 @@
     font-size: 9px;
     letter-spacing: 0.6px;
 }
+.maquina-progresso {
+    --wake-fill: var(--yellow);
+    --wake-track: rgba(255, 255, 255, 0.07);
+    width: 100%;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    overflow: hidden;
+}
+.wake-progress-bar {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 2px;
+    height: 100%;
+    border-radius: 4px;
+    background: var(--wake-track);
+    transform: scaleY(0.25);
+    transform-origin: center;
+    opacity: 0.45;
+    transition:
+        background-color 300ms ease,
+        transform 350ms cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 300ms ease,
+        box-shadow 350ms ease;
+}
+.wake-progress-bar[data-active="true"] {
+    background: var(--wake-fill);
+    transform: scaleY(0.65);
+    opacity: 1;
+}
+.wake-progress-bar[data-current="true"] {
+    transform: scaleY(1);
+    opacity: 1;
+    box-shadow:
+        0 0 6px rgba(240, 200, 8, 0.35);
+}
+.wake-progress-bar[data-wave="true"] {
+    transform: scaleY(0.82);
+    opacity: 0.9;
+}
+.wake-progress-bar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--wake-fill);
+    opacity: 0;
+    transition:
+        opacity 250ms ease;
+}
+.wake-progress-bar[data-current="true"]::after {
+    opacity: 0.35;
+}
+@media (prefers-reduced-motion: reduce) {
+    .wake-progress-bar {
+        transition: none;
+    }
+}
 .maquina-eficiencia {
     display: flex;
     align-items: center;
@@ -1583,6 +1642,49 @@
 .maquina-detalhes-button:active {
     transform: translateY(0);
     background: #24262a;
+}
+
+.maquina-detalhes-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    transform: translate(-9px, -9px);
+}
+
+.maquina-detalhes-footer .btn-secondary {
+    height: 40px;
+    padding: 0 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border);
+    border-radius: 5px;
+
+    background: var(--panel-light);
+    color: var(--text-secondary);
+
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+
+    cursor: pointer;
+
+    transition:
+        all 0.2s ease;
+}
+
+.maquina-detalhes-footer .btn-secondary:hover {
+    border-color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.maquina-detalhes-footer .btn-secondary:active {
+    transform: scale(0.97);
 }
 
 /* RESPONSIVIDADE */

@@ -42,8 +42,61 @@ menuItems.forEach(menuItem => {
         });
         // Ativa o item clicado
         menuItem.classList.add("active");
+        if (sectionId === "maquinas") {
+            carregarMaquinas();
+        }
     });
 });
+function fecharDetalhesMaquina() {
+    pararSimulacaoProgresso();
+    const modal =
+        document.getElementById(
+            "modalDetalhesMaquina"
+        );
+    if (!modal) {
+        return;
+    }
+    modal.classList.remove("active");
+}
+const fecharDetalhesMaquinaX =
+    document.getElementById("fecharDetalhesMaquina");
+const fecharDetalhesMaquinaBotao =
+    document.getElementById("fecharDetalhesMaquinaBotao");
+if (fecharDetalhesMaquinaX) {
+    fecharDetalhesMaquinaX.addEventListener(
+        "click",
+        fecharDetalhesMaquina
+    );
+}
+if (fecharDetalhesMaquinaBotao) {
+
+    fecharDetalhesMaquinaBotao.addEventListener(
+        "click",
+        fecharDetalhesMaquina
+    );
+}
+const modalDetalhesMaquina =
+    document.getElementById("modalDetalhesMaquina");
+if (modalDetalhesMaquina) {
+    modalDetalhesMaquina.addEventListener(
+        "click",
+        function (event) {
+
+            if (event.target === modalDetalhesMaquina) {
+                fecharDetalhesMaquina();
+            }
+        }
+    );
+}
+document.addEventListener(
+    "keydown",
+    function (event) {
+        if (event.key !== "Escape") {
+            return;
+        }
+        fecharDetalhesMaquina();
+    }
+);
 
 // =========================================================
 // CATEGORIAS
@@ -366,31 +419,30 @@ if (modalMaquina) {
 
 let maquinas = [];
 let processosAtivos = [];
+let configuracoesMaquina = [];
 
 // CARREGAR MÁQUINAS
 
 async function carregarMaquinas() {
+    const container = document.getElementById("maquinasGrid");
     try {
-        const resposta = await fetch(
-            `${API_URL}/Maquinas`
-        );
+        const resposta = await fetch(`${API_URL}/Maquinas`);
         if (!resposta.ok) {
-            throw new Error(
-                `Erro HTTP: ${resposta.status}`
-            );
+            throw new Error(`Erro HTTP: ${resposta.status}`);
         }
         maquinas = await resposta.json();
-        console.log(
-            "Máquinas carregadas:",
-            maquinas
-        );
+        renderizarMaquinas();
         await carregarProcessosAtivos();
         renderizarMaquinas();
     } catch (erro) {
-        console.error(
-            "Erro ao carregar máquinas:",
-            erro
-        );
+        console.error("Erro ao carregar máquinas:", erro);
+        if (container) {
+            container.innerHTML = `
+                <div class="maquinas-empty">
+                    <span>ERRO AO CARREGAR EQUIPAMENTOS</span>
+                </div>
+            `;
+        }
     }
 }
 
@@ -486,9 +538,8 @@ function renderizarMaquinas() {
                 ${statusTexto}
             </div>
             <div class="maquina-processo">
-                ${
-                    produzindo
-                    ? `
+                ${produzindo
+                ? `
                         <strong>
                             ${processo.numeroOS}
                         </strong>
@@ -498,12 +549,12 @@ function renderizarMaquinas() {
                             ${processo.quantidadePlanejada}
                         </span>
                     `
-                    : `
+                : `
                         <span>
                             NENHUM PROCESSO EM EXECUÇÃO
                         </span>
                     `
-                }
+            }
             </div>
             <button
                 type="button"
@@ -539,46 +590,431 @@ function adicionarEventosDetalhesMaquinas() {
         );
     });
 }
-async function abrirDetalhesMaquina(id) {
-    try {
-        const resposta = await fetch(
-            `${API_URL}/ProcessosProducao/maquina/${id}`
-        );
-        if (resposta.status === 404) {
-            console.log(
-                "Nenhum processo ativo nesta máquina."
-            );
-            return;
-        }
-        if (!resposta.ok) {
-            throw new Error(
-                `Erro HTTP: ${resposta.status}`
-            );
-        }
-        const processo =
-            await resposta.json();
-        console.log(
-            "Processo da máquina:",
-            processo
-        );     
-        alert(
-            `Máquina: ${processo.maquinaNome}\n\n` +
-            `OS: ${processo.numeroOS}\n` +
-            `Cliente: ${processo.cliente}\n` +
-            `Processo: ${processo.tipoServico}\n\n` +
-            `Produção: ${processo.quantidadeProduzida} / ${processo.quantidadePlanejada}\n` +
-            `Produção por minuto: ${processo.producaoPorMinuto}\n` +
-            `Material consumido: ${processo.materialConsumido}`
-        );
-    } catch (erro) {
-        console.error(
-            "Erro ao carregar detalhes da máquina:",
-            erro
-        );
+function numeroValido(valor) {
+    if (valor === null || valor === undefined || valor === "") {
+        return null;
+    }
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? numero : null;
+}
+function normalizarTexto(texto) {
+    return String(texto ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toLowerCase();
+}
+function encontrarConfiguracaoDoServico(configuracoes, tipoServico) {
+    if (!Array.isArray(configuracoes) || !tipoServico) {
+        return null;
+    }
+    const alvo = normalizarTexto(tipoServico);
+    return configuracoes.find(
+        configuracao => normalizarTexto(configuracao.tipoServico) === alvo
+    ) || null;
+}
+function formatarTempoOperacao(dataInicio) {
+    if (!dataInicio) {
+        return "-";
+    }
+    const inicio = new Date(dataInicio);
+    if (Number.isNaN(inicio.getTime())) {
+        return "-";
+    }
+    const minutosTotais = Math.max(
+        0,
+        Math.floor((new Date() - inicio) / 60000)
+    );
+    const horas = Math.floor(minutosTotais / 60);
+    const minutos = minutosTotais % 60;
+    return horas > 0 ? `${horas}h ${minutos}min` : `${minutos} min`;
+}
+function definirTexto(idElemento, texto) {
+    const elemento = document.getElementById(idElemento);
+    if (elemento) {
+        elemento.textContent = texto;
+    }
+}
+const STATUS_EM_EXECUCAO = "EM_EXECUCAO";
+const QUANTIDADE_BARRAS_PROGRESSO = 32;
+function criarBarrasProgressoMaquina() {
+
+    const container =
+        document.getElementById("detalhesMaquinaProgresso");
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    for (
+        let i = 0;
+        i < QUANTIDADE_BARRAS_PROGRESSO;
+        i++
+    ) {
+
+        const barra = document.createElement("span");
+
+        barra.className = "wake-progress-bar";
+
+        barra.dataset.active = "false";
+        barra.dataset.current = "false";
+        barra.dataset.wave = "false";
+
+        container.appendChild(barra);
     }
 }
 
-carregarMaquinas();
+
+function atualizarVisualProgresso(produzida, planejada) {
+
+    const container =
+        document.getElementById("detalhesMaquinaProgresso");
+    if (!container || planejada <= 0) {
+        return;
+    }
+    const percentual =
+        Math.min(
+            (produzida / planejada) * 100,
+            100
+        );
+    const barras =
+        container.querySelectorAll(
+            ".wake-progress-bar"
+        );
+    const posicaoAtual =
+        (percentual / 100) *
+        (barras.length - 1);
+    barras.forEach((barra, index) => {
+        const distancia =
+            Math.abs(index - posicaoAtual);
+        barra.dataset.active =
+            index <= posicaoAtual ? "true" : "false";
+        barra.dataset.current = distancia < 0.5 ? "true" : "false";
+        barra.dataset.wave = distancia > 0.5 && distancia <= 1
+                ? "true"
+                : "false";
+    });
+
+    definirTexto(
+        "detalhesMaquinaProgressoTexto",
+        `${Math.round(produzida)} / ${Math.round(planejada)}`
+    );
+
+    definirTexto(
+        "detalhesMaquinaPercentual",
+        `${percentual.toFixed(0)}%`
+    );
+}
+
+
+function iniciarSimulacaoProgresso(
+    produzidaInicial,
+    planejada,
+    producaoPorMinuto,
+    consumoPorUnidade
+) {
+
+    pararSimulacaoProgresso();
+
+    if (
+        planejada <= 0 ||
+        producaoPorMinuto === null ||
+        producaoPorMinuto <= 0
+    ) {
+        return;
+    }
+
+    progressoSimulado =
+        Math.min(
+            produzidaInicial,
+            planejada
+        );
+
+    // 1 segundo real = 1 minuto simulado
+    const MINUTOS_SIMULADOS_POR_SEGUNDO = 0.15;
+
+    intervaloProgressoMaquina =
+        setInterval(() => {
+
+            if (
+                progressoSimulado >=
+                planejada
+            ) {
+
+                progressoSimulado =
+                    planejada;
+
+                atualizarVisualProgresso(
+                    progressoSimulado,
+                    planejada
+                );
+
+                atualizarDadosProducaoVisual(
+                    progressoSimulado,
+                    consumoPorUnidade
+                );
+
+                pararSimulacaoProgresso();
+
+                return;
+            }
+
+            progressoSimulado +=
+                producaoPorMinuto *
+                MINUTOS_SIMULADOS_POR_SEGUNDO;
+
+            if (
+                progressoSimulado >
+                planejada
+            ) {
+                progressoSimulado =
+                    planejada;
+            }
+
+            atualizarVisualProgresso(
+                progressoSimulado,
+                planejada
+            );
+
+            atualizarDadosProducaoVisual(
+                progressoSimulado,
+                consumoPorUnidade
+            );
+
+        }, 1000);
+}
+
+
+function pararSimulacaoProgresso() {
+
+    if (intervaloProgressoMaquina) {
+
+        clearInterval(
+            intervaloProgressoMaquina
+        );
+
+        intervaloProgressoMaquina = null;
+    }
+}
+
+
+function atualizarDadosProducaoVisual(
+    produzida,
+    consumoPorUnidade
+) {
+
+    if (
+        consumoPorUnidade === null ||
+        consumoPorUnidade === undefined
+    ) {
+        return;
+    }
+
+    const materialConsumido =
+        produzida *
+        consumoPorUnidade;
+
+    definirTexto(
+        "detalhesMaquinaMaterial",
+        materialConsumido.toFixed(2)
+    );
+}
+let intervaloProgressoMaquina = null;
+let progressoSimulado = 0;
+function numeroValido(valor) {
+    if (valor === null || valor === undefined || valor === "") {
+        return null;
+    }
+    const numero = Number(valor);
+    return Number.isFinite(numero) ? numero : null;
+}
+function normalizarTexto(texto) {
+    return String(texto ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toLowerCase();
+}
+function encontrarConfiguracaoDoServico(configuracoes, tipoServico) {
+    if (!Array.isArray(configuracoes) || !tipoServico) {
+        return null;
+    }
+    const alvo = normalizarTexto(tipoServico);
+    return configuracoes.find(
+        configuracao =>
+            configuracao.ativa !== false &&
+            normalizarTexto(configuracao.tipoServico) === alvo
+    ) || null;
+}
+function formatarTempoOperacao(dataInicio) {
+    if (!dataInicio) {
+        return "-";
+    }
+    const inicio = new Date(dataInicio);
+    if (Number.isNaN(inicio.getTime())) {
+        return "-";
+    }
+    const minutosTotais = Math.max(
+        0,
+        Math.floor((new Date() - inicio) / 60000)
+    );
+    const horas = Math.floor(minutosTotais / 60);
+    const minutos = minutosTotais % 60;
+
+    return horas > 0 ? `${horas}h ${minutos}min` : `${minutos} min`;
+}
+function definirTexto(idElemento, texto) {
+    const elemento = document.getElementById(idElemento);
+    if (elemento) {
+        elemento.textContent = texto;
+    }
+}
+async function abrirDetalhesMaquina(id) {
+    try {
+        const respostaMaquina = await fetch(`${API_URL}/Maquinas/${id}`);
+        if (!respostaMaquina.ok) {
+            throw new Error(
+                `Erro ao buscar máquina: ${respostaMaquina.status}`
+            );
+        }
+        const maquina = await respostaMaquina.json();
+        let processo = null;
+        const respostaProcesso = await fetch(
+            `${API_URL}/ProcessosProducao/maquina/${id}`
+        );
+        if (respostaProcesso.ok) {
+            processo = await respostaProcesso.json();
+        } else if (respostaProcesso.status !== 404) {
+            throw new Error(
+                `Erro ao buscar processo: ${respostaProcesso.status}`
+            );
+        }
+        const configuracoes = await carregarConfiguracoesMaquina(id);
+        definirTexto("detalhesMaquinaNome", maquina.nome || "Máquina");
+        definirTexto(
+            "detalhesMaquinaIdentificacao",
+            `${maquina.codigo || "-"} • ` +
+            `${maquina.fabricante || "-"} • ` +
+            `${maquina.modelo || "-"}`
+        );
+
+        const produzindo =
+            !!processo && processo.status === STATUS_EM_EXECUCAO;
+        if (!produzindo) {
+            // ---------- SEM PROCESSO EM EXECUÇÃO ----------
+            definirTexto("detalhesMaquinaStatus", "OPERACIONAL");
+            definirTexto("detalhesMaquinaOS", "-");
+            definirTexto("detalhesMaquinaCliente", "-");
+            definirTexto("detalhesMaquinaProcesso", "-");
+            definirTexto("detalhesMaquinaProgressoTexto", "0 / 0");
+            definirTexto("detalhesMaquinaPercentual", "0%");
+            definirTexto("detalhesMaquinaProducaoMinuto", "-");
+            definirTexto("detalhesMaquinaTempo", "-");
+            definirTexto("detalhesMaquinaMaterial", "-");
+            definirTexto(
+                "detalhesMaquinaObservacoes",
+                maquina.observacoes || "Nenhuma observação registrada."
+            );
+            pararSimulacaoProgresso();
+            criarBarrasProgressoMaquina();
+            atualizarVisualProgresso(0, 1);
+        } else {
+            // ---------- PROCESSO EM EXECUÇÃO ----------
+            const configuracao = encontrarConfiguracaoDoServico(
+                configuracoes,
+                processo.tipoServico
+            );
+            const produzida = numeroValido(processo.quantidadeProduzida) ?? 0;
+            const planejada = numeroValido(processo.quantidadePlanejada) ?? 0;
+            const percentualProducao = planejada > 0
+                ? Math.min((produzida / planejada) * 100, 100)
+                : 0;
+            const porMinuto =
+                numeroValido(processo.producaoPorMinuto) ??
+                numeroValido(configuracao?.producaoPorMinuto);
+            const consumoPorUnidade =
+                numeroValido(configuracao?.consumoPorUnidade);
+            const materialConsumido =
+                numeroValido(processo.materialConsumido) ??
+                (consumoPorUnidade !== null
+                    ? produzida * consumoPorUnidade
+                    : null);
+            definirTexto("detalhesMaquinaStatus", "PRODUZINDO");
+            definirTexto("detalhesMaquinaOS", processo.numeroOS || "-");
+            definirTexto("detalhesMaquinaCliente", processo.cliente || "-");
+            definirTexto(
+                "detalhesMaquinaProcesso",
+                processo.tipoServico || "-"
+            );
+            definirTexto(
+                "detalhesMaquinaProgressoTexto",
+                `${produzida} / ${planejada}`
+            );
+            definirTexto(
+                "detalhesMaquinaPercentual",
+                `${percentualProducao.toFixed(0)}%`
+            );
+            definirTexto(
+                "detalhesMaquinaProducaoMinuto",
+                porMinuto !== null ? `${porMinuto.toFixed(2)} un/min` : "-"
+            );
+            definirTexto(
+                "detalhesMaquinaTempo",
+                formatarTempoOperacao(processo.dataInicio)
+            );
+            definirTexto(
+                "detalhesMaquinaMaterial",
+                materialConsumido !== null
+                    ? materialConsumido.toFixed(2)
+                    : "-"
+            );
+            definirTexto(
+                "detalhesMaquinaObservacoes",
+                processo.observacoes ||
+                maquina.observacoes ||
+                "Nenhuma observação registrada."
+            );
+            criarBarrasProgressoMaquina();
+            atualizarVisualProgresso(
+                produzida,
+                planejada
+            );
+            iniciarSimulacaoProgresso(
+                produzida,
+                planejada,
+                porMinuto,
+                consumoPorUnidade
+            );
+        }
+        document
+            .getElementById("modalDetalhesMaquina")
+            .classList.add("active");
+    } catch (erro) {
+        console.error("Erro ao abrir detalhes da máquina:", erro);
+        alert("Não foi possível carregar os detalhes da máquina.");
+    }
+}
+
+// CONFIGURAÇÕES MÁQUINA
+
+async function carregarConfiguracoesMaquina(maquinaId) {
+    try {
+        const resposta = await fetch(
+            `${API_URL}/ConfiguracoesMaquina/maquina/${maquinaId}`
+        );
+        if (!resposta.ok) {
+            throw new Error(`Erro HTTP: ${resposta.status}`);
+        }
+        return await resposta.json();
+    } catch (erro) {
+        console.error("Erro ao carregar configurações da máquina:",
+            erro
+        );
+        return [];
+    }
+}
 
 // NOVO MATERIAL
 
@@ -1216,11 +1652,13 @@ function editarFuncionarioSelecionado() {
     document.getElementById("cadastrarFuncionario").textContent = "SALVAR ALTERAÇÕES";
 }
 
+
 // =========================================================
 // INICIALIZAÇÃO
 // =========================================================
 
 carregarFuncionarios();
+carregarMaquinas();
 
 // =========================================================
 // RELATÓRIOS DE SERVIÇOS

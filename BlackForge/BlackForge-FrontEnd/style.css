@@ -54,6 +54,41 @@
     --sidebar-width: 270px;
 }
 
+/* ========== TEMA CLARO ========== */
+
+   [data-theme="claro"] {
+
+    /* -=-=-=- FUNDOS -=-=-=- */
+    --bg-primary: #1C2127;
+    --bg-secondary: #242A31;
+    --bg-tertiary: #303740;
+
+    /* -=-=-=- PAINÉIS -=-=-=- */
+    --panel: #F1F2F2;
+    --panel-dark: #D5DADE;
+    --panel-light: #FFFFFF;
+    --panel-hover: #E8EBED;
+
+    /* -=-=-=- COR PRINCIPAL -=-=-=- */
+    --yellow: #0070CC;
+    --yellow-bright: #1688FF;
+    --yellow-dark: #00549A;
+
+    /* -=-=-=- ESTADOS -=-=-=- */
+    --success: #00A651;
+    --warning: #F5C400;
+    --danger: #E4002B;
+    --info: #1688FF;
+
+    /* -=-=-=- TEXTO -=-=-=- */
+    --text-primary: #F1F2F2;
+    --text-secondary: #C7CDD2;
+
+    /* -=-=-=- BORDAS -=-=-=- */
+    --border: #3B434B;
+    --border-light: #D0D5D9;
+    --border-yellow: #0070CC;
+}
 
 /* ========== RESET ========== */
 

@@ -1,5 +1,51 @@
 [
   {
+    "ContainingType": "BlackForge.Controllers.ConfiguracaoController",
+    "Method": "GetConfiguracao",
+    "RelativePath": "api/Configuracao",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.ConfiguracaoSistema",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracaoController",
+    "Method": "AlterarTema",
+    "RelativePath": "api/Configuracao/tema",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "codigoTema",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.ConfiguracaoSistema",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "BlackForge.Controllers.ConfiguracoesMaquinaController",
     "Method": "GetConfiguracoes",
     "RelativePath": "api/ConfiguracoesMaquina",

@@ -46,8 +46,7 @@ namespace BlackForge.Controllers
                     ConsumoPorUnidade = p.ConsumoPorUnidade,
                     MaterialConsumido = p.MaterialConsumido,
 
-                    Status = p.Status,
-                    Observacoes = p.Observacoes
+                    Status = p.Status
                 })
                 .ToListAsync();
 
@@ -85,8 +84,7 @@ namespace BlackForge.Controllers
                     ConsumoPorUnidade = p.ConsumoPorUnidade,
                     MaterialConsumido = p.MaterialConsumido,
 
-                    Status = p.Status,
-                    Observacoes = p.Observacoes
+                    Status = p.Status
                 })
                 .FirstOrDefaultAsync();
 
@@ -135,8 +133,7 @@ namespace BlackForge.Controllers
                     ConsumoPorUnidade = p.ConsumoPorUnidade,
                     MaterialConsumido = p.MaterialConsumido,
 
-                    Status = p.Status,
-                    Observacoes = p.Observacoes
+                    Status = p.Status
                 })
                 .FirstOrDefaultAsync();
 
@@ -177,14 +174,13 @@ namespace BlackForge.Controllers
                     ConsumoPorUnidade = p.ConsumoPorUnidade,
                     MaterialConsumido = p.MaterialConsumido,
 
-                    Status = p.Status,
-                    Observacoes = p.Observacoes
+                    Status = p.Status
                 })
                 .ToListAsync();
 
             return Ok(processos);
         }
-      
+
         [HttpPut("{id}/finalizar")]
         public async Task<IActionResult> FinalizarProcesso(
             int id,

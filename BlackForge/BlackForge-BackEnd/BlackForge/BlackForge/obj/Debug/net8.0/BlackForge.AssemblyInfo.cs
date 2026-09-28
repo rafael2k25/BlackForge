@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BlackForge")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0efd7fa89aa02f3a0f1c8feb31e90a1e08c74a9c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4a61499fc9b2b7e9c2b450e5ff2bec9da8f23773")]
 [assembly: System.Reflection.AssemblyProductAttribute("BlackForge")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BlackForge")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

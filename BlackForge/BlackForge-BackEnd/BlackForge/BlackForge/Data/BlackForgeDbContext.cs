@@ -17,6 +17,8 @@ namespace BlackForge.Data
         public DbSet<OrdemServico> OrdensServico { get; set; }
         public DbSet<OrdemServicoMaterial> OrdensServicoMateriais { get; set; }
         public DbSet<ProcessoProducao> ProcessosProducao { get; set; }
+        public DbSet<Tema> Temas { get; set; }
+        public DbSet<ConfiguracaoSistema> ConfiguracaoSistema { get; set; }
         public DbSet<ConfiguracaoMaquina> ConfiguracoesMaquina { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -229,10 +231,6 @@ namespace BlackForge.Data
                 .HasMaxLength(30)
                 .IsRequired();
             modelBuilder.Entity<ProcessoProducao>()
-                .Property(p => p.Observacoes)
-                .HasMaxLength(500)
-                .IsRequired(false);
-            modelBuilder.Entity<ProcessoProducao>()
                 .HasOne(p => p.Maquina)
                 .WithMany(m => m.ProcessosProducao)
                 .HasForeignKey(p => p.MaquinaId)
@@ -272,6 +270,13 @@ namespace BlackForge.Data
                 .WithMany(m => m.Configuracoes)
                 .HasForeignKey(c => c.MaquinaId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // ================= CONFIGURAÇÃO DO SISTEMA =================
+            modelBuilder.Entity<ConfiguracaoSistema>()
+                .HasOne(c => c.Tema)
+                .WithMany()
+                .HasForeignKey(c => c.TemaId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
