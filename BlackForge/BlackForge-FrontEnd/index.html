@@ -123,9 +123,6 @@
                     </small>
                 </div>
             </div>
-            <div class="version">
-                Build: SE2.0
-            </div>
         </div>
     </aside>
 
@@ -285,16 +282,28 @@
                     + NOVA OS
                 </button>
             </div>
-            <div class="industrial-panel empty-panel">
-                <h3>
-                    Não existem ordens de serviço cadastradas no sistema.
-                </h3>
-                <p>
-                    <!-- CAMPO VAZIO -->
-                </p>
-                <button type="button" class="secondary-button" id="criarOS">
-                    CRIAR OS
-                </button>
+            <div class="industrial-panel maquinas-panel ordens-servico-panel">
+                <div class="maquinas-empty ordens-servico-empty" id="ordensServicoEmpty">
+                    <div class="maquinas-empty-icon">
+                        <ion-icon name="document-text-outline"></ion-icon>
+                    </div>
+                    <h3>
+                        NENHUMA ORDEM DE SERVIÇO CADASTRADA
+                    </h3>
+                    <p>
+                        Cadastre uma nova OS para começar o acompanhamento.
+                    </p>
+                    <button
+                        type="button"
+                        class="secondary-button"
+                        id="criarOS">
+                        CRIAR OS
+                    </button>
+                </div>
+                <div
+                    class="ordens-servico-lista"
+                    id="ordensServicoLista"
+                ></div>
             </div>
         </section>
 
@@ -585,259 +594,360 @@
     <!-- ======================== INÍCIO MODAL NOVA ORDEM DE SERVIÇO ======================== -->
 
     <div class="modal-overlay" id="modalOS">
-        <div class="modal modal-os">
+        <div class="modal-material ordem-modal">
 
-            <!-- ================ CABEÇALHO ================ -->
+            <!-- ======================== CABEÇALHO ======================== -->
 
-            <div class="modal-header">
+            <div class="modal-material-header">
                 <div>
-                    <h2>
-                        Nova Ordem de Serviço
-                    </h2>
-                    <p>
-                        Cadastro e configuração da ordem de produção.
-                    </p>
+                    <span class="section-label">PRODUÇÃO</span>
+                    <h2 id="tituloModalOS">NOVA ORDEM DE SERVIÇO</h2>
+                    <span>Cadastro e configuração da ordem de produção</span>
                 </div>
-                <button type="button" class="modal-close" id="fecharModalOS">
-                    <ion-icon name="close-sharp"></ion-icon>
+                <button class="modal-close" id="fecharModalOS" type="button" aria-label="Fechar">
+                    <ion-icon name="close-outline"></ion-icon>
                 </button>
             </div>
 
-            <!-- ================ DADOS DA ORDEM ================ -->
+            <!-- ======================== CONTEÚDO ======================== -->
 
-            <div class="os-block">
-                <div class="os-block-header">
-                    <div>
-                        <span>
-                            ● IDENTIFICAÇÃO
-                        </span>
-                        <h3>
-                            Dados do Cliente
-                        </h3>
-                    </div>
-                </div>
-                <div class="form-grid form-grid-3">
-                    <div class="form-group">
-                        <label for="clienteOS">
-                            CLIENTE
-                        </label>
-                        <input type="text" id="clienteOS" placeholder="Nome do cliente">
-                    </div>
-                    <div class="form-group">
-                        <label for="contatoOS">
-                            CONTATO
-                        </label>
-                        <input type="text" id="contatoOS" placeholder="Ex.: (79) 4002-8922">
-                    </div>
-                    <div class="form-group">
-                        <label for="enderecoOS">
-                            ENDEREÇO
-                        </label>
-                        <input type="text" id="enderecoOS" placeholder="Endereço do cliente">
-                    </div>
-                    <div class="form-group">
-                        <label for="numeroOS">
-                            NÚMERO DA OS
-                        </label>
-                        <input type="text" id="numeroOS" placeholder="Ex.: OS-0001">
-                    </div>
-                    <div class="form-group">
-                        <label for="dataOS">
-                            DATA DE ABERTURA
-                        </label>
-                        <input type="date" id="dataOS">
-                    </div>
-                    <div class="form-group form-full">
-                        <label for="descricaoOS">
-                            DESCRIÇÃO DO SERVIÇO
-                        </label>
-                        <textarea id="descricaoOS" rows="3"
-                            placeholder="Descreva o serviço que será realizado..."></textarea>
-                    </div>
-                </div>
-            </div>
+            <div class="modal-material-content">
 
-            <!-- ================ PRODUÇÃO ================ -->
+                <!-- ================= DADOS DO CLIENTE ================= -->
 
-            <div class="os-block">
-                <div class="os-block-header">
-                    <div>
-                        <span>
-                            ● PRODUÇÃO
-                        </span>
-                        <h3>
-                            Dados de Produção
-                        </h3>
+                <div class="material-section">
+                    <div class="material-section-title">DADOS DO CLIENTE</div>
+                    <div class="material-form-grid">
+                        <div class="material-form-group">
+                            <label for="clienteOS">CLIENTE</label>
+                            <input type="text" id="clienteOS" placeholder="Nome do cliente">
+                        </div>
+                        <div class="material-form-group">
+                            <label for="contatoOS">CONTATO</label>
+                            <input type="text" id="contatoOS" placeholder="Ex.: (79) 4002-8922">
+                        </div>
+                        <div class="material-form-group material-form-full">
+                            <label for="enderecoOS">ENDEREÇO</label>
+                            <input type="text" id="enderecoOS" placeholder="Endereço do cliente">
+                        </div>
                     </div>
                 </div>
-                <div class="form-grid form-grid-3">
-                    <div class="form-group">
-                        <label for="tipoServico">
-                            TIPO DE SERVIÇO
-                        </label>
-                        <select id="tipoServico">
-                            <option value="">
-                                Selecionar...
-                            </option>
-                            <option value="usinagem">
-                                Usinagem
-                            </option>
-                            <option value="torneamento">
-                                Torneamento
-                            </option>
-                            <option value="fresagem">
-                                Fresagem
-                            </option>
-                            <option value="corte">
-                                Corte
-                            </option>
-                            <option value="solda">
-                                Solda
-                            </option>
-                            <option value="outro">
-                                Outro
-                            </option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="dataEntregaOS">
-                            PREVISÃO DE ENTREGA
-                        </label>
-                        <input type="date" id="dataEntregaOS">
-                    </div>
-                    <div class="form-group">
-                        <label for="responsavelOS">
-                            RESPONSÁVEL
-                        </label>
-                        <input type="text" id="responsavelOS" placeholder="Responsável pela OS">
-                    </div>
-                </div>
-            </div>
 
-            <!-- ================ FINANCEIRO ================ -->
+                <!-- ================= IDENTIFICAÇÃO ================= -->
 
-            <div class="os-block">
-                <div class="os-block-header">
-                    <div>
-                        <span>
-                            ● FINANCEIRO
-                        </span>
-                        <h3>
-                            Valores da Ordem
-                        </h3>
+                <div class="material-section">
+                    <div class="material-section-title">IDENTIFICAÇÃO DA ORDEM</div>
+                    <div class="material-form-grid">
+                        <div class="material-form-group">
+                            <label for="numeroOS">NÚMERO DA OS</label>
+                            <input type="text" id="numeroOS" placeholder="Ex.: OS-0001">
+                        </div>
+                        <div class="material-form-group">
+                            <label for="dataOS">DATA DE ABERTURA</label>
+                            <input type="date" id="dataOS">
+                        </div>
+                        <div class="material-form-group material-form-full">
+                            <label for="descricaoOS">DESCRIÇÃO DO SERVIÇO</label>
+                            <textarea id="descricaoOS" rows="3"
+                                placeholder="Descreva o serviço que será realizado..."></textarea>
+                        </div>
                     </div>
                 </div>
-                <div class="form-grid form-grid-3">
-                    <div class="form-group">
-                        <label for="valorMateriais">
-                            MATERIAIS
-                        </label>
-                        <input type="number" id="valorMateriais" value="0.00" min="0" step="0.01" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label for="valorMaoObra">
-                            MÃO DE OBRA
-                        </label>
-                        <input type="number" id="valorMaoObra" value="0.00" min="0" step="0.01">
-                    </div> <br>
-                    <div class="form-group">
-                        <label for="descontoOS">
-                            DESCONTO
-                        </label>
-                        <input type="number" id="descontoOS" value="0.00" min="0" step="0.01">
+
+                <!-- ================= PRODUÇÃO ================= -->
+
+                <div class="material-section">
+                    <div class="material-section-title">DADOS DE PRODUÇÃO</div>
+                    <div class="material-form-grid">
+                        <div class="material-form-group">
+                            <label for="tipoServico">TIPO DE SERVIÇO</label>
+                            <select id="tipoServico">
+                                <option value="">Selecionar...</option>
+                                <option value="usinagem">Usinagem</option>
+                                <option value="torneamento">Torneamento</option>
+                                <option value="fresagem">Fresagem</option>
+                                <option value="corte">Corte</option>
+                                <option value="solda">Solda</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                        <div class="material-form-group">
+                            <label for="dataEntregaOS">PREVISÃO DE ENTREGA</label>
+                            <input type="date" id="dataEntregaOS">
+                        </div>
+                        <div class="material-form-group material-form-full">
+                            <label for="responsavelOS">RESPONSÁVEL</label>
+                            <select id="responsavelOS">
+                                <option value="">Selecione o funcionário</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div class="os-total-box">
-                    <div>
-                        <span>
-                            VALOR TOTAL DA ORDEM
-                        </span>
-                        <small>
-                            Materiais + mão de obra - desconto
-                        </small>
+
+                <!-- ================= FINANCEIRO ================= -->
+
+                <div class="material-section">
+                    <div class="material-section-title">VALORES DA ORDEM</div>
+                    <div class="material-form-grid">
+                        <div class="material-form-group">
+                            <label for="valorMateriais">MATERIAIS</label>
+                            <input type="number" id="valorMateriais" value="0.00" min="0" step="0.01" readonly>
+                        </div>
+                        <div class="material-form-group">
+                            <label for="valorMaoObra">MÃO DE OBRA</label>
+                            <input type="number" id="valorMaoObra" value="0.00" min="0" step="0.01">
+                        </div>
+                        <div class="material-form-group">
+                            <label for="descontoOS">DESCONTO</label>
+                            <input type="number" id="descontoOS" value="0.00" min="0" step="0.01">
+                        </div>
+                        <div class="material-form-group">
+                            <label for="condicaoPagamento">CONDIÇÃO DE PAGAMENTO</label>
+                            <select id="condicaoPagamento">
+                                <option value="">Selecionar...</option>
+                                <option value="avista">À vista</option>
+                                <option value="pix">PIX</option>
+                                <option value="cartao">Cartão</option>
+                                <option value="boleto">Boleto</option>
+                                <option value="30dias">30 dias</option>
+                                <option value="parcelado">Parcelado</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
                     </div>
-                    <strong id="valorTotalOS">
-                        R$ 0,00
-                    </strong>
-                </div> <br>
-                <div class="form-grid form-grid-2">
-                    <div class="form-group">
-                        <label for="condicaoPagamento">
-                            CONDIÇÃO DE PAGAMENTO
-                        </label>
-                        <select id="condicaoPagamento">
-                            <option value="">
-                                Selecionar...
-                            </option>
-                            <option value="avista">
-                                À vista
-                            </option>
-                            <option value="pix">
-                                PIX
-                            </option>
-                            <option value="cartao">
-                                Cartão
-                            </option>
-                            <option value="boleto">
-                                Boleto
-                            </option>
-                            <option value="30dias">
-                                30 dias
-                            </option>
-                            <option value="parcelado">
-                                Parcelado
-                            </option>
-                            <option value="outro">
-                                Outro
-                            </option>
-                        </select>
+                    <div class="os-total-box">
+                        <div>
+                            <span>VALOR TOTAL DA ORDEM</span>
+                            <small>Materiais + mão de obra - desconto</small>
+                        </div>
+                        <strong id="valorTotalOS">R$ 0,00</strong>
+                    </div>
+                </div>
+
+                <!-- ================= OBSERVAÇÕES ================= -->
+
+                <div class="material-section">
+                    <div class="material-section-title">OBSERVAÇÕES</div>
+                    <div class="material-form-group">
+                        <label for="observacoesOS">OBSERVAÇÕES</label>
+                        <textarea id="observacoesOS" rows="4"
+                            placeholder="Adicione observações, recomendações ou informações complementares..."></textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- ================ OBSERVAÇÕES ================ -->
+            <!-- ======================== AÇÕES ======================== -->
 
-            <div class="os-block">
-                <div class="os-block-header">
-                    <div>
-                        <span>
-                            ● OBSERVAÇÕES
-                        </span>
-                        <h3>
-                            Informações Adicionais
-                        </h3>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="observacoesOS">
-                        OBSERVAÇÕES
-                    </label>
-                    <textarea id="observacoesOS" rows="4"
-                        placeholder="Adicione observações, recomendações ou informações complementares...">
-                    </textarea>
-                </div>
-            </div>
-
-            <!-- ================ RODAPÉ ================ -->
-
-            <div class="modal-os-footer">
-                <button type="button" class="secondary-button" id="cancelarOS">
+            <div class="modal-material-footer">
+                <button class="btn-secondary" id="cancelarOS" type="button">
                     CANCELAR
                 </button>
-                <div class="modal-os-footer-right">
-                    <button type="button" class="secondary-button" id="salvarOS">
-                        SALVAR OS
-                    </button>
-                    <button type="button" class="primary-button" id="salvarImprimirOS">
-                        <ion-icon name="print-sharp"></ion-icon>
-                        SALVAR E IMPRIMIR
-                    </button>
-                </div>
+                <button class="btn-secondary" id="salvarOS" type="button">
+                    SALVAR OS
+                </button>
+                <button class="btn-primary" id="salvarImprimirOS" type="button">
+                    <ion-icon name="print-sharp"></ion-icon>
+                    SALVAR E IMPRIMIR
+                </button>
             </div>
         </div>
     </div>
 
     <!-- ======================== FIM MODAL NOVA ORDEM DE SERVIÇO ======================== -->
+
+
+<!-- ======================== INÍCIO MODAL DETALHES OS ======================== -->
+
+<div class="modal-overlay" id="modalDetalhesOS">
+    <div class="modal-material ordem-detalhes-modal">
+
+        <!-- CABEÇALHO -->
+
+        <div class="modal-material-header">
+            <div>
+                <span class="section-label">
+                    ORDEM DE SERVIÇO
+                </span>
+                <h2 id="detalhesOSNumero">
+                    OS-0000
+                </h2>
+                <span id="detalhesOSCliente">
+                    Cliente
+                </span>
+            </div>
+            <button
+                class="modal-close"
+                id="fecharDetalhesOS"
+                type="button"
+                aria-label="Fechar">
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+        </div>
+
+        <!-- CONTEÚDO -->
+
+        <div class="modal-material-content">
+
+            <!-- IDENTIFICAÇÃO -->
+
+            <div class="material-section">
+                <div class="material-section-title">
+                    IDENTIFICAÇÃO
+                </div>
+                <div class="ordem-detalhes-grid">
+                    <div class="ordem-info">
+                        <span>CLIENTE</span>
+                        <strong id="detalhesOSClienteInfo">-</strong>
+                    </div>
+                    <div class="ordem-info">
+                        <span>CONTATO</span>
+                        <strong id="detalhesOSContato">-</strong>
+                    </div>
+                    <div class="ordem-info">
+                        <span>ENDEREÇO</span>
+                        <strong id="detalhesOSEndereco">-</strong>
+                    </div>
+                    <div class="ordem-info">
+                        <span>DATA DE ABERTURA</span>
+                        <strong id="detalhesOSDataAbertura">-</strong>
+                    </div>
+                    <div class="ordem-info">
+                        <span>PREVISÃO DE ENTREGA</span>
+                        <strong id="detalhesOSDataEntrega">-</strong>
+                    </div>
+                    <div class="ordem-info">
+                        <span>RESPONSÁVEL</span>
+                        <strong id="detalhesOSResponsavel">
+                            Não definido
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SERVIÇO -->
+
+            <div class="material-section">
+                <div class="material-section-title">
+                    SERVIÇO
+                </div>
+                <div class="ordem-detalhes-grid">
+                    <div class="ordem-info">
+                        <span>
+                            TIPO DE SERVIÇO
+                        </span>
+                        <strong id="detalhesOSTipoServico">
+                            -
+                        </strong>
+                    </div>
+                </div>
+                <div class="ordem-detalhes-texto">
+                    <span>
+                        DESCRIÇÃO
+                    </span>
+                    <p id="detalhesOSDescricao">
+                        -
+                    </p>
+                </div>
+            </div>
+
+            <!-- FINANCEIRO -->
+
+            <div class="material-section">
+                <div class="material-section-title">
+                    FINANCEIRO
+                </div>
+                <div class="ordem-detalhes-grid">
+                    <div class="ordem-info">
+                        <span>MATERIAIS</span>
+                        <strong id="detalhesOSMateriais">
+                            R$ 0,00
+                        </strong>
+                    </div>
+                    <div class="ordem-info">
+                        <span>MÃO DE OBRA</span>
+                        <strong id="detalhesOSMaoObra">
+                            R$ 0,00
+                        </strong>
+                    </div>
+                    <div class="ordem-info">
+                        <span>DESCONTO</span>
+                        <strong id="detalhesOSDesconto">
+                            R$ 0,00
+                        </strong>
+                    </div>
+                    <div class="ordem-info">
+                        <span>
+                            VALOR TOTAL
+                        </span>
+                        <strong id="detalhesOSTotal">
+                            R$ 0,00
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGAMENTO -->
+
+            <div class="material-section">
+                <div class="material-section-title">
+                    PAGAMENTO
+                </div>
+                <div class="ordem-detalhes-grid">
+                    <div class="ordem-info">
+                        <span>
+                            CONDIÇÃO DE PAGAMENTO
+                        </span>
+                        <strong id="detalhesOSPagamento">
+                            -
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OBSERVAÇÕES -->
+
+            <div class="material-section">
+                <div class="material-section-title">
+                    OBSERVAÇÕES
+                </div>
+                <div class="ordem-detalhes-texto">
+                    <p id="detalhesOSObservacoes">
+                        Nenhuma observação registrada.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RODAPÉ -->
+
+        <div class="modal-footer ordem-detalhes-footer">
+            <div class="ordem-detalhes-acoes">
+                <button
+                    type="button"
+                    id="editarOS"
+                    class="btn-editar-os">
+                    <ion-icon name="create-outline"></ion-icon>
+                    EDITAR
+                </button>
+                <button
+                    type="button"
+                    id="removerOS"
+                    class="btn-remover-os">
+                    <ion-icon name="trash-outline"></ion-icon>
+                    REMOVER
+                </button>
+            </div>
+            <button
+                type="button"
+                id="fecharDetalhesOSBotao"
+                class="btn-secondary">
+                FECHAR
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======================== FIM MODAL DETALHES OS ======================== -->
 
     <!-- ======================== INÍCIO MODAL NOVA MÁQUINA [2018 - 2246] ======================== -->
 

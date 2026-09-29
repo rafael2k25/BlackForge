@@ -168,9 +168,7 @@ const salvarImprimirOS = document.getElementById("salvarImprimirOS");
 
 // Modal de detalhes
 const modalDetalhesOS = document.getElementById("modalDetalhesOS");
-const btnFecharDetalhesOS = document.getElementById("fecharDetalhesOS");
-const btnFecharDetalhesOSRodape = document.getElementById("fecharDetalhesOSBotao");
-const tituloModalOS = document.getElementById("tituloModalOS");
+const fecharModalDetalhesOS = document.getElementById("fecharModalDetalhesOS");
 const editarOS = document.getElementById("editarOS");
 const removerOS = document.getElementById("removerOS");
 
@@ -183,7 +181,6 @@ let modoEdicaoOS = false;
 const IDS_DETALHES_OS = {
     numero: "detalhesOSNumero",
     cliente: "detalhesOSCliente",
-    clienteInfo: "detalhesOSClienteInfo",
     contato: "detalhesOSContato",
     endereco: "detalhesOSEndereco",
     dataAbertura: "detalhesOSDataAbertura",
@@ -191,11 +188,11 @@ const IDS_DETALHES_OS = {
     tipoServico: "detalhesOSTipoServico",
     responsavel: "detalhesOSResponsavel",
     descricao: "detalhesOSDescricao",
-    valorMaoObra: "detalhesOSMaoObra",
-    valorMateriais: "detalhesOSMateriais",
+    valorMaoObra: "detalhesOSValorMaoObra",
+    valorMateriais: "detalhesOSValorMateriais",
     desconto: "detalhesOSDesconto",
-    valorTotal: "detalhesOSTotal",
-    condicaoPagamento: "detalhesOSPagamento",
+    valorTotal: "detalhesOSValorTotal",
+    condicaoPagamento: "detalhesOSCondicaoPagamento",
     observacoes: "detalhesOSObservacoes"
 };
 
@@ -261,21 +258,29 @@ function formatarTextoLivreOS(valor) {
 // Ajuste as chaves conforme os "value" das opções do seu <select>
 const TIPOS_SERVICO_OS = {
     usinagem: "Usinagem",
-    torneamento: "Torneamento",
-    fresagem: "Fresagem",
+    manutencao: "Manutenção",
+    soldagem: "Soldagem",
     corte: "Corte",
-    solda: "Solda",
-    outro: "Outro"
+    dobra: "Dobra",
+    fabricacao: "Fabricação",
+    reparo: "Reparo",
+    instalacao: "Instalação",
+    outro: "Outro",
+    outros: "Outros"
 };
 
 const CONDICOES_PAGAMENTO_OS = {
     avista: "À vista",
     pix: "PIX",
-    cartao: "Cartão",
+    dinheiro: "Dinheiro",
     boleto: "Boleto",
+    cartao: "Cartão",
+    cartaocredito: "Cartão de crédito",
+    cartaodebito: "Cartão de débito",
     "30dias": "30 dias",
-    parcelado: "Parcelado",
-    outro: "Outro"
+    "60dias": "60 dias",
+    "3060dias": "30/60 dias",
+    parcelado: "Parcelado"
 };
 
 function obterTipoServicoOS(tipo) {
@@ -298,77 +303,13 @@ function escaparHtmlOS(valor) {
     });
 }
 
-// Lê um campo do objeto ignorando maiúsculas/minúsculas (valorMateriais, ValorMateriais...)
-function lerCampoOS(obj, nomes) {
-    if (!obj) {
-        return undefined;
-    }
-    const chaves = Object.keys(obj);
-    for (const nome of nomes) {
-        const alvo = normalizarChaveOS(nome);
-        const chave = chaves.find(function (k) {
-            return normalizarChaveOS(k) === alvo;
-        });
-        if (chave !== undefined && obj[chave] !== null && obj[chave] !== undefined) {
-            return obj[chave];
-        }
-    }
-    return undefined;
-}
-
-function obterValorMateriaisOS(ordem) {
-    const direto = lerCampoOS(ordem, ["valorMateriais", "valorMaterial", "totalMateriais"]);
-    if (direto !== undefined) {
-        return paraNumeroOS(direto);
-    }
-    const lista = lerCampoOS(ordem, ["materiais"]);
-    if (Array.isArray(lista)) {
-        return lista.reduce(function (soma, m) {
-            const total = lerCampoOS(m, ["valorTotal", "subtotal", "total"]);
-            if (total !== undefined) {
-                return soma + paraNumeroOS(total);
-            }
-            const qtd = lerCampoOS(m, ["quantidade"]);
-            const unit = lerCampoOS(m, ["valorUnitario", "precoUnitario", "preco", "valor"]);
-            return soma + (qtd === undefined ? 1 : paraNumeroOS(qtd)) * paraNumeroOS(unit);
-        }, 0);
-    }
-    return 0;
-}
-
-function obterDescontoOS(ordem) {
-    return paraNumeroOS(lerCampoOS(ordem, ["desconto", "valorDesconto"]));
-}
-
-// Seleciona a <option> comparando sem acento/maiúscula, pelo value ou pelo texto
-function selecionarOpcaoOS(idSelect, valor) {
-    const select = document.getElementById(idSelect);
-    if (!select) {
-        return;
-    }
-    select.value = "";
-    if (valor === null || valor === undefined || valor === "") {
-        return;
-    }
-    const alvo = normalizarChaveOS(valor);
-    const opcao = Array.from(select.options).find(function (o) {
-        return normalizarChaveOS(o.value) === alvo
-            || normalizarChaveOS(o.textContent) === alvo;
-    });
-    if (opcao) {
-        select.value = opcao.value;
-    } else {
-        console.warn(`[OS] Nenhuma opção de "${idSelect}" corresponde a:`, valor);
-    }
-}
-
 function calcularTotalOS(ordem) {
     if (ordem.valorTotal !== undefined && ordem.valorTotal !== null) {
         return paraNumeroOS(ordem.valorTotal);
     }
     return paraNumeroOS(ordem.valorMaoObra)
-        + paraNumeroOS(obterValorMateriaisOS(ordem))
-        - paraNumeroOS(obterDescontoOS(ordem));
+        + paraNumeroOS(ordem.valorMateriais)
+        - paraNumeroOS(ordem.desconto);
 }
 
 // =========================================================
@@ -382,7 +323,6 @@ async function carregarOrdensServico() {
             throw new Error(`Erro HTTP: ${resposta.status}`);
         }
         ordensServico = await resposta.json();
-        console.log("Ordens de serviço carregadas:", ordensServico);
         renderizarOrdensServico();
     } catch (erro) {
         console.error("Erro ao carregar ordens de serviço:", erro);
@@ -406,31 +346,31 @@ function renderizarOrdensServico() {
     lista.style.display = "flex";
 
     ordensServico.forEach(function (ordem) {
-        const linha = document.createElement("div");
-        linha.className = "os-row";
+        const card = document.createElement("div");
+        card.className = "ordem-servico-card";
         const responsavel = ordem.funcionario?.nome || "Não definido";
 
-        linha.innerHTML = `
-            <div class="os-identificacao">
-                <div class="os-icon">
-                    <ion-icon name="document-text-outline"></ion-icon>
+        card.innerHTML = `
+            <div class="ordem-servico-info">
+                <div class="ordem-servico-numero">
+                    ${escaparHtmlOS(ordem.numeroOS)}
                 </div>
-                <div class="os-info">
-                    <div class="os-numero">${escaparHtmlOS(ordem.numeroOS)}</div>
-                    <div class="os-cliente">${escaparHtmlOS(ordem.cliente)}</div>
+                <div>
+                    <span>CLIENTE</span>
+                    <strong>${escaparHtmlOS(ordem.cliente)}</strong>
                 </div>
-            </div>
-            <div class="os-coluna">
-                <span>SERVIÇO</span>
-                <strong>${escaparHtmlOS(obterTipoServicoOS(ordem.tipoServico))}</strong>
-            </div>
-            <div class="os-coluna os-responsavel">
-                <span>RESPONSÁVEL</span>
-                <strong>${escaparHtmlOS(responsavel)}</strong>
-            </div>
-            <div class="os-coluna os-valor-coluna">
-                <span>VALOR TOTAL</span>
-                <strong class="os-valor">${formatarMoedaOS(ordem.valorTotal)}</strong>
+                <div>
+                    <span>SERVIÇO</span>
+                    <strong>${escaparHtmlOS(obterTipoServicoOS(ordem.tipoServico))}</strong>
+                </div>
+                <div>
+                    <span>RESPONSÁVEL</span>
+                    <strong>${escaparHtmlOS(responsavel)}</strong>
+                </div>
+                <div>
+                    <span>VALOR TOTAL</span>
+                    <strong>${formatarMoedaOS(ordem.valorTotal)}</strong>
+                </div>
             </div>
             <button
                 type="button"
@@ -439,7 +379,7 @@ function renderizarOrdensServico() {
                 DETALHES →
             </button>
         `;
-        lista.appendChild(linha);
+        lista.appendChild(card);
     });
     adicionarEventosDetalhesOS();
 }
@@ -477,10 +417,7 @@ function abrirNovaOS() {
     ordemSelecionadaOS = null;
     limparFormularioOS();
     if (salvarOS) {
-        salvarOS.textContent = "SALVAR OS";
-    }
-    if (tituloModalOS) {
-        tituloModalOS.textContent = "NOVA ORDEM DE SERVIÇO";
+        salvarOS.textContent = "SALVAR";
     }
     abrirModalOS();
 }
@@ -493,7 +430,7 @@ function abrirModalDetalhesOS() {
     document.body.style.overflow = "hidden";
 }
 
-function fecharModalDetalhesOS() {
+function fecharDetalhesOS() {
     if (!modalDetalhesOS) {
         return;
     }
@@ -505,8 +442,7 @@ if (novaOS) novaOS.addEventListener("click", abrirNovaOS);
 if (criarOS) criarOS.addEventListener("click", abrirNovaOS);
 if (fecharModalOS) fecharModalOS.addEventListener("click", fecharOS);
 if (cancelarOS) cancelarOS.addEventListener("click", fecharOS);
-if (btnFecharDetalhesOS) btnFecharDetalhesOS.addEventListener("click", fecharModalDetalhesOS);
-if (btnFecharDetalhesOSRodape) btnFecharDetalhesOSRodape.addEventListener("click", fecharModalDetalhesOS);
+if (fecharModalDetalhesOS) fecharModalDetalhesOS.addEventListener("click", fecharDetalhesOS);
 
 if (modalOS) {
     modalOS.addEventListener("click", function (event) {
@@ -518,7 +454,7 @@ if (modalOS) {
 if (modalDetalhesOS) {
     modalDetalhesOS.addEventListener("click", function (event) {
         if (event.target === modalDetalhesOS) {
-            fecharModalDetalhesOS();
+            fecharDetalhesOS();
         }
     });
 }
@@ -529,7 +465,7 @@ document.addEventListener("keydown", function (event) {
     if (modalOS && modalOS.classList.contains("active")) {
         fecharOS();
     } else if (modalDetalhesOS && modalDetalhesOS.classList.contains("active")) {
-        fecharModalDetalhesOS();
+        fecharDetalhesOS();
     }
 });
 
@@ -569,7 +505,6 @@ function preencherDetalhesOS(ordem) {
 
     definirTexto(ids.numero, ordem.numeroOS || "-");
     definirTexto(ids.cliente, ordem.cliente || "-");
-    definirTexto(ids.clienteInfo, ordem.cliente || "-");
     definirTexto(ids.contato, ordem.contato || "-");
     definirTexto(ids.endereco, ordem.endereco || "-");
     definirTexto(ids.dataAbertura, formatarDataOS(ordem.dataAbertura));
@@ -578,8 +513,8 @@ function preencherDetalhesOS(ordem) {
     definirTexto(ids.responsavel, ordem.funcionario?.nome || "Não definido");
     definirTexto(ids.descricao, ordem.descricaoServico || "-");
     definirTexto(ids.valorMaoObra, formatarMoedaOS(ordem.valorMaoObra));
-    definirTexto(ids.valorMateriais, formatarMoedaOS(obterValorMateriaisOS(ordem)));
-    definirTexto(ids.desconto, formatarMoedaOS(obterDescontoOS(ordem)));
+    definirTexto(ids.valorMateriais, formatarMoedaOS(ordem.valorMateriais));
+    definirTexto(ids.desconto, formatarMoedaOS(ordem.desconto));
     definirTexto(ids.valorTotal, formatarMoedaOS(calcularTotalOS(ordem)));
     definirTexto(ids.condicaoPagamento, obterCondicaoPagamentoOS(ordem.condicaoPagamento));
     definirTexto(ids.observacoes, ordem.observacoes || "Nenhuma observação registrada.");
@@ -601,7 +536,6 @@ function lerFormularioOS() {
         dataEntrega: document.getElementById("dataEntregaOS").value,
         funcionarioId: Number(document.getElementById("responsavelOS").value) || null,
         valorMaoObra: Number(document.getElementById("valorMaoObra").value) || 0,
-        valorMateriais: Number(document.getElementById("valorMateriais").value) || 0,
         desconto: Number(document.getElementById("descontoOS").value) || 0,
         condicaoPagamento: document.getElementById("condicaoPagamento").value,
         observacoes: document.getElementById("observacoesOS").value.trim(),
@@ -733,8 +667,8 @@ function imprimirOS(ordem) {
     ${linha("Responsável", responsavel)}
     ${linha("Descrição", ordem.descricaoServico || "-")}
     ${linha("Mão de obra", formatarMoedaOS(ordem.valorMaoObra))}
-    ${linha("Materiais", formatarMoedaOS(obterValorMateriaisOS(ordem)))}
-    ${linha("Desconto", formatarMoedaOS(obterDescontoOS(ordem)))}
+    ${linha("Materiais", formatarMoedaOS(ordem.valorMateriais))}
+    ${linha("Desconto", formatarMoedaOS(ordem.desconto))}
     ${linha("Valor total", formatarMoedaOS(calcularTotalOS(ordem)))}
     ${linha("Condição de pagamento", obterCondicaoPagamentoOS(ordem.condicaoPagamento))}
     ${linha("Observações", ordem.observacoes || "-")}
@@ -761,7 +695,6 @@ function editarOSSelecionada() {
         return;
     }
     const o = ordemSelecionadaOS;
-    console.log("[OS] Editando:", o);
     modoEdicaoOS = true;
 
     const paraInputData = function (valor) {
@@ -775,22 +708,17 @@ function editarOSSelecionada() {
     document.getElementById("dataOS").value = paraInputData(o.dataAbertura);
     document.getElementById("dataEntregaOS").value = paraInputData(o.dataEntrega);
     document.getElementById("descricaoOS").value = o.descricaoServico || "";
-    selecionarOpcaoOS("tipoServico", o.tipoServico);
+    document.getElementById("tipoServico").value = o.tipoServico ?? "";
     document.getElementById("responsavelOS").value = o.funcionarioId ?? o.funcionario?.id ?? "";
     document.getElementById("valorMaoObra").value = o.valorMaoObra ?? "0.00";
-    document.getElementById("descontoOS").value = obterDescontoOS(o).toFixed(2);
-    selecionarOpcaoOS("condicaoPagamento", o.condicaoPagamento);
+    document.getElementById("descontoOS").value = o.desconto ?? "0.00";
+    document.getElementById("condicaoPagamento").value = o.condicaoPagamento ?? "";
     document.getElementById("observacoesOS").value = o.observacoes || "";
 
     if (salvarOS) {
         salvarOS.textContent = "SALVAR ALTERAÇÕES";
     }
-    if (tituloModalOS) {
-        tituloModalOS.textContent = "EDITAR ORDEM DE SERVIÇO";
-    }
-    document.getElementById("valorMateriais").value = obterValorMateriaisOS(o).toFixed(2);
-    atualizarTotalOS();
-    fecharModalDetalhesOS();
+    fecharDetalhesOS();
     abrirModalOS();
 }
 
@@ -813,7 +741,7 @@ async function removerOSSelecionada() {
             const mensagem = await resposta.text();
             throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
         }
-        fecharModalDetalhesOS();
+        fecharDetalhesOS();
         ordemSelecionadaOS = null;
         await carregarOrdensServico();
         alert("Ordem de serviço removida com sucesso!");
@@ -856,25 +784,6 @@ function limparFormularioOS() {
 }
 
 // =========================================================
-// TOTAL EM TEMPO REAL (materiais + mão de obra - desconto)
-// =========================================================
-
-function atualizarTotalOS() {
-    const total =
-        (Number(document.getElementById("valorMateriais").value) || 0) +
-        (Number(document.getElementById("valorMaoObra").value) || 0) -
-        (Number(document.getElementById("descontoOS").value) || 0);
-    definirTexto("valorTotalOS", formatarMoedaOS(total));
-}
-
-["valorMateriais", "valorMaoObra", "descontoOS"].forEach(function (id) {
-    const campo = document.getElementById(id);
-    if (campo) {
-        campo.addEventListener("input", atualizarTotalOS);
-    }
-});
-
-// =========================================================
 // LIGAÇÃO DOS BOTÕES
 // =========================================================
 
@@ -899,13 +808,12 @@ function conferirIdsOS() {
     const idsFixos = [
         "modalOS", "novaOS", "criarOS", "fecharModalOS", "cancelarOS",
         "salvarOS", "salvarImprimirOS",
-        "modalDetalhesOS", "fecharDetalhesOS", "fecharDetalhesOSBotao", "editarOS", "removerOS",
-        "tituloModalOS",
+        "modalDetalhesOS", "fecharModalDetalhesOS", "editarOS", "removerOS",
         "ordensServicoLista", "ordensServicoEmpty",
         "numeroOS", "clienteOS", "contatoOS", "enderecoOS", "dataOS",
         "dataEntregaOS", "descricaoOS", "tipoServico", "responsavelOS",
         "valorMaoObra", "valorMateriais", "descontoOS", "condicaoPagamento",
-        "observacoesOS", "valorTotalOS"
+        "observacoesOS", "valorTotalOS", "listaMateriais"
     ];
     const todos = idsFixos.concat(Object.values(IDS_DETALHES_OS));
     const faltando = todos.filter(function (id) {
