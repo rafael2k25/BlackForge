@@ -1,81 +1,963 @@
-USE BlackForgeBD;
+USE BANCOBLACKFORGE;
 GO
 
--- ==========================================
--- 1. Inserindo Materiais
--- ==========================================
-INSERT INTO Materiais (Codigo, Nome, Categoria, Unidade, Descricao) VALUES
-('MAT-001', 'Aço Carbono SAE 1020', 'Metais', 'KG', 'Barra redonda de aço carbono de 2 polegadas'),
-('MAT-002', 'Carvão Mineral', 'Combustíveis', 'KG', 'Carvão de alta caloria para forja'),
-('MAT-003', 'Eletrodo Revestido E7018', 'Soldagem', 'CX', 'Caixa com 5kg de eletrodos de 3.25mm'),
-('MAT-004', 'Óleo de Têmpera Rápida', 'Insumos', 'L', 'Óleo industrial para tratamento térmico de metais'),
-('MAT-005', 'Chapa de Aço Inox 304', 'Metais', 'UN', 'Chapa lisa 2000x1000x2mm');
+/* ============================================================
+   DADOS FICTÍCIOS - BLACKFORGE
+   ============================================================ */
+
+
+/* ============================================================
+   1. FUNCIONÁRIOS
+   ============================================================ */
+
+INSERT INTO Funcionarios
+(
+    Nome,
+    Matricula,
+    CPF,
+    Cargo,
+    Idade,
+    Telefone,
+    Setor,
+    DataAdmissao,
+    Email,
+    Observacoes
+)
+VALUES
+(
+    'João Carlos Mendes',
+    'FUNC-004',
+    '444.444.444-44',
+    'Operador CNC',
+    29,
+    '(79) 99111-1001',
+    'Produção',
+    '2024-02-12',
+    'joao.mendes@blackforge.com',
+    'Operador de torno CNC.'
+),
+(
+    'Lucas Ferreira',
+    'FUNC-005',
+    '555.555.555-55',
+    'Operador de Fresadora',
+    34,
+    '(79) 99111-1002',
+    'Produção',
+    '2023-06-19',
+    'lucas.ferreira@blackforge.com',
+    'Especialista em fresagem CNC.'
+),
+(
+    'André Luiz Costa',
+    'FUNC-006',
+    '666.666.666-66',
+    'Técnico de Manutenção',
+    37,
+    '(79) 99111-1003',
+    'Manutenção',
+    '2022-11-07',
+    'andre.costa@blackforge.com',
+    'Responsável pela manutenção preventiva.'
+),
+(
+    'Pedro Henrique Alves',
+    'FUNC-007',
+    '777.777.777-77',
+    'Almoxarife',
+    31,
+    '(79) 99111-1004',
+    'Estoque',
+    '2024-04-08',
+    'pedro.alves@blackforge.com',
+    'Controle de materiais e lotes.'
+),
+(
+    'Marcelo Ribeiro',
+    'FUNC-008',
+    '888.888.888-88',
+    'Engenheiro de Produção',
+    45,
+    '(79) 99111-1005',
+    'Engenharia',
+    '2020-09-14',
+    'marcelo.ribeiro@blackforge.com',
+    'Planejamento e acompanhamento da produção.'
+);
 GO
 
--- ==========================================
--- 2. Inserindo Lotes
--- ==========================================
-INSERT INTO Lotes (Codigo, Quantidade, DataFabricacao, DataValidade, MaterialId) VALUES
-('LT-2023-A01', 500.00, '2023-01-15', '2033-01-15', 1),
-('LT-2023-C01', 2000.00, '2023-09-01', NULL, 2),
-('LT-2023-E05', 30.00, '2023-08-10', '2025-08-10', 3),
-('LT-2023-O12', 200.00, '2023-10-01', '2026-10-01', 4),
-('LT-2023-I09', 50.00, '2023-05-20', '2043-05-20', 5);
+
+/* ============================================================
+   2. MÁQUINAS
+   ============================================================ */
+
+INSERT INTO Maquinas
+(
+    Nome,
+    Codigo,
+    Fabricante,
+    Modelo,
+    NumeroSerie,
+    DataAquisicao
+)
+VALUES
+(
+    'Torno CNC 03',
+    'MC-004',
+    'Romi',
+    'GL 240',
+    'ROMI-GL240-003',
+    '2024-01-15'
+),
+(
+    'Fresadora CNC 02',
+    'MC-005',
+    'Romi',
+    'D 800',
+    'ROMI-D800-002',
+    '2023-05-22'
+),
+(
+    'Centro de Usinagem 01',
+    'MC-006',
+    'Haas',
+    'VF-2',
+    'HAAS-VF2-001',
+    '2024-07-10'
+),
+(
+    'Torno Convencional 01',
+    'MC-007',
+    'Nardini',
+    'ND 250',
+    'NARDINI-ND250-001',
+    '2021-03-18'
+);
 GO
 
--- ==========================================
--- 3. Inserindo Movimentações
--- ==========================================
-INSERT INTO Movimentacoes (Tipo, Quantidade, DataMovimentacao, Observacoes, MaterialId, LoteId) VALUES
-('Entrada', 500.00, '2023-01-16 08:30:00', 'Compra recebida do fornecedor MetalX', 1, 1),
-('Entrada', 2000.00, '2023-09-05 14:00:00', 'Estoque de inverno renovado', 2, 2),
-('Saída', 50.00, '2023-10-10 09:15:00', 'Uso diário nas forjas', 2, 2),
-('Saída', 10.00, '2023-10-11 10:45:00', 'Liberação de barras para setor de usinagem', 1, 1),
-('Entrada', 30.00, '2023-08-15 16:20:00', 'Reposição de estoque de solda', 3, 3);
+
+/* ============================================================
+   3. MATERIAIS
+   ============================================================ */
+
+INSERT INTO Materiais
+(
+    Codigo,
+    Nome,
+    Categoria,
+    Unidade,
+    Descricao,
+    EstoqueMinimo
+)
+VALUES
+(
+    'MAT-004',
+    'Aço Carbono SAE 1045',
+    'Aço',
+    'KG',
+    'Aço carbono de alta resistência para componentes mecânicos.',
+    80.00
+),
+(
+    'MAT-005',
+    'Aço Inox 316',
+    'Aço Inox',
+    'KG',
+    'Aço inoxidável utilizado em ambientes corrosivos.',
+    40.00
+),
+(
+    'MAT-006',
+    'Alumínio 7075',
+    'Alumínio',
+    'KG',
+    'Alumínio de alta resistência para componentes de precisão.',
+    25.00
+),
+(
+    'MAT-007',
+    'Bronze SAE 660',
+    'Bronze',
+    'KG',
+    'Bronze para buchas e componentes mecânicos.',
+    20.00
+),
+(
+    'MAT-008',
+    'Latão',
+    'Não Ferroso',
+    'KG',
+    'Latão para componentes usinados e conexões.',
+    15.00
+);
 GO
 
--- ==========================================
--- 4. Inserindo Funcionários
--- ==========================================
-INSERT INTO Funcionarios (Nome, Matricula, CPF, Cargo, Idade, Telefone, Setor, DataAdmissao, Email, Observacoes) VALUES
-('Carlos da Silva', 'MAT-4829103756', '111.222.333-44', 'Mestre Forjador', 45, '(79) 99999-1111', 'Produção', '2015-03-10', 'carlos@gmail.com', 'Especialista em aço damasco e ligas especiais.'),
-('Ana Carneiro', 'MAT-9173648205', '222.333.444-55', 'Soldadora TIG/MIG', 32, '(79) 98888-2222', 'Montagem', '2018-07-22', 'ana@gmail.com', 'Possui certificação industrial.'),
-('Roberto Gonsalves', 'MAT-3058274916', '333.444.555-66', 'Operador de Torno CNC', 28, '(79) 97777-3333', 'Usinagem', '2020-01-15', 'roberto@gmail.com', NULL),
-('Julia Santana', 'MAT-7641092835', '444.555.666-77', 'Engenheira de Produção', 38, '(79) 96666-4444', 'Administração', '2012-11-01', 'julia@gmail.com', 'Supervisora geral do chão de fábrica.');
+
+/* ============================================================
+   4. LOTES
+   ============================================================ */
+
+INSERT INTO Lotes
+(
+    Codigo,
+    Quantidade,
+    CustoUnitario,
+    DataEntrada,
+    DataFabricacao,
+    DataValidade,
+    MaterialId,
+    Observacoes
+)
+SELECT
+    'LOTE-1045-001',
+    350.00,
+    14.80,
+    DATEADD(DAY, -25, GETDATE()),
+    DATEADD(DAY, -40, GETDATE()),
+    NULL,
+    Id,
+    'Lote de aço SAE 1045.'
+FROM Materiais
+WHERE Codigo = 'MAT-004';
+
+
+INSERT INTO Lotes
+(
+    Codigo,
+    Quantidade,
+    CustoUnitario,
+    DataEntrada,
+    DataFabricacao,
+    DataValidade,
+    MaterialId,
+    Observacoes
+)
+SELECT
+    'LOTE-316-001',
+    180.00,
+    32.50,
+    DATEADD(DAY, -18, GETDATE()),
+    DATEADD(DAY, -35, GETDATE()),
+    NULL,
+    Id,
+    'Lote de aço inox 316.'
+FROM Materiais
+WHERE Codigo = 'MAT-005';
+
+
+INSERT INTO Lotes
+(
+    Codigo,
+    Quantidade,
+    CustoUnitario,
+    DataEntrada,
+    DataFabricacao,
+    DataValidade,
+    MaterialId,
+    Observacoes
+)
+SELECT
+    'LOTE-7075-001',
+    120.00,
+    27.90,
+    DATEADD(DAY, -30, GETDATE()),
+    DATEADD(DAY, -50, GETDATE()),
+    NULL,
+    Id,
+    'Alumínio de alta resistência.'
+FROM Materiais
+WHERE Codigo = 'MAT-006';
+
+
+INSERT INTO Lotes
+(
+    Codigo,
+    Quantidade,
+    CustoUnitario,
+    DataEntrada,
+    DataFabricacao,
+    DataValidade,
+    MaterialId,
+    Observacoes
+)
+SELECT
+    'LOTE-BRONZE-001',
+    75.00,
+    41.30,
+    DATEADD(DAY, -12, GETDATE()),
+    DATEADD(DAY, -25, GETDATE()),
+    NULL,
+    Id,
+    'Lote de bronze SAE 660.'
+FROM Materiais
+WHERE Codigo = 'MAT-007';
+
+
+INSERT INTO Lotes
+(
+    Codigo,
+    Quantidade,
+    CustoUnitario,
+    DataEntrada,
+    DataFabricacao,
+    DataValidade,
+    MaterialId,
+    Observacoes
+)
+SELECT
+    'LOTE-LATAO-001',
+    60.00,
+    36.70,
+    DATEADD(DAY, -8, GETDATE()),
+    DATEADD(DAY, -20, GETDATE()),
+    NULL,
+    Id,
+    'Lote de latão para usinagem.'
+FROM Materiais
+WHERE Codigo = 'MAT-008';
 GO
 
--- ==========================================
--- 5. Inserindo Máquinas
--- ==========================================
-INSERT INTO Maquinas (Nome, Codigo, Fabricante, Modelo, NumeroSerie, DataAquisicao, Observacoes) VALUES
-('Torno Mecânico', 'MAQ-001', 'Romi', 'T 240', 'SN-987654', '2016-05-10', 'Manutenção preventiva em dia.'),
-('Prensa Hidráulica 100T', 'MAQ-002', 'Bovenau', 'P1000', 'SN-123456', '2019-08-20', 'Trocar o fluido hidráulico em dezembro.'),
-('Forno de Indução', 'MAQ-003', 'Inductotherm', 'VIP 500', 'SN-112233', '2021-02-15', 'Alta capacidade de fusão (até 1500°C).'),
-('Máquina de Solda Inversora', 'MAQ-004', 'Esab', 'Smashweld 266X', 'SN-445566', '2022-11-05', NULL);
+
+/* ============================================================
+   5. MOVIMENTAÇÕES
+   ============================================================ */
+
+INSERT INTO Movimentacoes
+(
+    Tipo,
+    Quantidade,
+    DataMovimentacao,
+    Observacoes,
+    MaterialId,
+    LoteId
+)
+SELECT
+    'entrada',
+    350.00,
+    DATEADD(DAY, -25, GETDATE()),
+    'Entrada de aço SAE 1045.',
+    m.Id,
+    l.Id
+FROM Materiais m
+INNER JOIN Lotes l
+    ON l.MaterialId = m.Id
+WHERE m.Codigo = 'MAT-004'
+AND l.Codigo = 'LOTE-1045-001';
+
+
+INSERT INTO Movimentacoes
+(
+    Tipo,
+    Quantidade,
+    DataMovimentacao,
+    Observacoes,
+    MaterialId,
+    LoteId
+)
+SELECT
+    'entrada',
+    180.00,
+    DATEADD(DAY, -18, GETDATE()),
+    'Entrada de aço inox 316.',
+    m.Id,
+    l.Id
+FROM Materiais m
+INNER JOIN Lotes l
+    ON l.MaterialId = m.Id
+WHERE m.Codigo = 'MAT-005'
+AND l.Codigo = 'LOTE-316-001';
+
+
+INSERT INTO Movimentacoes
+(
+    Tipo,
+    Quantidade,
+    DataMovimentacao,
+    Observacoes,
+    MaterialId,
+    LoteId
+)
+SELECT
+    'entrada',
+    120.00,
+    DATEADD(DAY, -30, GETDATE()),
+    'Entrada de alumínio 7075.',
+    m.Id,
+    l.Id
+FROM Materiais m
+INNER JOIN Lotes l
+    ON l.MaterialId = m.Id
+WHERE m.Codigo = 'MAT-006'
+AND l.Codigo = 'LOTE-7075-001';
+
+
+INSERT INTO Movimentacoes
+(
+    Tipo,
+    Quantidade,
+    DataMovimentacao,
+    Observacoes,
+    MaterialId,
+    LoteId
+)
+SELECT
+    'entrada',
+    75.00,
+    DATEADD(DAY, -12, GETDATE()),
+    'Entrada de bronze SAE 660.',
+    m.Id,
+    l.Id
+FROM Materiais m
+INNER JOIN Lotes l
+    ON l.MaterialId = m.Id
+WHERE m.Codigo = 'MAT-007'
+AND l.Codigo = 'LOTE-BRONZE-001';
+
+
+INSERT INTO Movimentacoes
+(
+    Tipo,
+    Quantidade,
+    DataMovimentacao,
+    Observacoes,
+    MaterialId,
+    LoteId
+)
+SELECT
+    'entrada',
+    60.00,
+    DATEADD(DAY, -8, GETDATE()),
+    'Entrada de latão.',
+    m.Id,
+    l.Id
+FROM Materiais m
+INNER JOIN Lotes l
+    ON l.MaterialId = m.Id
+WHERE m.Codigo = 'MAT-008'
+AND l.Codigo = 'LOTE-LATAO-001';
 GO
 
--- ==========================================
--- 6. Inserindo Ordens de Serviço
--- ==========================================
-INSERT INTO OrdensServico (NumeroOS, Cliente, Contato, Endereco, DataAbertura, DescricaoServico, TipoServico, DataInicio, DataEntrega, FuncionarioId, ValorMateriais, ValorMaoObra, Desconto, ValorTotal, CondicaoPagamento, Observacoes) VALUES
-('OS-2023-001', 'Indústrias MetalSul', 'João Pereira', 'Av. das Indústrias, 1000 - Galpão 3', '2023-10-01', 'Usinagem de engrenagem helicoidal personalizada para maquinário agrícola.', 'Usinagem', '2023-10-02', '2023-10-15', 3, 500.00, 1500.00, 100.00, 1900.00, 'Boleto 30/60 dias', 'Exige laudo de qualidade dimensional.'),
-('OS-2023-002', 'Construtora Ápice', 'Mariana Costa', 'Rua Central, 500 - Obra 02', '2023-10-05', 'Montagem e soldagem de estrutura metálica para portão industrial.', 'Montagem', '2023-10-06', NULL, 2, 1200.00, 800.00, 0.00, 2000.00, '50% sinal, 50% na entrega', 'Serviço em andamento.'),
-('OS-2023-003', 'Fazenda São Jorge', 'Carlos Silva', 'Rodovia BR-101, Km 50', '2023-10-10', 'Forjamento de 20 enxadas especiais com aço temperado.', 'Forjamento', NULL, NULL, 1, 300.00, 600.00, 50.00, 850.00, 'À vista (PIX)', 'Prioridade alta para plantio.');
+
+/* ============================================================
+   6. CONFIGURAÇÕES DAS MÁQUINAS
+   ============================================================ */
+
+INSERT INTO ConfiguracoesMaquina
+(
+    MaquinaId,
+    TipoServico,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    Ativa
+)
+SELECT
+    Id,
+    'torneamento',
+    18.00,
+    0.7500,
+    1
+FROM Maquinas
+WHERE Codigo = 'MC-004';
+
+
+INSERT INTO ConfiguracoesMaquina
+(
+    MaquinaId,
+    TipoServico,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    Ativa
+)
+SELECT
+    Id,
+    'fresagem',
+    10.00,
+    1.1000,
+    1
+FROM Maquinas
+WHERE Codigo = 'MC-005';
+
+
+INSERT INTO ConfiguracoesMaquina
+(
+    MaquinaId,
+    TipoServico,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    Ativa
+)
+SELECT
+    Id,
+    'usinagem',
+    14.00,
+    0.9000,
+    1
+FROM Maquinas
+WHERE Codigo = 'MC-006';
+
+
+INSERT INTO ConfiguracoesMaquina
+(
+    MaquinaId,
+    TipoServico,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    Ativa
+)
+SELECT
+    Id,
+    'torneamento',
+    8.00,
+    1.0000,
+    1
+FROM Maquinas
+WHERE Codigo = 'MC-007';
 GO
 
--- ==========================================
--- 7. Inserindo Materiais nas Ordens de Serviço
--- ==========================================
--- OS 1 (Usinagem da engrenagem): Usa Aço Carbono
-INSERT INTO OrdensServicoMateriais (OrdemServicoId, MaterialId, Quantidade, Unidade, ValorUnitario, Subtotal) VALUES
-(1, 1, 50.00, 'KG', 10.00, 500.00); 
 
--- OS 2 (Portão industrial): Usa Chapa Inox e Eletrodos (Totalizando os 1200.00)
-INSERT INTO OrdensServicoMateriais (OrdemServicoId, MaterialId, Quantidade, Unidade, ValorUnitario, Subtotal) VALUES
-(2, 5, 10.00, 'UN', 100.00, 1000.00), 
-(2, 3, 2.00, 'CX', 100.00, 200.00); 
+/* ============================================================
+   7. ORDENS DE SERVIÇO
+   ============================================================ */
 
--- OS 3 (Enxadas): Usa Aço Carbono
-INSERT INTO OrdensServicoMateriais (OrdemServicoId, MaterialId, Quantidade, Unidade, ValorUnitario, Subtotal) VALUES
-(3, 1, 30.00, 'KG', 10.00, 300.00); 
+INSERT INTO OrdensServico
+(
+    NumeroOS,
+    Cliente,
+    Contato,
+    Endereco,
+    DataAbertura,
+    DescricaoServico,
+    TipoServico,
+    DataEntrega,
+    FuncionarioId,
+    MaquinaId,
+    ValorMateriais,
+    ValorMaoObra,
+    Desconto,
+    ValorTotal,
+    CondicaoPagamento,
+    Observacoes
+)
+SELECT
+    'OS-0002',
+    'Metalúrgica Nordeste',
+    '(79) 98888-2001',
+    'Aracaju - SE',
+    DATEADD(DAY, -5, GETDATE()),
+    'Fabricação de eixos em aço SAE 1045.',
+    'torneamento',
+    DATEADD(DAY, 5, GETDATE()),
+    f.Id,
+    m.Id,
+    5180.00,
+    2100.00,
+    200.00,
+    7080.00,
+    '30 dias após entrega.',
+    'Produção de lote de eixos.'
+FROM Funcionarios f
+INNER JOIN Maquinas m
+    ON m.Codigo = 'MC-004'
+WHERE f.Matricula = 'FUNC-004';
+
+
+INSERT INTO OrdensServico
+(
+    NumeroOS,
+    Cliente,
+    Contato,
+    Endereco,
+    DataAbertura,
+    DescricaoServico,
+    TipoServico,
+    DataEntrega,
+    FuncionarioId,
+    MaquinaId,
+    ValorMateriais,
+    ValorMaoObra,
+    Desconto,
+    ValorTotal,
+    CondicaoPagamento,
+    Observacoes
+)
+SELECT
+    'OS-0003',
+    'Indústria Sergipana',
+    '(79) 98888-2002',
+    'Nossa Senhora do Socorro - SE',
+    DATEADD(DAY, -3, GETDATE()),
+    'Fresagem de suportes industriais.',
+    'fresagem',
+    DATEADD(DAY, 8, GETDATE()),
+    f.Id,
+    m.Id,
+    3348.00,
+    1750.00,
+    0.00,
+    5098.00,
+    '50% entrada / 50% entrega.',
+    'Suportes para linha de produção.'
+FROM Funcionarios f
+INNER JOIN Maquinas m
+    ON m.Codigo = 'MC-005'
+WHERE f.Matricula = 'FUNC-005';
+
+
+INSERT INTO OrdensServico
+(
+    NumeroOS,
+    Cliente,
+    Contato,
+    Endereco,
+    DataAbertura,
+    DescricaoServico,
+    TipoServico,
+    DataEntrega,
+    FuncionarioId,
+    MaquinaId,
+    ValorMateriais,
+    ValorMaoObra,
+    Desconto,
+    ValorTotal,
+    CondicaoPagamento,
+    Observacoes
+)
+SELECT
+    'OS-0004',
+    'Mecânica Industrial Alfa',
+    '(79) 98888-2003',
+    'São Cristóvão - SE',
+    DATEADD(DAY, -2, GETDATE()),
+    'Usinagem de componentes de precisão.',
+    'usinagem',
+    DATEADD(DAY, 10, GETDATE()),
+    f.Id,
+    m.Id,
+    2890.00,
+    2600.00,
+    150.00,
+    5340.00,
+    '28 dias.',
+    'Componentes com tolerância dimensional reduzida.'
+FROM Funcionarios f
+INNER JOIN Maquinas m
+    ON m.Codigo = 'MC-006'
+WHERE f.Matricula = 'FUNC-008';
+
+
+INSERT INTO OrdensServico
+(
+    NumeroOS,
+    Cliente,
+    Contato,
+    Endereco,
+    DataAbertura,
+    DescricaoServico,
+    TipoServico,
+    DataEntrega,
+    FuncionarioId,
+    MaquinaId,
+    ValorMateriais,
+    ValorMaoObra,
+    Desconto,
+    ValorTotal,
+    CondicaoPagamento,
+    Observacoes
+)
+SELECT
+    'OS-0005',
+    'Auto Center Brasil',
+    '(79) 98888-2004',
+    'Aracaju - SE',
+    DATEADD(DAY, -10, GETDATE()),
+    'Fabricação de buchas em bronze.',
+    'torneamento',
+    DATEADD(DAY, -2, GETDATE()),
+    f.Id,
+    m.Id,
+    1239.00,
+    950.00,
+    0.00,
+    2189.00,
+    'À vista.',
+    'Serviço concluído.'
+FROM Funcionarios f
+INNER JOIN Maquinas m
+    ON m.Codigo = 'MC-007'
+WHERE f.Matricula = 'FUNC-002';
+GO
+
+
+/* ============================================================
+   8. MATERIAIS DAS ORDENS
+   ============================================================ */
+
+-- OS 0002
+INSERT INTO OrdensServicoMateriais
+(
+    OrdemServicoId,
+    MaterialId,
+    Quantidade,
+    Unidade,
+    ValorUnitario,
+    Subtotal
+)
+SELECT
+    os.Id,
+    m.Id,
+    350.00,
+    'KG',
+    14.80,
+    5180.00
+FROM OrdensServico os
+INNER JOIN Materiais m
+    ON m.Codigo = 'MAT-004'
+WHERE os.NumeroOS = 'OS-0002';
+
+
+-- OS 0003
+INSERT INTO OrdensServicoMateriais
+(
+    OrdemServicoId,
+    MaterialId,
+    Quantidade,
+    Unidade,
+    ValorUnitario,
+    Subtotal
+)
+SELECT
+    os.Id,
+    m.Id,
+    120.00,
+    'KG',
+    27.90,
+    3348.00
+FROM OrdensServico os
+INNER JOIN Materiais m
+    ON m.Codigo = 'MAT-006'
+WHERE os.NumeroOS = 'OS-0003';
+
+
+-- OS 0004
+INSERT INTO OrdensServicoMateriais
+(
+    OrdemServicoId,
+    MaterialId,
+    Quantidade,
+    Unidade,
+    ValorUnitario,
+    Subtotal
+)
+SELECT
+    os.Id,
+    m.Id,
+    100.00,
+    'KG',
+    28.90,
+    2890.00
+FROM OrdensServico os
+INNER JOIN Materiais m
+    ON m.Codigo = 'MAT-005'
+WHERE os.NumeroOS = 'OS-0004';
+
+
+-- OS 0005
+INSERT INTO OrdensServicoMateriais
+(
+    OrdemServicoId,
+    MaterialId,
+    Quantidade,
+    Unidade,
+    ValorUnitario,
+    Subtotal
+)
+SELECT
+    os.Id,
+    m.Id,
+    30.00,
+    'KG',
+    41.30,
+    1239.00
+FROM OrdensServico os
+INNER JOIN Materiais m
+    ON m.Codigo = 'MAT-007'
+WHERE os.NumeroOS = 'OS-0005';
+GO
+
+
+/* ============================================================
+   9. PROCESSOS DE PRODUÇÃO
+   ============================================================ */
+
+-- OS 0002 em execução
+INSERT INTO ProcessosProducao
+(
+    OrdemServicoId,
+    MaquinaId,
+    DataInicio,
+    DataFim,
+    QuantidadePlanejada,
+    QuantidadeProduzida,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    MaterialConsumido,
+    Status
+)
+SELECT
+    os.Id,
+    m.Id,
+    DATEADD(HOUR, -3, GETDATE()),
+    NULL,
+    350,
+    215,
+    18.00,
+    0.7500,
+    161.2500,
+    'EM_EXECUCAO'
+FROM OrdensServico os
+INNER JOIN Maquinas m
+    ON m.Codigo = 'MC-004'
+WHERE os.NumeroOS = 'OS-0002';
+
+
+-- OS 0003 em execução
+INSERT INTO ProcessosProducao
+(
+    OrdemServicoId,
+    MaquinaId,
+    DataInicio,
+    DataFim,
+    QuantidadePlanejada,
+    QuantidadeProduzida,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    MaterialConsumido,
+    Status
+)
+SELECT
+    os.Id,
+    m.Id,
+    DATEADD(HOUR, -2, GETDATE()),
+    NULL,
+    120,
+    74,
+    10.00,
+    1.1000,
+    81.4000,
+    'EM_EXECUCAO'
+FROM OrdensServico os
+INNER JOIN Maquinas m
+    ON m.Codigo = 'MC-005'
+WHERE os.NumeroOS = 'OS-0003';
+
+
+-- OS 0004 em execução
+INSERT INTO ProcessosProducao
+(
+    OrdemServicoId,
+    MaquinaId,
+    DataInicio,
+    DataFim,
+    QuantidadePlanejada,
+    QuantidadeProduzida,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    MaterialConsumido,
+    Status
+)
+SELECT
+    os.Id,
+    m.Id,
+    DATEADD(MINUTE, -90, GETDATE()),
+    NULL,
+    100,
+    38,
+    14.00,
+    0.9000,
+    34.2000,
+    'EM_EXECUCAO'
+FROM OrdensServico os
+INNER JOIN Maquinas m
+    ON m.Codigo = 'MC-006'
+WHERE os.NumeroOS = 'OS-0004';
+
+
+-- OS 0005 concluída
+INSERT INTO ProcessosProducao
+(
+    OrdemServicoId,
+    MaquinaId,
+    DataInicio,
+    DataFim,
+    QuantidadePlanejada,
+    QuantidadeProduzida,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    MaterialConsumido,
+    Status
+)
+SELECT
+    os.Id,
+    m.Id,
+    DATEADD(DAY, -4, GETDATE()),
+    DATEADD(DAY, -3, GETDATE()),
+    30,
+    30,
+    8.00,
+    1.0000,
+    30.0000,
+    'CONCLUIDO'
+FROM OrdensServico os
+INNER JOIN Maquinas m
+    ON m.Codigo = 'MC-007'
+WHERE os.NumeroOS = 'OS-0005';
+GO
+
+
+/* ============================================================
+   10. RESUMO DOS DADOS
+   ============================================================ */
+
+SELECT 'Funcionarios' AS Tabela, COUNT(*) AS Registros
+FROM Funcionarios
+
+UNION ALL
+
+SELECT 'Maquinas', COUNT(*)
+FROM Maquinas
+
+UNION ALL
+
+SELECT 'Materiais', COUNT(*)
+FROM Materiais
+
+UNION ALL
+
+SELECT 'Lotes', COUNT(*)
+FROM Lotes
+
+UNION ALL
+
+SELECT 'Movimentacoes', COUNT(*)
+FROM Movimentacoes
+
+UNION ALL
+
+SELECT 'OrdensServico', COUNT(*)
+FROM OrdensServico
+
+UNION ALL
+
+SELECT 'OrdensServicoMateriais', COUNT(*)
+FROM OrdensServicoMateriais
+
+UNION ALL
+
+SELECT 'ProcessosProducao', COUNT(*)
+FROM ProcessosProducao
+
+UNION ALL
+
+SELECT 'ConfiguracoesMaquina', COUNT(*)
+FROM ConfiguracoesMaquina;
 GO

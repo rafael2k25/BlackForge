@@ -104,8 +104,10 @@ namespace BlackForge.Controllers
                 }
             }
 
-            ordem.ValorMateriais = ordem.Materiais?
-                .Sum(m => m.Subtotal) ?? 0;
+            if (ordem.Materiais != null && ordem.Materiais.Any())
+            {
+                ordem.ValorMateriais = ordem.Materiais.Sum(m => m.Subtotal);
+            }
 
             if (ordem.ValorMaoObra < 0)
                 return BadRequest("O valor da mão de obra não pode ser negativo.");
@@ -208,8 +210,10 @@ namespace BlackForge.Controllers
                 }
             }
 
-            ordem.ValorMateriais = ordem.Materiais?
-                .Sum(m => m.Subtotal) ?? 0;
+            if (ordem.Materiais != null && ordem.Materiais.Any())
+            {
+                ordem.ValorMateriais = ordem.Materiais.Sum(m => m.Subtotal);
+            }
 
             if (ordem.ValorMaoObra < 0)
                 return BadRequest(

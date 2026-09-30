@@ -1586,27 +1586,171 @@ function abrirModalNovoMaterial() {
 function fecharModalNovoMaterial() {
     modalNovoMaterial.classList.remove("active");
 }
-abrirModalMaterial.addEventListener(
-    "click",
-    abrirModalNovoMaterial
-);
-cadastrarMaterialVazio.addEventListener(
-    "click",
-    abrirModalNovoMaterial
-);
-fecharModalMaterial.addEventListener(
-    "click",
-    fecharModalNovoMaterial
-);
-cancelarMaterial.addEventListener(
-    "click",
-    fecharModalNovoMaterial
-);
+if (abrirModalMaterial) {
+    abrirModalMaterial.addEventListener(
+        "click",
+        abrirModalNovoMaterial
+    );
+}
+if (fecharModalMaterial) {
+    fecharModalMaterial.addEventListener(
+        "click",
+        fecharModalNovoMaterial
+    );
+}
+if (cancelarMaterial) {
+    cancelarMaterial.addEventListener(
+        "click",
+        fecharModalNovoMaterial
+    );
+}
 modalNovoMaterial.addEventListener("click", (event) => {
     if (event.target === modalNovoMaterial) {
         fecharModalNovoMaterial();
     }
 });
+
+async function carregarMateriais() {
+
+    const lista = document.getElementById("materiaisLista");
+
+    if (!lista) {
+        console.warn("[MATERIAIS] Elemento #materiaisLista não encontrado.");
+        return;
+    }
+
+    try {
+
+        lista.innerHTML = `
+            <div class="materiais-loading">
+                <span>CARREGANDO MATERIAIS...</span>
+            </div>
+        `;
+
+        const response = await fetch(`${API_URL}/materiais`);
+
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
+
+        materiais = await response.json();
+
+        console.log("[MATERIAIS] Dados recebidos:", materiais);
+
+        renderizarMateriais();
+
+    } catch (error) {
+
+        console.error("[MATERIAIS] Erro ao carregar:", error);
+
+        lista.innerHTML = `
+            <div class="materiais-empty">
+                <h3>Não foi possível carregar os materiais.</h3>
+                <p>Verifique se a API do BlackForge está funcionando.</p>
+            </div>
+        `;
+    }
+}
+
+// RENDERIZAR MATERIAIS
+
+function renderizarMateriais() {
+    const lista = document.getElementById("materiaisLista");
+    if (!lista) {
+        return;
+    }
+    if (!materiais || materiais.length === 0) {
+        lista.innerHTML = `
+            <div class="materiais-empty">
+                <h3>
+                    O estoque ainda não possui materiais registrados.
+                </h3>
+                <p>
+                    Cadastre um material para começar o controle do estoque.
+                </p>
+                <button
+                    type="button"
+                    class="secondary-button"
+                    id="cadastrarMaterialVazio">
+                    CADASTRAR MATERIAL
+                </button>
+            </div>
+        `;
+        const botao = document.getElementById("cadastrarMaterialVazio");
+        if (botao) {
+            botao.addEventListener("click", abrirModalNovoMaterial);
+        }
+        return;
+    }
+    lista.innerHTML = materiais.map(function (material) {
+        const estoqueStatus = material.abaixoDoMinimo
+            ? "ABAIXO DO MÍNIMO"
+            : "ESTOQUE NORMAL";
+        return `
+            <div class="material-card">
+                <div class="material-card-header">
+                    <div>
+                        <span class="material-card-codigo">
+                            ${material.codigo}
+                        </span>
+                        <h3>
+                            ${material.nome}
+                        </h3>
+                    </div>
+                    <span class="material-card-status ${material.abaixoDoMinimo ? "status-alerta" : "status-ok"}">
+                        ${estoqueStatus}
+                    </span>
+                </div>
+                <div class="material-card-info">
+                    <div>
+                        <span>CATEGORIA</span>
+                        <strong>
+                            ${material.categoria || "-"}
+                        </strong>
+                    </div>
+                    <div>
+                        <span>UNIDADE</span>
+                        <strong>
+                            ${material.unidade || "-"}
+                        </strong>
+                    </div>
+                    <div>
+                        <span>ESTOQUE</span>
+                        <strong>
+                            ${material.quantidadeTotal} ${material.unidade || ""}
+                        </strong>
+                    </div>
+                    <div>
+                        <span>CUSTO MÉDIO</span>
+                        <strong>
+                            ${formatarMoedaMaterial(material.custoMedio)}
+                        </strong>
+                    </div>
+                </div>
+                ${
+                    material.descricao
+                        ? `
+                            <div class="material-card-descricao">
+                                ${material.descricao}
+                            </div>
+                          `
+                        : ""
+                }
+            </div>
+        `;
+    }).join("");
+}
+
+// FORMATAR MOEDA
+
+function formatarMoedaMaterial(valor) {
+
+    return Number(valor || 0).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+    });
+
+}
 
 // NOVO LOTE
 
@@ -1639,6 +1783,24 @@ if (modalNovoLote) {
             fecharModalNovoLote();
         }
     });
+}
+
+// MATERIAIS
+
+let materiais = [];
+
+async function carregarMateriais() {
+    try {
+        const response = await fetch(`${API_URL}/materiais`);
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
+        }
+        materiais = await response.json();
+        console.log("Materiais carregados:", materiais);
+        renderizarMateriais();
+    } catch (error) {
+        console.error("Erro ao carregar materiais:", error);
+    }
 }
 
 // FUNCIONÁRIOS
@@ -2238,18 +2400,14 @@ function editarFuncionarioSelecionado() {
     document.getElementById("cadastrarFuncionario").textContent = "SALVAR ALTERAÇÕES";
 }
 
-
-// =========================================================
 // INICIALIZAÇÃO
-// =========================================================
 
 carregarFuncionarios();
 carregarMaquinas();
 carregarOrdensServico();
+carregarMateriais();
 
-// =========================================================
 // RELATÓRIOS DE SERVIÇOS
-// =========================================================
 
 const limparFiltrosServicos =
     document.getElementById("limparFiltrosServicos");

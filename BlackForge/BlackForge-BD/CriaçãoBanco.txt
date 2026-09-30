@@ -1,49 +1,188 @@
-CREATE DATABASE BlackForgeBD;
+/* ============================================================
+   BLACKFORGE
+   CRIAÇÃO DO BANCO DE DADOS
+   ============================================================ */
+
+USE master;
 GO
 
-USE BlackForgeBD;
+/* ============================================================
+   APAGA O BANCO CASO JÁ EXISTA
+   ============================================================ */
+
+IF DB_ID('BANCOBLACKFORGE') IS NOT NULL
+BEGIN
+    ALTER DATABASE BANCOBLACKFORGE
+    SET SINGLE_USER
+    WITH ROLLBACK IMMEDIATE;
+
+    DROP DATABASE BANCOBLACKFORGE;
+END;
 GO
+
+/* ============================================================
+   CRIA O BANCO
+   ============================================================ */
+
+CREATE DATABASE BANCOBLACKFORGE;
+GO
+
+USE BANCOBLACKFORGE;
+GO
+
+
+/* ============================================================
+   1. MATERIAIS
+   ============================================================ */
 
 CREATE TABLE Materiais
 (
     Id INT IDENTITY(1,1) NOT NULL,
+
     Codigo NVARCHAR(50) NOT NULL,
     Nome NVARCHAR(150) NOT NULL,
     Categoria NVARCHAR(50) NOT NULL,
     Unidade NVARCHAR(20) NOT NULL,
-    Descricao NVARCHAR(MAX) NULL,
+    Descricao NVARCHAR(500) NULL,
+
+    EstoqueMinimo DECIMAL(18,2) NOT NULL
+        CONSTRAINT DF_Materiais_EstoqueMinimo DEFAULT 0,
 
     CONSTRAINT PK_Materiais
-        PRIMARY KEY (Id)
-);
-GO
-
-CREATE TABLE ConfiguracoesMaquina (
-    Id INT IDENTITY(1,1) NOT NULL,
-    MaquinaId INT NOT NULL,
-    TipoServico NVARCHAR(50) NOT NULL,
-    ProducaoPorMinuto DECIMAL(18,2) NOT NULL,
-    ConsumoPorUnidade DECIMAL(18,4) NOT NULL,
-    Ativa BIT NOT NULL DEFAULT 1,
-
-    CONSTRAINT PK_ConfiguracoesMaquina
         PRIMARY KEY (Id),
 
-    CONSTRAINT FK_ConfiguracoesMaquina_Maquinas
-        FOREIGN KEY (MaquinaId)
-        REFERENCES Maquinas(Id)
-        ON DELETE CASCADE
+    CONSTRAINT UQ_Materiais_Codigo
+        UNIQUE (Codigo)
 );
 GO
+
+
+/* ============================================================
+   2. FUNCIONÁRIOS
+   ============================================================ */
+
+CREATE TABLE Funcionarios
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+
+    Nome NVARCHAR(150) NOT NULL,
+    Matricula NVARCHAR(50) NOT NULL,
+    CPF NVARCHAR(14) NOT NULL,
+    Cargo NVARCHAR(100) NOT NULL,
+    Idade INT NOT NULL,
+
+    Telefone NVARCHAR(20) NULL,
+    Setor NVARCHAR(100) NOT NULL,
+
+    DataAdmissao DATETIME2 NOT NULL,
+
+    Email NVARCHAR(150) NULL,
+    Observacoes NVARCHAR(500) NULL,
+
+    CONSTRAINT PK_Funcionarios
+        PRIMARY KEY (Id),
+
+    CONSTRAINT UQ_Funcionarios_Matricula
+        UNIQUE (Matricula),
+
+    CONSTRAINT UQ_Funcionarios_CPF
+        UNIQUE (CPF)
+);
+GO
+
+
+/* ============================================================
+   3. MÁQUINAS
+   ============================================================ */
+
+CREATE TABLE Maquinas
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+
+    Nome NVARCHAR(150) NOT NULL,
+    Codigo NVARCHAR(50) NOT NULL,
+    Fabricante NVARCHAR(100) NOT NULL,
+    Modelo NVARCHAR(100) NOT NULL,
+    NumeroSerie NVARCHAR(100) NOT NULL,
+
+    DataAquisicao DATETIME2 NOT NULL,
+
+    CONSTRAINT PK_Maquinas
+        PRIMARY KEY (Id),
+
+    CONSTRAINT UQ_Maquinas_Codigo
+        UNIQUE (Codigo),
+
+    CONSTRAINT UQ_Maquinas_NumeroSerie
+        UNIQUE (NumeroSerie)
+);
+GO
+
+
+/* ============================================================
+   4. TEMAS
+   ============================================================ */
+
+CREATE TABLE Temas
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+
+    Nome NVARCHAR(100) NOT NULL,
+    Codigo NVARCHAR(50) NOT NULL,
+    Ativo BIT NOT NULL
+        CONSTRAINT DF_Temas_Ativo DEFAULT 1,
+
+    CONSTRAINT PK_Temas
+        PRIMARY KEY (Id),
+
+    CONSTRAINT UQ_Temas_Codigo
+        UNIQUE (Codigo)
+);
+GO
+
+
+/* ============================================================
+   5. CONFIGURAÇÃO DO SISTEMA
+   ============================================================ */
+
+CREATE TABLE ConfiguracaoSistema
+(
+    Id INT NOT NULL,
+    TemaId INT NOT NULL,
+
+    CONSTRAINT PK_ConfiguracaoSistema
+        PRIMARY KEY (Id),
+
+    CONSTRAINT FK_ConfiguracaoSistema_Temas
+        FOREIGN KEY (TemaId)
+        REFERENCES Temas(Id)
+        ON DELETE NO ACTION
+);
+GO
+
+
+/* ============================================================
+   6. LOTES
+   ============================================================ */
 
 CREATE TABLE Lotes
 (
     Id INT IDENTITY(1,1) NOT NULL,
+
     Codigo NVARCHAR(50) NOT NULL,
+
     Quantidade DECIMAL(18,2) NOT NULL,
+
+    CustoUnitario DECIMAL(18,2) NOT NULL,
+
+    DataEntrada DATETIME2 NOT NULL,
+
     DataFabricacao DATETIME2 NULL,
     DataValidade DATETIME2 NULL,
+
     MaterialId INT NOT NULL,
+
+    Observacoes NVARCHAR(500) NULL,
 
     CONSTRAINT PK_Lotes
         PRIMARY KEY (Id),
@@ -51,18 +190,32 @@ CREATE TABLE Lotes
     CONSTRAINT FK_Lotes_Materiais
         FOREIGN KEY (MaterialId)
         REFERENCES Materiais(Id)
-        ON DELETE NO ACTION
+        ON DELETE NO ACTION,
+
+    CONSTRAINT UQ_Lotes_Material_Codigo
+        UNIQUE (MaterialId, Codigo)
 );
 GO
+
+
+/* ============================================================
+   7. MOVIMENTAÇÕES
+   ============================================================ */
 
 CREATE TABLE Movimentacoes
 (
     Id INT IDENTITY(1,1) NOT NULL,
+
     Tipo NVARCHAR(20) NOT NULL,
+
     Quantidade DECIMAL(18,2) NOT NULL,
+
     DataMovimentacao DATETIME2 NOT NULL,
-    Observacoes NVARCHAR(MAX) NULL,
+
+    Observacoes NVARCHAR(500) NULL,
+
     MaterialId INT NOT NULL,
+
     LoteId INT NULL,
 
     CONSTRAINT PK_Movimentacoes
@@ -80,98 +233,743 @@ CREATE TABLE Movimentacoes
 );
 GO
 
-CREATE TABLE Funcionarios
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-    Nome NVARCHAR(150) NOT NULL,
-    Matricula NVARCHAR(50) NOT NULL,
-    CPF NVARCHAR(14) NOT NULL,
-    Cargo NVARCHAR(100) NOT NULL,
-    Idade INT NOT NULL,
-    Telefone NVARCHAR(20) NULL,
-    Setor NVARCHAR(100) NOT NULL,
-    DataAdmissao DATETIME2 NOT NULL,
-    Email NVARCHAR(150) NULL,
-    Observacoes NVARCHAR(500) NULL,
 
-    CONSTRAINT PK_Funcionarios
-        PRIMARY KEY (Id),
-
-    CONSTRAINT UQ_Funcionarios_Matricula
-        UNIQUE (Matricula),
-
-    CONSTRAINT UQ_Funcionarios_CPF
-        UNIQUE (CPF)
-);
-GO
-
-CREATE TABLE Maquinas
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-    Nome NVARCHAR(150) NOT NULL,
-    Codigo NVARCHAR(50) NOT NULL,
-    Fabricante NVARCHAR(100) NOT NULL,
-    Modelo NVARCHAR(100) NOT NULL,
-    NumeroSerie NVARCHAR(100) NOT NULL,
-    DataAquisicao DATETIME2 NOT NULL,
-    Observacoes NVARCHAR(MAX) NULL,
-
-    CONSTRAINT PK_Maquinas
-        PRIMARY KEY (Id)
-);
-GO
+/* ============================================================
+   8. ORDENS DE SERVIÇO
+   ============================================================ */
 
 CREATE TABLE OrdensServico
 (
     Id INT IDENTITY(1,1) NOT NULL,
+
     NumeroOS NVARCHAR(50) NOT NULL,
+
     Cliente NVARCHAR(150) NOT NULL,
-    Contato NVARCHAR(MAX) NULL,
-    Endereco NVARCHAR(MAX) NULL,
+
+    Contato NVARCHAR(100) NULL,
+
+    Endereco NVARCHAR(300) NULL,
+
     DataAbertura DATETIME2 NOT NULL,
-    DescricaoServico NVARCHAR(MAX) NOT NULL,
+
+    DescricaoServico NVARCHAR(1000) NOT NULL,
+
     TipoServico NVARCHAR(50) NOT NULL,
-    DataInicio DATETIME2 NULL,
+
     DataEntrega DATETIME2 NULL,
+
     FuncionarioId INT NULL,
-    ValorMateriais DECIMAL(18,2) NOT NULL,
-    ValorMaoObra DECIMAL(18,2) NOT NULL,
-    Desconto DECIMAL(18,2) NOT NULL,
-    ValorTotal DECIMAL(18,2) NOT NULL,
+
+    MaquinaId INT NULL,
+
+    ValorMateriais DECIMAL(18,2) NOT NULL
+        CONSTRAINT DF_OS_ValorMateriais DEFAULT 0,
+
+    ValorMaoObra DECIMAL(18,2) NOT NULL
+        CONSTRAINT DF_OS_ValorMaoObra DEFAULT 0,
+
+    Desconto DECIMAL(18,2) NOT NULL
+        CONSTRAINT DF_OS_Desconto DEFAULT 0,
+
+    ValorTotal DECIMAL(18,2) NOT NULL
+        CONSTRAINT DF_OS_ValorTotal DEFAULT 0,
+
     CondicaoPagamento NVARCHAR(MAX) NULL,
-    Observacoes NVARCHAR(MAX) NULL,
+
+    Observacoes NVARCHAR(500) NULL,
 
     CONSTRAINT PK_OrdensServico
         PRIMARY KEY (Id),
 
+    CONSTRAINT UQ_OrdensServico_NumeroOS
+        UNIQUE (NumeroOS),
+
     CONSTRAINT FK_OrdensServico_Funcionarios
         FOREIGN KEY (FuncionarioId)
         REFERENCES Funcionarios(Id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT FK_OrdensServico_Maquinas
+        FOREIGN KEY (MaquinaId)
+        REFERENCES Maquinas(Id)
         ON DELETE SET NULL
 );
 GO
 
+
+/* ============================================================
+   9. ORDEM DE SERVIÇO + MATERIAIS
+   ============================================================ */
+
 CREATE TABLE OrdensServicoMateriais
 (
     Id INT IDENTITY(1,1) NOT NULL,
+
     OrdemServicoId INT NOT NULL,
+
     MaterialId INT NOT NULL,
+
     Quantidade DECIMAL(18,2) NOT NULL,
+
     Unidade NVARCHAR(20) NOT NULL,
+
     ValorUnitario DECIMAL(18,2) NOT NULL,
+
     Subtotal DECIMAL(18,2) NOT NULL,
 
     CONSTRAINT PK_OrdensServicoMateriais
         PRIMARY KEY (Id),
 
-    CONSTRAINT FK_OrdensServicoMateriais_OrdensServico
+    CONSTRAINT FK_OSMateriais_OrdensServico
         FOREIGN KEY (OrdemServicoId)
         REFERENCES OrdensServico(Id)
         ON DELETE CASCADE,
 
-    CONSTRAINT FK_OrdensServicoMateriais_Materiais
+    CONSTRAINT FK_OSMateriais_Materiais
         FOREIGN KEY (MaterialId)
         REFERENCES Materiais(Id)
         ON DELETE NO ACTION
 );
+GO
+
+
+/* ============================================================
+   10. PROCESSOS DE PRODUÇÃO
+   ============================================================ */
+
+CREATE TABLE ProcessosProducao
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+
+    OrdemServicoId INT NOT NULL,
+
+    MaquinaId INT NOT NULL,
+
+    DataInicio DATETIME2 NOT NULL,
+
+    DataFim DATETIME2 NULL,
+
+    QuantidadePlanejada INT NOT NULL,
+
+    QuantidadeProduzida INT NOT NULL,
+
+    ProducaoPorMinuto DECIMAL(18,2) NOT NULL,
+
+    ConsumoPorUnidade DECIMAL(18,4) NOT NULL,
+
+    MaterialConsumido DECIMAL(18,4) NOT NULL,
+
+    Status NVARCHAR(30) NOT NULL,
+
+    CONSTRAINT PK_ProcessosProducao
+        PRIMARY KEY (Id),
+
+    CONSTRAINT FK_ProcessosProducao_OrdensServico
+        FOREIGN KEY (OrdemServicoId)
+        REFERENCES OrdensServico(Id)
+        ON DELETE NO ACTION,
+
+    CONSTRAINT FK_ProcessosProducao_Maquinas
+        FOREIGN KEY (MaquinaId)
+        REFERENCES Maquinas(Id)
+        ON DELETE NO ACTION
+);
+GO
+
+
+/* ============================================================
+   11. CONFIGURAÇÕES DAS MÁQUINAS
+   ============================================================ */
+
+CREATE TABLE ConfiguracoesMaquina
+(
+    Id INT IDENTITY(1,1) NOT NULL,
+
+    MaquinaId INT NOT NULL,
+
+    TipoServico NVARCHAR(50) NOT NULL,
+
+    ProducaoPorMinuto DECIMAL(18,2) NOT NULL,
+
+    ConsumoPorUnidade DECIMAL(18,4) NOT NULL,
+
+    Ativa BIT NOT NULL
+        CONSTRAINT DF_ConfiguracoesMaquina_Ativa DEFAULT 1,
+
+    CONSTRAINT PK_ConfiguracoesMaquina
+        PRIMARY KEY (Id),
+
+    CONSTRAINT FK_ConfiguracoesMaquina_Maquinas
+        FOREIGN KEY (MaquinaId)
+        REFERENCES Maquinas(Id)
+        ON DELETE CASCADE
+);
+GO
+
+
+/* ============================================================
+   DADOS INICIAIS
+   ============================================================ */
+
+
+/* ============================================================
+   TEMAS
+   ============================================================ */
+
+INSERT INTO Temas
+(
+    Nome,
+    Codigo,
+    Ativo
+)
+VALUES
+(
+    'Tema Escuro',
+    'escuro',
+    1
+),
+(
+    'Tema Claro',
+    'claro',
+    1
+),
+(
+    'PlayStation',
+    'playstation',
+    1
+);
+GO
+
+
+/* ============================================================
+   CONFIGURAÇÃO INICIAL
+   ============================================================ */
+
+INSERT INTO ConfiguracaoSistema
+(
+    Id,
+    TemaId
+)
+SELECT
+    1,
+    Id
+FROM Temas
+WHERE Codigo = 'escuro';
+GO
+
+
+/* ============================================================
+   FUNCIONÁRIOS
+   ============================================================ */
+
+INSERT INTO Funcionarios
+(
+    Nome,
+    Matricula,
+    CPF,
+    Cargo,
+    Idade,
+    Telefone,
+    Setor,
+    DataAdmissao,
+    Email,
+    Observacoes
+)
+VALUES
+(
+    'Carlos Henrique',
+    'FUNC-001',
+    '111.111.111-11',
+    'Operador CNC',
+    32,
+    '(79) 99999-0001',
+    'Produção',
+    '2023-02-15',
+    'carlos@blackforge.com',
+    'Operador principal de máquinas CNC.'
+),
+(
+    'Marcos Oliveira',
+    'FUNC-002',
+    '222.222.222-22',
+    'Torneiro Mecânico',
+    41,
+    '(79) 99999-0002',
+    'Produção',
+    '2022-08-10',
+    'marcos@blackforge.com',
+    'Responsável por operações de torneamento.'
+),
+(
+    'Rafael Santos',
+    'FUNC-003',
+    '333.333.333-33',
+    'Supervisor de Produção',
+    38,
+    '(79) 99999-0003',
+    'Produção',
+    '2021-05-20',
+    'rafael@blackforge.com',
+    'Supervisão das atividades de produção.'
+);
+GO
+
+
+/* ============================================================
+   MÁQUINAS
+   ============================================================ */
+
+INSERT INTO Maquinas
+(
+    Nome,
+    Codigo,
+    Fabricante,
+    Modelo,
+    NumeroSerie,
+    DataAquisicao
+)
+VALUES
+(
+    'Torno CNC 01',
+    'MC-001',
+    'Romi',
+    'T 240',
+    'ROMI-T240-001',
+    '2022-03-15'
+),
+(
+    'Torno CNC 02',
+    'MC-002',
+    'Romi',
+    'T 240',
+    'ROMI-T240-002',
+    '2023-01-20'
+),
+(
+    'Fresadora CNC 01',
+    'MC-003',
+    'Romi',
+    'D 600',
+    'ROMI-D600-001',
+    '2023-08-10'
+);
+GO
+
+
+/* ============================================================
+   MATERIAIS
+   ============================================================ */
+
+INSERT INTO Materiais
+(
+    Codigo,
+    Nome,
+    Categoria,
+    Unidade,
+    Descricao,
+    EstoqueMinimo
+)
+VALUES
+(
+    'MAT-001',
+    'Aço Carbono SAE 1020',
+    'Aço',
+    'KG',
+    'Aço carbono utilizado em operações de usinagem.',
+    100.00
+),
+(
+    'MAT-002',
+    'Aço Inox 304',
+    'Aço Inox',
+    'KG',
+    'Aço inoxidável para fabricação de componentes.',
+    50.00
+),
+(
+    'MAT-003',
+    'Alumínio 6061',
+    'Alumínio',
+    'KG',
+    'Alumínio para componentes usinados.',
+    30.00
+);
+GO
+
+
+/* ============================================================
+   LOTES
+   ============================================================ */
+
+INSERT INTO Lotes
+(
+    Codigo,
+    Quantidade,
+    CustoUnitario,
+    DataEntrada,
+    DataFabricacao,
+    DataValidade,
+    MaterialId,
+    Observacoes
+)
+SELECT
+    'LOTE-1020-001',
+    500.00,
+    12.50,
+    GETDATE(),
+    NULL,
+    NULL,
+    Id,
+    'Lote inicial para testes do sistema.'
+FROM Materiais
+WHERE Codigo = 'MAT-001';
+
+
+INSERT INTO Lotes
+(
+    Codigo,
+    Quantidade,
+    CustoUnitario,
+    DataEntrada,
+    DataFabricacao,
+    DataValidade,
+    MaterialId,
+    Observacoes
+)
+SELECT
+    'LOTE-INOX-001',
+    200.00,
+    28.90,
+    GETDATE(),
+    NULL,
+    NULL,
+    Id,
+    'Lote inicial de aço inox.'
+FROM Materiais
+WHERE Codigo = 'MAT-002';
+
+
+INSERT INTO Lotes
+(
+    Codigo,
+    Quantidade,
+    CustoUnitario,
+    DataEntrada,
+    DataFabricacao,
+    DataValidade,
+    MaterialId,
+    Observacoes
+)
+SELECT
+    'LOTE-AL-001',
+    150.00,
+    19.75,
+    GETDATE(),
+    NULL,
+    NULL,
+    Id,
+    'Lote inicial de alumínio.'
+FROM Materiais
+WHERE Codigo = 'MAT-003';
+GO
+
+
+/* ============================================================
+   MOVIMENTAÇÕES INICIAIS
+   ============================================================ */
+
+INSERT INTO Movimentacoes
+(
+    Tipo,
+    Quantidade,
+    DataMovimentacao,
+    Observacoes,
+    MaterialId,
+    LoteId
+)
+SELECT
+    'entrada',
+    500.00,
+    GETDATE(),
+    'Entrada inicial de estoque.',
+    m.Id,
+    l.Id
+FROM Materiais m
+INNER JOIN Lotes l
+    ON l.MaterialId = m.Id
+WHERE m.Codigo = 'MAT-001'
+AND l.Codigo = 'LOTE-1020-001';
+
+
+INSERT INTO Movimentacoes
+(
+    Tipo,
+    Quantidade,
+    DataMovimentacao,
+    Observacoes,
+    MaterialId,
+    LoteId
+)
+SELECT
+    'entrada',
+    200.00,
+    GETDATE(),
+    'Entrada inicial de estoque.',
+    m.Id,
+    l.Id
+FROM Materiais m
+INNER JOIN Lotes l
+    ON l.MaterialId = m.Id
+WHERE m.Codigo = 'MAT-002'
+AND l.Codigo = 'LOTE-INOX-001';
+
+
+INSERT INTO Movimentacoes
+(
+    Tipo,
+    Quantidade,
+    DataMovimentacao,
+    Observacoes,
+    MaterialId,
+    LoteId
+)
+SELECT
+    'entrada',
+    150.00,
+    GETDATE(),
+    'Entrada inicial de estoque.',
+    m.Id,
+    l.Id
+FROM Materiais m
+INNER JOIN Lotes l
+    ON l.MaterialId = m.Id
+WHERE m.Codigo = 'MAT-003'
+AND l.Codigo = 'LOTE-AL-001';
+GO
+
+
+/* ============================================================
+   CONFIGURAÇÕES DAS MÁQUINAS
+   ============================================================ */
+
+INSERT INTO ConfiguracoesMaquina
+(
+    MaquinaId,
+    TipoServico,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    Ativa
+)
+SELECT
+    Id,
+    'torneamento',
+    15.00,
+    0.8000,
+    1
+FROM Maquinas
+WHERE Codigo = 'MC-001';
+
+
+INSERT INTO ConfiguracoesMaquina
+(
+    MaquinaId,
+    TipoServico,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    Ativa
+)
+SELECT
+    Id,
+    'torneamento',
+    12.00,
+    0.8500,
+    1
+FROM Maquinas
+WHERE Codigo = 'MC-002';
+
+
+INSERT INTO ConfiguracoesMaquina
+(
+    MaquinaId,
+    TipoServico,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    Ativa
+)
+SELECT
+    Id,
+    'fresagem',
+    8.00,
+    1.2000,
+    1
+FROM Maquinas
+WHERE Codigo = 'MC-003';
+GO
+
+
+/* ============================================================
+   ORDEM DE SERVIÇO DE TESTE
+   ============================================================ */
+
+INSERT INTO OrdensServico
+(
+    NumeroOS,
+    Cliente,
+    Contato,
+    Endereco,
+    DataAbertura,
+    DescricaoServico,
+    TipoServico,
+    DataEntrega,
+    FuncionarioId,
+    MaquinaId,
+    ValorMateriais,
+    ValorMaoObra,
+    Desconto,
+    ValorTotal,
+    CondicaoPagamento,
+    Observacoes
+)
+SELECT
+    'OS-0001',
+    'Metalúrgica Alpha',
+    '(79) 98888-1111',
+    'Aracaju - SE',
+    GETDATE(),
+    'Fabricação de cilindros em aço carbono.',
+    'torneamento',
+    DATEADD(DAY, 7, GETDATE()),
+    f.Id,
+    m.Id,
+    6250.00,
+    1800.00,
+    0.00,
+    8050.00,
+    '50% na entrada e 50% na entrega.',
+    'OS criada para teste inicial do sistema.'
+FROM Funcionarios f
+CROSS JOIN Maquinas m
+WHERE f.Matricula = 'FUNC-001'
+AND m.Codigo = 'MC-001';
+GO
+
+
+/* ============================================================
+   MATERIAL DA ORDEM DE SERVIÇO
+   ============================================================ */
+
+INSERT INTO OrdensServicoMateriais
+(
+    OrdemServicoId,
+    MaterialId,
+    Quantidade,
+    Unidade,
+    ValorUnitario,
+    Subtotal
+)
+SELECT
+    os.Id,
+    m.Id,
+    500.00,
+    'KG',
+    12.50,
+    6250.00
+FROM OrdensServico os
+INNER JOIN Materiais m
+    ON m.Codigo = 'MAT-001'
+WHERE os.NumeroOS = 'OS-0001';
+GO
+
+
+/* ============================================================
+   PROCESSO DE PRODUÇÃO DE TESTE
+   ============================================================ */
+
+INSERT INTO ProcessosProducao
+(
+    OrdemServicoId,
+    MaquinaId,
+    DataInicio,
+    DataFim,
+    QuantidadePlanejada,
+    QuantidadeProduzida,
+    ProducaoPorMinuto,
+    ConsumoPorUnidade,
+    MaterialConsumido,
+    Status
+)
+SELECT
+    os.Id,
+    m.Id,
+    GETDATE(),
+    NULL,
+    500,
+    0,
+    15.00,
+    0.8000,
+    0.0000,
+    'EM_EXECUCAO'
+FROM OrdensServico os
+INNER JOIN Maquinas m
+    ON m.Codigo = 'MC-001'
+WHERE os.NumeroOS = 'OS-0001';
+GO
+
+
+/* ============================================================
+   VERIFICAÇÃO FINAL
+   ============================================================ */
+
+SELECT 'Materiais' AS Tabela, COUNT(*) AS Quantidade
+FROM Materiais
+
+UNION ALL
+
+SELECT 'Lotes', COUNT(*)
+FROM Lotes
+
+UNION ALL
+
+SELECT 'Movimentacoes', COUNT(*)
+FROM Movimentacoes
+
+UNION ALL
+
+SELECT 'Funcionarios', COUNT(*)
+FROM Funcionarios
+
+UNION ALL
+
+SELECT 'Maquinas', COUNT(*)
+FROM Maquinas
+
+UNION ALL
+
+SELECT 'OrdensServico', COUNT(*)
+FROM OrdensServico
+
+UNION ALL
+
+SELECT 'OrdensServicoMateriais', COUNT(*)
+FROM OrdensServicoMateriais
+
+UNION ALL
+
+SELECT 'ProcessosProducao', COUNT(*)
+FROM ProcessosProducao
+
+UNION ALL
+
+SELECT 'Temas', COUNT(*)
+FROM Temas
+
+UNION ALL
+
+SELECT 'ConfiguracaoSistema', COUNT(*)
+FROM ConfiguracaoSistema
+
+UNION ALL
+
+SELECT 'ConfiguracoesMaquina', COUNT(*)
+FROM ConfiguracoesMaquina;
 GO

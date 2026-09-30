@@ -9,6 +9,11 @@ namespace BlackForge.Data
             : base(options)
         {
         }
+
+        // =========================================================
+        // DBSETS
+        // =========================================================
+
         public DbSet<Material> Materiais { get; set; }
         public DbSet<Lote> Lotes { get; set; }
         public DbSet<Movimentacao> Movimentacoes { get; set; }
@@ -20,10 +25,13 @@ namespace BlackForge.Data
         public DbSet<Tema> Temas { get; set; }
         public DbSet<ConfiguracaoSistema> ConfiguracaoSistema { get; set; }
         public DbSet<ConfiguracaoMaquina> ConfiguracoesMaquina { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // ================= MATERIAL =================
+            // =========================================================
+            // MATERIAL
+            // =========================================================
             modelBuilder.Entity<Material>()
                 .HasKey(m => m.Id);
             modelBuilder.Entity<Material>()
@@ -42,8 +50,19 @@ namespace BlackForge.Data
                 .Property(m => m.Unidade)
                 .HasMaxLength(20)
                 .IsRequired();
-
-            // ================= LOTE =================         
+            modelBuilder.Entity<Material>()
+                .Property(m => m.Descricao)
+                .HasMaxLength(500)
+                .IsRequired(false);
+            modelBuilder.Entity<Material>()
+                .Property(m => m.EstoqueMinimo)
+                .HasPrecision(18, 2);
+            modelBuilder.Entity<Material>()
+                .HasIndex(m => m.Codigo)
+                .IsUnique();
+            // =========================================================
+            // LOTE
+            // =========================================================
             modelBuilder.Entity<Lote>()
                 .HasKey(l => l.Id);
             modelBuilder.Entity<Lote>()
@@ -52,14 +71,40 @@ namespace BlackForge.Data
                 .IsRequired();
             modelBuilder.Entity<Lote>()
                 .Property(l => l.Quantidade)
-                .HasPrecision(18, 2);
+                .HasPrecision(18, 2)
+                .IsRequired();
+            modelBuilder.Entity<Lote>()
+                .Property(l => l.CustoUnitario)
+                .HasPrecision(18, 2)
+                .IsRequired();
+            modelBuilder.Entity<Lote>()
+                .Property(l => l.DataEntrada)
+                .IsRequired();
+            modelBuilder.Entity<Lote>()
+                .Property(l => l.DataFabricacao)
+                .IsRequired(false);
+            modelBuilder.Entity<Lote>()
+                .Property(l => l.DataValidade)
+                .IsRequired(false);
+            modelBuilder.Entity<Lote>()
+                .Property(l => l.Observacoes)
+                .HasMaxLength(500)
+                .IsRequired(false);
             modelBuilder.Entity<Lote>()
                 .HasOne(l => l.Material)
                 .WithMany()
                 .HasForeignKey(l => l.MaterialId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // ================= MOVIMENTAÇÃO =================
+            modelBuilder.Entity<Lote>()
+                .HasIndex(l => new
+                {
+                    l.MaterialId,
+                    l.Codigo
+                })
+                .IsUnique();
+            // =========================================================
+            // MOVIMENTAÇÃO
+            // =========================================================
             modelBuilder.Entity<Movimentacao>()
                 .HasKey(m => m.Id);
             modelBuilder.Entity<Movimentacao>()
@@ -68,7 +113,15 @@ namespace BlackForge.Data
                 .IsRequired();
             modelBuilder.Entity<Movimentacao>()
                 .Property(m => m.Quantidade)
-                .HasPrecision(18, 2);
+                .HasPrecision(18, 2)
+                .IsRequired();
+            modelBuilder.Entity<Movimentacao>()
+                .Property(m => m.DataMovimentacao)
+                .IsRequired();
+            modelBuilder.Entity<Movimentacao>()
+                .Property(m => m.Observacoes)
+                .HasMaxLength(500)
+                .IsRequired(false);
             modelBuilder.Entity<Movimentacao>()
                 .HasOne(m => m.Material)
                 .WithMany()
@@ -79,8 +132,9 @@ namespace BlackForge.Data
                 .WithMany()
                 .HasForeignKey(m => m.LoteId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // ================= FUNCIONÁRIO =================
+            // =========================================================
+            // FUNCIONÁRIO
+            // =========================================================
             modelBuilder.Entity<Funcionario>()
                 .HasKey(f => f.Id);
             modelBuilder.Entity<Funcionario>()
@@ -127,10 +181,11 @@ namespace BlackForge.Data
             modelBuilder.Entity<Funcionario>()
                 .HasIndex(f => f.CPF)
                 .IsUnique();
-
-            // ================= MÁQUINA =================
-
-            modelBuilder.Entity<Maquina>().HasKey(m => m.Id);
+            // =========================================================
+            // MÁQUINA
+            // =========================================================
+            modelBuilder.Entity<Maquina>()
+                .HasKey(m => m.Id);
             modelBuilder.Entity<Maquina>()
                 .Property(m => m.Nome)
                 .HasMaxLength(150)
@@ -151,8 +206,18 @@ namespace BlackForge.Data
                 .Property(m => m.NumeroSerie)
                 .HasMaxLength(100)
                 .IsRequired();
-
-            // ================= ORDEM DE SERVIÇO =================
+            modelBuilder.Entity<Maquina>()
+                .Property(m => m.DataAquisicao)
+                .IsRequired();
+            modelBuilder.Entity<Maquina>()
+                .HasIndex(m => m.Codigo)
+                .IsUnique();
+            modelBuilder.Entity<Maquina>()
+                .HasIndex(m => m.NumeroSerie)
+                .IsUnique();
+            // =========================================================
+            // ORDEM DE SERVIÇO
+            // =========================================================
             modelBuilder.Entity<OrdemServico>()
                 .HasKey(o => o.Id);
             modelBuilder.Entity<OrdemServico>()
@@ -164,44 +229,85 @@ namespace BlackForge.Data
                 .HasMaxLength(150)
                 .IsRequired();
             modelBuilder.Entity<OrdemServico>()
+                .Property(o => o.Contato)
+                .HasMaxLength(100)
+                .IsRequired(false);
+            modelBuilder.Entity<OrdemServico>()
+                .Property(o => o.Endereco)
+                .HasMaxLength(300)
+                .IsRequired(false);
+            modelBuilder.Entity<OrdemServico>()
+                .Property(o => o.DataAbertura)
+                .IsRequired();
+            modelBuilder.Entity<OrdemServico>()
+                .Property(o => o.DescricaoServico)
+                .HasMaxLength(1000)
+                .IsRequired();
+            modelBuilder.Entity<OrdemServico>()
                 .Property(o => o.TipoServico)
                 .HasMaxLength(50)
                 .IsRequired();
             modelBuilder.Entity<OrdemServico>()
+                .Property(o => o.DataEntrega)
+                .IsRequired(false);
+            modelBuilder.Entity<OrdemServico>()
                 .Property(o => o.ValorMateriais)
-                .HasPrecision(18, 2);
+                .HasPrecision(18, 2)
+                .IsRequired();
             modelBuilder.Entity<OrdemServico>()
                 .Property(o => o.ValorMaoObra)
-                .HasPrecision(18, 2);
+                .HasPrecision(18, 2)
+                .IsRequired();
             modelBuilder.Entity<OrdemServico>()
                 .Property(o => o.Desconto)
-                .HasPrecision(18, 2);
+                .HasPrecision(18, 2)
+                .IsRequired();
             modelBuilder.Entity<OrdemServico>()
                 .Property(o => o.ValorTotal)
-                .HasPrecision(18, 2);
-
-            // Funcionário responsável pela OS
+                .HasPrecision(18, 2)
+                .IsRequired();
+            modelBuilder.Entity<OrdemServico>()
+                .Property(o => o.CondicaoPagamento)
+                .HasColumnType("nvarchar(max)")
+                .IsRequired(false);
+            modelBuilder.Entity<OrdemServico>()
+                .Property(o => o.Observacoes)
+                .HasMaxLength(500)
+                .IsRequired(false);
+            modelBuilder.Entity<OrdemServico>()
+                .HasIndex(o => o.NumeroOS)
+                .IsUnique();
             modelBuilder.Entity<OrdemServico>()
                 .HasOne(o => o.Funcionario)
                 .WithMany()
                 .HasForeignKey(o => o.FuncionarioId)
                 .OnDelete(DeleteBehavior.SetNull);
-
-            // ================= ORDEM DE SERVIÇO E MATERIAL =================
+            modelBuilder.Entity<OrdemServico>()
+                .HasOne(o => o.Maquina)
+                .WithMany()
+                .HasForeignKey(o => o.MaquinaId)
+                .HasPrincipalKey(m => m.Id)
+                .OnDelete(DeleteBehavior.SetNull);
+            // =========================================================
+            // ORDEM DE SERVIÇO + MATERIAL
+            // =========================================================
             modelBuilder.Entity<OrdemServicoMaterial>()
                 .HasKey(om => om.Id);
             modelBuilder.Entity<OrdemServicoMaterial>()
                 .Property(om => om.Quantidade)
-                .HasPrecision(18, 2);
-            modelBuilder.Entity<OrdemServicoMaterial>()
-                .Property(om => om.ValorUnitario)
-                .HasPrecision(18, 2);
-            modelBuilder.Entity<OrdemServicoMaterial>()
-                .Property(om => om.Subtotal)
-                .HasPrecision(18, 2);
+                .HasPrecision(18, 2)
+                .IsRequired();
             modelBuilder.Entity<OrdemServicoMaterial>()
                 .Property(om => om.Unidade)
                 .HasMaxLength(20)
+                .IsRequired();
+            modelBuilder.Entity<OrdemServicoMaterial>()
+                .Property(om => om.ValorUnitario)
+                .HasPrecision(18, 2)
+                .IsRequired();
+            modelBuilder.Entity<OrdemServicoMaterial>()
+                .Property(om => om.Subtotal)
+                .HasPrecision(18, 2)
                 .IsRequired();
             modelBuilder.Entity<OrdemServicoMaterial>()
                 .HasOne(om => om.OrdemServico)
@@ -213,19 +319,36 @@ namespace BlackForge.Data
                 .WithMany()
                 .HasForeignKey(om => om.MaterialId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-            // ================= PROCESSOS DE PRODUÇÃO =================
-
-            modelBuilder.Entity<ProcessoProducao>().HasKey(p => p.Id);
+            // =========================================================
+            // PROCESSOS DE PRODUÇÃO
+            // =========================================================
+            modelBuilder.Entity<ProcessoProducao>()
+                .HasKey(p => p.Id);
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.DataInicio)
+                .IsRequired();
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.DataFim)
+                .IsRequired(false);
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.QuantidadePlanejada)
+                .IsRequired();
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.QuantidadeProduzida)
+                .IsRequired();
             modelBuilder.Entity<ProcessoProducao>()
                 .Property(p => p.ProducaoPorMinuto)
-                .HasPrecision(18, 2);
+                .HasPrecision(18, 2)
+                .IsRequired();
+
             modelBuilder.Entity<ProcessoProducao>()
                 .Property(p => p.ConsumoPorUnidade)
-                .HasPrecision(18, 4);
+                .HasPrecision(18, 4)
+                .IsRequired();
             modelBuilder.Entity<ProcessoProducao>()
                 .Property(p => p.MaterialConsumido)
-                .HasPrecision(18, 4);
+                .HasPrecision(18, 4)
+                .IsRequired();
             modelBuilder.Entity<ProcessoProducao>()
                 .Property(p => p.Status)
                 .HasMaxLength(30)
@@ -242,14 +365,9 @@ namespace BlackForge.Data
                 .HasForeignKey(p => p.OrdemServicoId)
                 .HasPrincipalKey(o => o.Id)
                 .OnDelete(DeleteBehavior.Restrict);
-            modelBuilder.Entity<OrdemServico>()
-                .HasOne(o => o.Maquina)
-                .WithMany()
-                .HasForeignKey(o => o.MaquinaId)
-                .HasPrincipalKey(m => m.Id)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // ================= CONFIGURAÇÃO DA MÁQUINA =================
+            // =========================================================
+            // CONFIGURAÇÃO DA MÁQUINA
+            // =========================================================
             modelBuilder.Entity<ConfiguracaoMaquina>()
                 .HasKey(c => c.Id);
             modelBuilder.Entity<ConfiguracaoMaquina>()
@@ -258,10 +376,12 @@ namespace BlackForge.Data
                 .IsRequired();
             modelBuilder.Entity<ConfiguracaoMaquina>()
                 .Property(c => c.ProducaoPorMinuto)
-                .HasPrecision(18, 2);
+                .HasPrecision(18, 2)
+                .IsRequired();
             modelBuilder.Entity<ConfiguracaoMaquina>()
                 .Property(c => c.ConsumoPorUnidade)
-                .HasPrecision(18, 4);
+                .HasPrecision(18, 4)
+                .IsRequired();
             modelBuilder.Entity<ConfiguracaoMaquina>()
                 .Property(c => c.Ativa)
                 .IsRequired();
@@ -270,8 +390,33 @@ namespace BlackForge.Data
                 .WithMany(m => m.Configuracoes)
                 .HasForeignKey(c => c.MaquinaId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // ================= CONFIGURAÇÃO DO SISTEMA =================
+            // =========================================================
+            // TEMAS
+            // =========================================================
+            modelBuilder.Entity<Tema>()
+                .HasKey(t => t.Id);
+            modelBuilder.Entity<Tema>()
+                .Property(t => t.Nome)
+                .HasMaxLength(100)
+                .IsRequired();
+            modelBuilder.Entity<Tema>()
+                .Property(t => t.Codigo)
+                .HasMaxLength(50)
+                .IsRequired();
+            modelBuilder.Entity<Tema>()
+                .Property(t => t.Ativo)
+                .IsRequired();
+            modelBuilder.Entity<Tema>()
+                .HasIndex(t => t.Codigo)
+                .IsUnique();
+            // =========================================================
+            // CONFIGURAÇÃO DO SISTEMA
+            // =========================================================
+            modelBuilder.Entity<ConfiguracaoSistema>()
+                .HasKey(c => c.Id);
+            modelBuilder.Entity<ConfiguracaoSistema>()
+                .Property(c => c.TemaId)
+                .IsRequired();
             modelBuilder.Entity<ConfiguracaoSistema>()
                 .HasOne(c => c.Tema)
                 .WithMany()
