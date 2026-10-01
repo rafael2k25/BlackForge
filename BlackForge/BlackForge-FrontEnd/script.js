@@ -607,7 +607,13 @@ function lerFormularioOS() {
         observacoes: document.getElementById("observacoesOS").value.trim(),
         // Na edição, preserva os materiais que já existem na OS
         materiais: modoEdicaoOS && ordemSelecionadaOS?.materiais
-            ? ordemSelecionadaOS.materiais
+            ? ordemSelecionadaOS.materiais.map(function (m) {
+                return {
+                    materialId: m.materialId,
+                    quantidade: m.quantidade,
+                    valorUnitario: m.valorUnitario
+                };
+            })
             : []
     };
 }
@@ -1024,6 +1030,9 @@ if (modalMaquina) {
 let maquinas = [];
 let processosAtivos = [];
 let configuracoesMaquina = [];
+let intervaloProgressoLista = null;
+
+const VELOCIDADE_SIMULACAO_LISTA = 0.15;
 
 // CARREGAR MÁQUINAS
 
@@ -1035,9 +1044,9 @@ async function carregarMaquinas() {
             throw new Error(`Erro HTTP: ${resposta.status}`);
         }
         maquinas = await resposta.json();
-        renderizarMaquinas();
         await carregarProcessosAtivos();
         renderizarMaquinas();
+        iniciarProgressoListaMaquinas();
     } catch (erro) {
         console.error("Erro ao carregar máquinas:", erro);
         if (container) {
@@ -1147,11 +1156,12 @@ function renderizarMaquinas() {
                         <strong>
                             ${processo.numeroOS}
                         </strong>
-                        <span>
-                            ${processo.quantidadeProduzida}
-                            /
-                            ${processo.quantidadePlanejada}
-                        </span>
+                        <span
+                        data-producao-maquina="${maquina.id}">
+                        ${Math.round(Number(processo.quantidadeProduzida) || 0)}
+                        /
+                        ${Math.round(Number(processo.quantidadePlanejada) || 0)}
+                    </span>
                     `
                 : `
                         <span>
@@ -1173,6 +1183,47 @@ function renderizarMaquinas() {
         );
     });
     adicionarEventosDetalhesMaquinas();
+}
+function atualizarContadoresListaMaquinas() {
+    processosAtivos.forEach(processo => {
+        if (processo.status !== "EM_EXECUCAO") {
+            return;
+        }
+        const maquinaId = processo.maquinaId;
+        const produzida =
+            Number(processo.quantidadeProduzida) || 0;
+        const planejada =
+            Number(processo.quantidadePlanejada) || 0;
+        const producaoPorMinuto =
+            Number(processo.producaoPorMinuto) || 0;
+        if (
+            planejada <= 0 ||
+            producaoPorMinuto <= 0 ||
+            produzida >= planejada
+        ) {
+            return;
+        }
+        processo.quantidadeProduzida = Math.min(
+            produzida +
+            producaoPorMinuto * VELOCIDADE_SIMULACAO_LISTA,
+            planejada
+        );
+        const contador = document.querySelector(
+            `[data-producao-maquina="${maquinaId}"]`
+        );
+        if (contador) {
+            contador.textContent =
+                `${Math.round(processo.quantidadeProduzida)} / ${Math.round(planejada)}`;
+        }
+    });
+}
+function iniciarProgressoListaMaquinas() {
+    if (intervaloProgressoLista) {
+        clearInterval(intervaloProgressoLista);
+    }
+    intervaloProgressoLista = setInterval(() => {
+        atualizarContadoresListaMaquinas();
+    }, 1000);
 }
 function adicionarEventosDetalhesMaquinas() {
     const botoes =
@@ -1297,8 +1348,8 @@ function atualizarVisualProgresso(produzida, planejada) {
             index <= posicaoAtual ? "true" : "false";
         barra.dataset.current = distancia < 0.5 ? "true" : "false";
         barra.dataset.wave = distancia > 0.5 && distancia <= 1
-                ? "true"
-                : "false";
+            ? "true"
+            : "false";
     });
 
     definirTexto(
@@ -1610,39 +1661,29 @@ modalNovoMaterial.addEventListener("click", (event) => {
     }
 });
 
+let materiais = [];
+
 async function carregarMateriais() {
-
     const lista = document.getElementById("materiaisLista");
-
     if (!lista) {
         console.warn("[MATERIAIS] Elemento #materiaisLista não encontrado.");
         return;
     }
-
     try {
-
         lista.innerHTML = `
             <div class="materiais-loading">
                 <span>CARREGANDO MATERIAIS...</span>
             </div>
         `;
-
         const response = await fetch(`${API_URL}/materiais`);
-
         if (!response.ok) {
             throw new Error(`Erro HTTP: ${response.status}`);
         }
-
         materiais = await response.json();
-
         console.log("[MATERIAIS] Dados recebidos:", materiais);
-
         renderizarMateriais();
-
     } catch (error) {
-
         console.error("[MATERIAIS] Erro ao carregar:", error);
-
         lista.innerHTML = `
             <div class="materiais-empty">
                 <h3>Não foi possível carregar os materiais.</h3>
@@ -1727,18 +1768,71 @@ function renderizarMateriais() {
                         </strong>
                     </div>
                 </div>
-                ${
-                    material.descricao
-                        ? `
-                            <div class="material-card-descricao">
-                                ${material.descricao}
-                            </div>
-                          `
-                        : ""
+                ${material.descricao
+                    ? `
+                        <div class="material-card-descricao">
+                            ${material.descricao}
+                        </div>
+                    `
+                    : ""
                 }
+                <div class="material-card-acoes">
+                    <button
+                        type="button"
+                        class="btn-excluir-material"
+                        data-material-id="${material.id}"
+                        data-material-nome="${material.nome}">
+                        <ion-icon name="trash-outline"></ion-icon>
+                        EXCLUIR
+                    </button>
+                </div>
             </div>
         `;
     }).join("");
+    document.querySelectorAll(".btn-excluir-material")
+        .forEach(function (botao) {
+            botao.addEventListener("click", function () {
+                const materialId = Number(botao.dataset.materialId);
+                const materialNome = botao.dataset.materialNome;
+                excluirMaterial(materialId, materialNome, botao);
+            });
+        });
+}
+
+async function excluirMaterial(id, nome, botao) {
+    const confirmado = await confirmarExclusaoMaterial(nome);
+    if (!confirmado) {
+        return;
+    }
+    try {
+        botao.disabled = true;
+        botao.textContent = "EXCLUINDO...";
+        const resposta = await fetch(
+            `${API_URL}/materiais/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+        if (!resposta.ok) {
+            const mensagem = await resposta.text();
+            throw new Error(
+                mensagem || `Erro HTTP: ${resposta.status}`
+            );
+        }
+        console.log(`[MATERIAIS] Material ${id} excluído.`);
+        await carregarMateriais();
+        alert(`Material "${nome}" excluído com sucesso!`);
+    } catch (erro) {
+        console.error("[MATERIAIS] Erro ao excluir:", erro);
+        alert(
+            `Não foi possível excluir o material.\n\n${erro.message}`
+        );
+        botao.disabled = false;
+        botao.innerHTML = `
+            <ion-icon name="trash-outline"></ion-icon>
+            EXCLUIR
+        `;
+    }
 }
 
 // FORMATAR MOEDA
@@ -1783,24 +1877,6 @@ if (modalNovoLote) {
             fecharModalNovoLote();
         }
     });
-}
-
-// MATERIAIS
-
-let materiais = [];
-
-async function carregarMateriais() {
-    try {
-        const response = await fetch(`${API_URL}/materiais`);
-        if (!response.ok) {
-            throw new Error(`Erro HTTP: ${response.status}`);
-        }
-        materiais = await response.json();
-        console.log("Materiais carregados:", materiais);
-        renderizarMateriais();
-    } catch (error) {
-        console.error("Erro ao carregar materiais:", error);
-    }
 }
 
 // FUNCIONÁRIOS
@@ -2666,26 +2742,88 @@ function gerarRelatorioDeFinanceiro() {
 
 }
 
-
-// =========================================================
 // EVENTOS
-// =========================================================
 
 if (limparFiltrosFinanceiro) {
-
     limparFiltrosFinanceiro.addEventListener(
         "click",
         limparFiltrosRelatorioFinanceiro
     );
-
 }
 
-
 if (gerarRelatorioFinanceiro) {
-
     gerarRelatorioFinanceiro.addEventListener(
         "click",
         gerarRelatorioDeFinanceiro
     );
-
 }
+
+// CONTROLE DO MODAL DE CONFIRMAÇÃO
+
+const modalConfirmacaoExclusao = document.getElementById(
+    "modalConfirmacaoExclusao"
+);
+
+const nomeMaterialExclusao = document.getElementById(
+    "nomeMaterialExclusao"
+);
+
+const btnConfirmarExclusao = document.getElementById(
+    "confirmarExclusaoMaterial"
+);
+
+const btnCancelarExclusao = document.getElementById(
+    "cancelarConfirmacaoExclusao"
+);
+
+const btnFecharConfirmacao = document.getElementById(
+    "fecharConfirmacaoExclusao"
+);
+
+let resolverConfirmacaoExclusao = null;
+
+function confirmarExclusaoMaterial(nome) {
+    return new Promise((resolve) => {
+        resolverConfirmacaoExclusao = resolve;
+
+        nomeMaterialExclusao.textContent = nome;
+
+        modalConfirmacaoExclusao.classList.add("ativo");
+    });
+}
+
+function fecharConfirmacaoExclusao(resultado) {
+    modalConfirmacaoExclusao.classList.remove("ativo");
+
+    if (resolverConfirmacaoExclusao) {
+        resolverConfirmacaoExclusao(resultado);
+        resolverConfirmacaoExclusao = null;
+    }
+}
+
+btnConfirmarExclusao.addEventListener("click", () => {
+    fecharConfirmacaoExclusao(true);
+});
+
+btnCancelarExclusao.addEventListener("click", () => {
+    fecharConfirmacaoExclusao(false);
+});
+
+btnFecharConfirmacao.addEventListener("click", () => {
+    fecharConfirmacaoExclusao(false);
+});
+
+modalConfirmacaoExclusao.addEventListener("click", (event) => {
+    if (event.target === modalConfirmacaoExclusao) {
+        fecharConfirmacaoExclusao(false);
+    }
+});
+
+document.addEventListener("keydown", (event) => {
+    if (
+        event.key === "Escape" &&
+        modalConfirmacaoExclusao.classList.contains("ativo")
+    ) {
+        fecharConfirmacaoExclusao(false);
+    }
+});

@@ -21,8 +21,6 @@
         public decimal ValorTotal { get; set; }
         public string? CondicaoPagamento { get; set; }
         public string? Observacoes { get; set; }
-        public ICollection<OrdemServicoMaterial> Materiais { get; set; }
-            = new List<OrdemServicoMaterial>();
         public ICollection<ProcessoProducao> ProcessosProducao { get; set; }
             = new List<ProcessoProducao>();
     }

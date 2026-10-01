@@ -125,29 +125,46 @@ namespace BlackForge.Controllers
         }
 
         // DELETE: api/materiais/5
+
+        // DELETE: api/materiais/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> ExcluirMaterial(int id)
         {
-            var material = await _context.Materiais.FirstOrDefaultAsync(m => m.Id == id);
-
+            var material = await _context.Materiais
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (material == null)
                 return NotFound();
-
-            var emUso =
-                await _context.Lotes.AnyAsync(l => l.MaterialId == id) ||
-                await _context.Movimentacoes.AnyAsync(m => m.MaterialId == id) ||
-                await _context.OrdensServicoMateriais.AnyAsync(om => om.MaterialId == id);
-
-            if (emUso)
+            await using var transacao =
+                await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Busca os lotes vinculados ao material
+                var lotes = await _context.Lotes
+                    .Where(l => l.MaterialId == id)
+                    .ToListAsync();
+                // Busca as movimentações vinculadas ao material
+                var movimentacoes = await _context.Movimentacoes
+                    .Where(m => m.MaterialId == id)
+                    .ToListAsync();
+                // Remove primeiro as movimentações
+                if (movimentacoes.Count > 0)
+                    _context.Movimentacoes.RemoveRange(movimentacoes);
+                // Depois remove os lotes
+                if (lotes.Count > 0)
+                    _context.Lotes.RemoveRange(lotes);
+                // Por último, remove o material
+                _context.Materiais.Remove(material);
+                await _context.SaveChangesAsync();
+                await transacao.CommitAsync();
+                return NoContent();
+            }
+            catch
+            {
+                await transacao.RollbackAsync();
                 return Conflict(
-                    "Não é possível excluir: o material possui lotes, movimentações ou está em uma ordem de serviço.");
-
-            _context.Materiais.Remove(material);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                    "Não foi possível excluir o material. Verifique se existem outros registros vinculados a ele.");
+            }
         }
-
         // ================= AUXILIARES =================
 
         private static string? Validar(MaterialCreateDto dto)

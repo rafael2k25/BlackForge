@@ -2302,3 +2302,549 @@
         transition: none;
     }
 }
+
+
+/* =========================================================
+   BLACKFORGE | NOVO VISUAL DA LISTA DE MATERIAIS
+   ========================================================= */
+
+   .materiais-panel {
+    width: 100%;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* BARRA DE BUSCA */
+
+.materiais-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    background: var(--panel-dark);
+    border-bottom: 1px solid var(--border);
+}
+
+.materiais-search {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+}
+
+.materiais-search ion-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    font-size: 18px;
+    pointer-events: none;
+}
+
+.materiais-search input {
+    width: 100%;
+    height: 44px;
+    padding: 0 15px 0 44px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.materiais-search input:focus {
+    border-color: var(--yellow-dark);
+    box-shadow: 0 0 0 3px rgba(240, 200, 8, .07);
+}
+
+.materiais-search input::placeholder {
+    color: var(--text-secondary);
+}
+
+/* GRID DOS MATERIAIS */
+
+.materiais-lista {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    padding: 22px;
+    align-items: stretch;
+}
+
+/* CARD */
+
+.material-card {
+    position: relative;
+    min-width: 0;
+    min-height: 245px;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow: hidden;
+    background: linear-gradient(
+        145deg,
+        var(--panel-light),
+        var(--panel)
+    );
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    transition:
+        transform .22s ease,
+        border-color .22s ease,
+        box-shadow .22s ease;
+}
+
+.material-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(
+        90deg,
+        var(--yellow-dark),
+        var(--yellow),
+        transparent
+    );
+    opacity: .8;
+}
+
+.material-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--border-yellow);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, .18);
+}
+
+/* CABEÇALHO */
+
+.material-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 17px;
+    border-bottom: 1px solid var(--border);
+}
+
+.material-card-header > div {
+    min-width: 0;
+}
+
+.material-card-codigo {
+    display: inline-block;
+    margin-bottom: 7px;
+    color: var(--yellow);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.material-card-header h3 {
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+}
+
+/* STATUS */
+
+.material-card-status {
+    flex-shrink: 0;
+    padding: 6px 8px;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .4px;
+    text-align: center;
+}
+
+.material-card-status.status-ok {
+    color: var(--success);
+    background: rgba(87, 199, 108, .07);
+}
+
+.material-card-status.status-alerta {
+    color: var(--warning);
+    background: rgba(240, 165, 0, .08);
+}
+
+/* INFORMAÇÕES */
+
+.material-card-info {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 17px 12px;
+    padding: 19px 0;
+}
+
+.material-card-info > div {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.material-card-info span {
+    color: var(--text-primary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.material-card-info strong {
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.material-card-info > div:nth-child(3) strong {
+    color: var(--yellow-bright);
+    font-size: 23px;
+    font-weight: 700;
+}
+
+/* DESCRIÇÃO */
+
+.material-card-descricao {
+    margin-top: auto;
+    padding-top: 13px;
+    border-top: 1px solid var(--border);
+    color: var(--text-primary);
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+/* CARREGAMENTO E LISTA VAZIA */
+
+.materiais-loading,
+.materiais-empty {
+    grid-column: 1 / -1;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+    color: var(--text-primary);
+}
+
+.materiais-loading span {
+    color: var(--yellow);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.materiais-empty h3 {
+    color: var(--text-primary);
+    font-size: 20px;
+}
+
+.materiais-empty p {
+    max-width: 400px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 1200px) {
+    .materiais-lista {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .materiais-lista {
+        grid-template-columns: 1fr;
+        padding: 15px;
+        gap: 13px;
+    }
+
+    .materiais-toolbar {
+        padding: 16px;
+    }
+
+    .material-card {
+        min-height: 220px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .material-card {
+        transition: none;
+    }
+
+    .material-card:hover {
+        transform: none;
+    }
+}
+
+/* AÇÕES DOS CARDS DE MATERIAIS*/
+
+.material-card-acoes {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-excluir-material {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 14px;
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    border-radius: 5px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.btn-excluir-material ion-icon {
+    font-size: 16px;
+}
+
+.btn-excluir-material:hover {
+    background: var(--danger);
+    color: #ffffff;
+}
+
+.btn-excluir-material:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */
+
+.modal-confirmacao-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.25s ease,
+                visibility 0.25s ease;
+}
+
+.modal-confirmacao-overlay.ativo {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.modal-confirmacao {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    padding: 28px;
+    background: var(--bg-secondary, #292b2f);
+    border: 1px solid var(--border-color, #41444a);
+    border-top: 3px solid var(--danger, #e04444);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+    transform: translateY(18px) scale(0.98);
+    transition: transform 0.25s ease;
+}
+
+.modal-confirmacao-overlay.ativo .modal-confirmacao {
+    transform: translateY(0) scale(1);
+}
+
+/* CABEÇALHO */
+
+.modal-confirmacao-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+}
+
+.modal-confirmacao-icone {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--danger, #e04444);
+    background: rgba(224, 68, 68, 0.12);
+    border: 1px solid rgba(224, 68, 68, 0.3);
+}
+
+.modal-confirmacao-icone ion-icon {
+    font-size: 27px;
+}
+
+.modal-confirmacao-fechar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secondary, #aaa);
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.modal-confirmacao-fechar:hover {
+    color: var(--text-primary, #fff);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.modal-confirmacao-fechar ion-icon {
+    font-size: 22px;
+}
+
+/* CONTEÚDO */
+
+.modal-confirmacao-tag {
+    display: inline-block;
+    margin-bottom: 10px;
+    color: var(--danger, #e04444);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+}
+
+.modal-confirmacao-conteudo h2 {
+    margin: 0 0 16px;
+    color: var(--text-primary, #f1f1f1);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.modal-confirmacao-conteudo p {
+    margin: 0;
+    color: var(--text-secondary, #c7c7c7);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.modal-confirmacao-conteudo strong {
+    color: var(--text-primary, #fff);
+}
+
+/* AVISO */
+
+.modal-confirmacao-aviso {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 22px;
+    padding: 14px;
+    background: rgba(224, 68, 68, 0.07);
+    border-left: 3px solid var(--danger, #e04444);
+}
+
+.modal-confirmacao-aviso ion-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--danger, #e04444);
+    font-size: 19px;
+}
+
+.modal-confirmacao-aviso span {
+    color: var(--text-secondary, #c7c7c7);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* BOTÕES */
+
+.modal-confirmacao-acoes {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 28px;
+}
+
+.btn-confirmacao-cancelar,
+.btn-confirmacao-excluir {
+    min-height: 42px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    border-radius: 5px;
+}
+
+.btn-confirmacao-cancelar {
+    color: var(--text-primary, #ccc);
+    background: transparent;
+    border: 1px solid var(--border-color, #41444a);
+}
+
+.btn-confirmacao-cancelar:hover {
+    color: var(--text-primary, #fff);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.btn-confirmacao-excluir {
+    color: #fff;
+    background: var(--danger, #d93636);
+    border: 1px solid var(--danger, #d93636);
+}
+
+.btn-confirmacao-excluir:hover {
+    background: #b92727;
+    border-color: #b92727;
+}
+
+.btn-confirmacao-excluir ion-icon {
+    font-size: 16px;
+}
+
+.btn-confirmacao-excluir:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 480px) {
+    .modal-confirmacao {
+        padding: 22px;
+    }
+
+    .modal-confirmacao-acoes {
+        flex-direction: column-reverse;
+    }
+
+    .btn-confirmacao-cancelar,
+    .btn-confirmacao-excluir {
+        width: 100%;
+    }
+}

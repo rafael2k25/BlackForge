@@ -14,31 +14,28 @@ namespace BlackForge.Controllers
         public OrdensServicoController(BlackForgeDbContext context)
         {
             _context = context;
-        }  
+        }
 
-        // GET: api/ordensservico      
+        // GET: api/ordensservico
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrdemServico>>> GetOrdensServico()
         {
             var ordens = await _context.OrdensServico
                 .AsNoTracking()
                 .Include(o => o.Funcionario)
-                .Include(o => o.Materiais)
-                    .ThenInclude(om => om.Material)
                 .OrderByDescending(o => o.DataAbertura)
                 .ToListAsync();
 
             return Ok(ordens);
         }
 
+        // GET: api/ordensservico/1
         [HttpGet("{id}")]
         public async Task<ActionResult<OrdemServico>> GetOrdemServico(int id)
         {
             var ordem = await _context.OrdensServico
                 .AsNoTracking()
                 .Include(o => o.Funcionario)
-                .Include(o => o.Materiais)
-                    .ThenInclude(om => om.Material)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (ordem == null)
@@ -47,6 +44,7 @@ namespace BlackForge.Controllers
             return Ok(ordem);
         }
 
+        // POST: api/ordensservico
         [HttpPost]
         public async Task<ActionResult<OrdemServico>> CriarOrdemServico(
             OrdemServico ordem)
@@ -67,7 +65,9 @@ namespace BlackForge.Controllers
                 .AnyAsync(o => o.NumeroOS == ordem.NumeroOS);
 
             if (numeroExiste)
-                return Conflict("Já existe uma ordem de serviço com esse número.");
+                return Conflict(
+                    "Já existe uma ordem de serviço com esse número."
+                );
 
             if (ordem.FuncionarioId.HasValue)
             {
@@ -75,45 +75,28 @@ namespace BlackForge.Controllers
                     .AnyAsync(f => f.Id == ordem.FuncionarioId.Value);
 
                 if (!funcionarioExiste)
-                    return BadRequest("O funcionário responsável informado não existe.");
+                    return BadRequest(
+                        "O funcionário responsável informado não existe."
+                    );
             }
 
             if (ordem.DataAbertura == default)
                 ordem.DataAbertura = DateTime.Now;
 
-            if (ordem.Materiais != null && ordem.Materiais.Any())
-            {
-                foreach (var item in ordem.Materiais)
-                {
-                    if (item.Quantidade <= 0)
-                        return BadRequest("A quantidade do material deve ser maior que zero.");
-
-                    if (item.ValorUnitario < 0)
-                        return BadRequest("O valor unitário do material não pode ser negativo.");
-
-                    var materialExiste = await _context.Materiais
-                        .AnyAsync(m => m.Id == item.MaterialId);
-
-                    if (!materialExiste)
-                        return BadRequest(
-                            $"O material com ID {item.MaterialId} não existe."
-                        );
-
-                    // Calcula o subtotal automaticamente
-                    item.Subtotal = item.Quantidade * item.ValorUnitario;
-                }
-            }
-
-            if (ordem.Materiais != null && ordem.Materiais.Any())
-            {
-                ordem.ValorMateriais = ordem.Materiais.Sum(m => m.Subtotal);
-            }
+            if (ordem.ValorMateriais < 0)
+                return BadRequest(
+                    "O valor dos materiais não pode ser negativo."
+                );
 
             if (ordem.ValorMaoObra < 0)
-                return BadRequest("O valor da mão de obra não pode ser negativo.");
+                return BadRequest(
+                    "O valor da mão de obra não pode ser negativo."
+                );
 
             if (ordem.Desconto < 0)
-                return BadRequest("O desconto não pode ser negativo.");
+                return BadRequest(
+                    "O desconto não pode ser negativo."
+                );
 
             ordem.ValorTotal =
                 ordem.ValorMateriais +
@@ -134,16 +117,18 @@ namespace BlackForge.Controllers
             );
         }
 
+        // PUT: api/ordensservico/1
         [HttpPut("{id}")]
         public async Task<IActionResult> AtualizarOrdemServico(
             int id,
             OrdemServico ordem)
         {
             if (id != ordem.Id)
-                return BadRequest();
+                return BadRequest(
+                    "O ID da URL não corresponde ao ID da ordem."
+                );
 
             var ordemExistente = await _context.OrdensServico
-                .Include(o => o.Materiais)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (ordemExistente == null)
@@ -182,38 +167,10 @@ namespace BlackForge.Controllers
                     );
             }
 
-            if (ordem.Materiais != null && ordem.Materiais.Any())
-            {
-                foreach (var item in ordem.Materiais)
-                {
-                    if (item.Quantidade <= 0)
-                        return BadRequest(
-                            "A quantidade do material deve ser maior que zero."
-                        );
-
-                    if (item.ValorUnitario < 0)
-                        return BadRequest(
-                            "O valor unitário do material não pode ser negativo."
-                        );
-
-                    var materialExiste = await _context.Materiais
-                        .AnyAsync(m => m.Id == item.MaterialId);
-
-                    if (!materialExiste)
-                        return BadRequest(
-                            $"O material com ID {item.MaterialId} não existe."
-                        );
-
-                    item.Subtotal =
-                        item.Quantidade *
-                        item.ValorUnitario;
-                }
-            }
-
-            if (ordem.Materiais != null && ordem.Materiais.Any())
-            {
-                ordem.ValorMateriais = ordem.Materiais.Sum(m => m.Subtotal);
-            }
+            if (ordem.ValorMateriais < 0)
+                return BadRequest(
+                    "O valor dos materiais não pode ser negativo."
+                );
 
             if (ordem.ValorMaoObra < 0)
                 return BadRequest(
@@ -225,50 +182,35 @@ namespace BlackForge.Controllers
                     "O desconto não pode ser negativo."
                 );
 
-            ordem.ValorTotal =
-                ordem.ValorMateriais +
-                ordem.ValorMaoObra -
-                ordem.Desconto;
-
-            if (ordem.ValorTotal < 0)
-                ordem.ValorTotal = 0;
-           
             ordemExistente.NumeroOS = ordem.NumeroOS;
             ordemExistente.Cliente = ordem.Cliente;
             ordemExistente.Contato = ordem.Contato;
             ordemExistente.Endereco = ordem.Endereco;
             ordemExistente.DataAbertura = ordem.DataAbertura;
             ordemExistente.DescricaoServico = ordem.DescricaoServico;
-            ordemExistente.TipoServico = ordem.TipoServico;           
+            ordemExistente.TipoServico = ordem.TipoServico;
             ordemExistente.DataEntrega = ordem.DataEntrega;
             ordemExistente.FuncionarioId = ordem.FuncionarioId;
             ordemExistente.ValorMateriais = ordem.ValorMateriais;
             ordemExistente.ValorMaoObra = ordem.ValorMaoObra;
             ordemExistente.Desconto = ordem.Desconto;
-            ordemExistente.ValorTotal = ordem.ValorTotal;
             ordemExistente.CondicaoPagamento = ordem.CondicaoPagamento;
             ordemExistente.Observacoes = ordem.Observacoes;
 
-            _context.OrdensServicoMateriais.RemoveRange(
-                ordemExistente.Materiais
-            );
+            ordemExistente.ValorTotal =
+                ordemExistente.ValorMateriais +
+                ordemExistente.ValorMaoObra -
+                ordemExistente.Desconto;
 
-            if (ordem.Materiais != null && ordem.Materiais.Any())
-            {
-                foreach (var item in ordem.Materiais)
-                {
-                    item.Id = 0;
-                    item.OrdemServicoId = id;
-
-                    _context.OrdensServicoMateriais.Add(item);
-                }
-            }
+            if (ordemExistente.ValorTotal < 0)
+                ordemExistente.ValorTotal = 0;
 
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
+        // DELETE: api/ordensservico/1
         [HttpDelete("{id}")]
         public async Task<IActionResult> ExcluirOrdemServico(int id)
         {

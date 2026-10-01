@@ -722,6 +722,7 @@
                                 <option value="boleto">Boleto</option>
                                 <option value="30dias">30 dias</option>
                                 <option value="parcelado">Parcelado</option>
+                                <option value="50% na entrada e 50% na entrega">50% na entrada e 50% na entrega</option>
                                 <option value="outro">Outro</option>
                             </select>
                         </div>
@@ -1894,6 +1895,56 @@
     </div>
 
     <!-- ======================== FIM MODAL DETALHES FUNCIONÁRIO ======================== -->
+
+<!-- ======================== INÍCIO MODAL DE CONFIRMAÇÃO DE EXCLUSÃO ======================== -->
+
+<div id="modalConfirmacaoExclusao" class="modal-confirmacao-overlay">
+    <div class="modal-confirmacao">
+        <div class="modal-confirmacao-header">
+            <div class="modal-confirmacao-icone">
+                <ion-icon name="warning-outline"></ion-icon>
+            </div>
+            <button type="button"
+                    class="modal-confirmacao-fechar"
+                    id="fecharConfirmacaoExclusao">
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+        </div>
+        <div class="modal-confirmacao-conteudo">
+            <span class="modal-confirmacao-tag">
+                OPERAÇÃO IRREVERSÍVEL
+            </span>
+            <h2>CONFIRMAR EXCLUSÃO</h2>
+            <p>
+                Deseja realmente excluir o material
+                <strong id="nomeMaterialExclusao"></strong>?
+            </p>
+            <div class="modal-confirmacao-aviso">
+                <ion-icon name="alert-circle-outline"></ion-icon>
+                <span>
+                    Os lotes e as movimentações vinculados a este
+                    material também serão excluídos.
+                    Esta ação não poderá ser desfeita.
+                </span>
+            </div>
+        </div>
+        <div class="modal-confirmacao-acoes">
+            <button type="button"
+                    id="cancelarConfirmacaoExclusao"
+                    class="btn-confirmacao-cancelar">
+                CANCELAR
+            </button>
+            <button type="button"
+                    id="confirmarExclusaoMaterial"
+                    class="btn-confirmacao-excluir">
+                <ion-icon name="trash-outline"></ion-icon>
+                EXCLUIR MATERIAL
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======================== FIM MODAL DE CONFIRMAÇÃO DE EXCLUSÃO ======================== -->
 
     <script src="script.js"></script>
 </body>
