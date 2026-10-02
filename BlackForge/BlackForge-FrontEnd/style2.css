@@ -2632,6 +2632,16 @@
     cursor: not-allowed;
 }
 
+.modal-confirmacao .btn-confirmacao-cancelar:hover {
+    border-color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.modal-confirmacao .btn-confirmacao-cancelar:active {
+    transform: scale(0.97);
+}
+
 /* MODAL DE CONFIRMAÇÃO DE EXCLUSÃO */
 
 .modal-confirmacao-overlay {
@@ -2787,18 +2797,22 @@
 
 .btn-confirmacao-cancelar,
 .btn-confirmacao-excluir {
-    min-height: 42px;
-    padding: 0 16px;
-    display: inline-flex;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 20px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: 0.2s ease;
+    border: 1px solid var(--border);
     border-radius: 5px;
+    background: var(--panel-light);
+    color: var(--text-secondary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .btn-confirmacao-cancelar {
@@ -2847,4 +2861,85 @@
     .btn-confirmacao-excluir {
         width: 100%;
     }
+}
+
+/* =========================================
+   AÇÕES DA TABELA DE LOTES
+========================================= */
+
+.lote-acoes {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.btn-editar-lote,
+.btn-excluir-lote {
+    width: 34px;
+    height: 34px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid transparent;
+    border-radius: 6px;
+
+    background: transparent;
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.btn-editar-lote ion-icon,
+.btn-excluir-lote ion-icon {
+    font-size: 17px;
+}
+
+/* EDITAR */
+
+.btn-editar-lote {
+    color: #1688FF;
+    border-color: rgba(22, 136, 255, 0.25);
+}
+
+.btn-editar-lote:hover {
+    background: rgba(22, 136, 255, 0.12);
+    border-color: #1688FF;
+    transform: translateY(-1px);
+}
+
+/* EXCLUIR */
+
+.btn-excluir-lote {
+    color: #E04B4B;
+    border-color: rgba(224, 75, 75, 0.25);
+}
+
+.btn-excluir-lote:hover {
+    background: rgba(224, 75, 75, 0.12);
+    border-color: #E04B4B;
+    transform: translateY(-1px);
+}
+
+/* CLIQUE */
+
+.btn-editar-lote:active,
+.btn-excluir-lote:active {
+    transform: scale(0.94);
+}
+
+/* DESABILITADO */
+
+.btn-editar-lote:disabled,
+.btn-excluir-lote:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
 }

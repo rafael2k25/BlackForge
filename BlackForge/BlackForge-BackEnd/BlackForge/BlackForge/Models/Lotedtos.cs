@@ -20,6 +20,7 @@
         public decimal CustoUnitario { get; set; }
         public DateTime? DataFabricacao { get; set; }
         public DateTime? DataValidade { get; set; }
+        public string? Observacoes { get; set; }
     }
 
     public class LoteDto
@@ -36,5 +37,6 @@
         public DateTime? DataFabricacao { get; set; }
         public DateTime? DataValidade { get; set; }
         public string Status { get; set; } = "sem-validade";
+        public string? Observacoes { get; set; }
     }
 }

@@ -518,11 +518,14 @@
                                 <th>
                                     VALIDADE
                                 </th>
+                                <th>
+                                    AÇÕES
+                                </th>
                             </tr>
                         </thead>
                         <tbody id="listaLotes">
                             <tr class="lotes-empty">
-                                <td colspan="5">
+                                <td colspan="6">
                                     <div class="empty-state">
                                         <ion-icon name="cube-outline"></ion-icon>
                                         <h3>
@@ -1507,7 +1510,7 @@
             <div class="modal-material-header">
                 <div>
                     <span class="section-label"></span>
-                    <h2>NOVO LOTE</h2>
+                    <h2 id="tituloModalLote">NOVO LOTE</h2>
                     <p>Cadastro de lote de material industrial</p>
                 </div>
                 <button class="modal-close" id="fecharModalLote" type="button" aria-label="Fechar">
@@ -1559,9 +1562,27 @@
                         <div class="material-form-group">
                             <label for="loteQuantidade">
                                 Quantidade
-                            </label>
-                            <input type="number" id="loteQuantidade" placeholder="Ex.: 500" min="0" step="0.01">
-                        </div>
+                            </label>              
+                            <input
+                                type="number"
+                                id="loteQuantidade"
+                                placeholder="Ex.: 500"
+                                min="0.01"
+                                step="0.01"
+                                required>
+                        </div>                   
+                        <div class="material-form-group">
+                            <label for="loteCustoUnitario">
+                                Custo unitário (R$)
+                            </label>        
+                            <input
+                                type="number"
+                                id="loteCustoUnitario"
+                                placeholder="Ex.: 12.50"
+                                min="0"
+                                step="0.01"
+                                required>
+                        </div>              
                     </div>
                 </div>
 
@@ -1588,6 +1609,15 @@
                             </label>
                             <input type="date" id="loteDataValidade">
                         </div>
+                    </div>
+                    <div class="material-section-title">
+                        OBSERVAÇÕES
+                    </div>
+                    <div class="material-form-group">
+                        <textarea
+                            id="loteObservacoes"
+                            rows="4"
+                            placeholder="Informações adicionais sobre o lote..."></textarea>
                     </div>
                 </div>
             </div>

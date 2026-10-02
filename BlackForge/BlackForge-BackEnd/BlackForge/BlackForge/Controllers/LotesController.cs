@@ -88,6 +88,10 @@ namespace BlackForge.Controllers
 
             var agora = DateTime.Now;
 
+            var observacoes = string.IsNullOrWhiteSpace(dto.Observacoes)
+    ? null
+    : dto.Observacoes.Trim();
+
             var lote = new Lote
             {
                 Codigo = codigo,
@@ -96,6 +100,7 @@ namespace BlackForge.Controllers
                 DataEntrada = dto.DataEntrada ?? agora,
                 DataFabricacao = dto.DataFabricacao,
                 DataValidade = dto.DataValidade,
+                Observacoes = observacoes,
                 MaterialId = dto.MaterialId,
                 Material = material
             };
@@ -105,7 +110,7 @@ namespace BlackForge.Controllers
                 Tipo = TipoEntrada,
                 Quantidade = dto.Quantidade,
                 DataMovimentacao = agora,
-                Observacoes = string.IsNullOrWhiteSpace(dto.Observacoes) ? null : dto.Observacoes.Trim(),
+                Observacoes = observacoes,
                 MaterialId = dto.MaterialId,
                 Lote = lote
             };
@@ -156,6 +161,9 @@ namespace BlackForge.Controllers
             lote.CustoUnitario = dto.CustoUnitario;
             lote.DataFabricacao = dto.DataFabricacao;
             lote.DataValidade = dto.DataValidade;
+            lote.Observacoes = string.IsNullOrWhiteSpace(dto.Observacoes)
+    ? null
+    : dto.Observacoes.Trim();
 
             await _context.SaveChangesAsync();
 
@@ -229,6 +237,7 @@ namespace BlackForge.Controllers
                 DataEntrada = l.DataEntrada,
                 DataFabricacao = l.DataFabricacao,
                 DataValidade = l.DataValidade,
+                Observacoes = l.Observacoes,
                 Status = CalcularStatus(l.DataValidade)
             };
         }

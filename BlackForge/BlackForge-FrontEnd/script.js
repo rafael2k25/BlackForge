@@ -1630,12 +1630,61 @@ const abrirModalMaterial = document.getElementById("abrirModalMaterial");
 const cadastrarMaterialVazio = document.getElementById("cadastrarMaterialVazio");
 const fecharModalMaterial = document.getElementById("fecharModalMaterial");
 const cancelarMaterial = document.getElementById("cancelarMaterial");
+const cadastrarMaterial = document.getElementById("cadastrarMaterial");
 
 function abrirModalNovoMaterial() {
     modalNovoMaterial.classList.add("active");
 }
 function fecharModalNovoMaterial() {
     modalNovoMaterial.classList.remove("active");
+}
+async function salvarNovoMaterial() {
+    const codigo = document.getElementById("materialCodigo").value.trim();
+    const nome = document.getElementById("materialNome").value.trim();
+    const categoria = document.getElementById("materialCategoria").value;
+    const unidade = document.getElementById("materialUnidade").value;
+    const descricao = document.getElementById("materialDescricao").value.trim();
+    if (!codigo || !nome || !categoria || !unidade) {
+        alert("Preencha todos os campos obrigatórios.");
+        return;
+    }
+    const material = {
+        codigo,
+        nome,
+        categoria,
+        unidade,
+        descricao: descricao || null,
+        estoqueMinimo: 0
+    };
+    try {
+        cadastrarMaterial.disabled = true;
+        cadastrarMaterial.textContent = "CADASTRANDO...";
+        const resposta = await fetch(`${API_URL}/materiais`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(material)
+        });
+        if (!resposta.ok) {
+            const erro = await resposta.text();
+            throw new Error(erro || `Erro HTTP: ${resposta.status}`);
+        }
+        fecharModalNovoMaterial();
+        document.getElementById("materialCodigo").value = "";
+        document.getElementById("materialNome").value = "";
+        document.getElementById("materialCategoria").value = "";
+        document.getElementById("materialUnidade").value = "";
+        document.getElementById("materialDescricao").value = "";
+        await carregarMateriais();
+        alert("Material cadastrado com sucesso!");
+    } catch (erro) {
+        console.error("Erro ao cadastrar material:", erro);
+        alert(`Não foi possível cadastrar o material.\n\n${erro.message}`);
+    } finally {
+        cadastrarMaterial.disabled = false;
+        cadastrarMaterial.textContent = "CADASTRAR";
+    }
 }
 if (abrirModalMaterial) {
     abrirModalMaterial.addEventListener(
@@ -1648,6 +1697,9 @@ if (fecharModalMaterial) {
         "click",
         fecharModalNovoMaterial
     );
+}
+if (cadastrarMaterial) {
+    cadastrarMaterial.addEventListener("click", salvarNovoMaterial);
 }
 if (cancelarMaterial) {
     cancelarMaterial.addEventListener(
@@ -1769,13 +1821,13 @@ function renderizarMateriais() {
                     </div>
                 </div>
                 ${material.descricao
-                    ? `
+                ? `
                         <div class="material-card-descricao">
                             ${material.descricao}
                         </div>
                     `
-                    : ""
-                }
+                : ""
+            }
                 <div class="material-card-acoes">
                     <button
                         type="button"
@@ -1848,35 +1900,475 @@ function formatarMoedaMaterial(valor) {
 
 // NOVO LOTE
 
+let lotes = [];
+let loteEmEdicaoId = null;
+
+const tituloModalLote = document.getElementById("tituloModalLote");
 const modalNovoLote = document.getElementById("modalNovoLote");
 const abrirModalLote = document.getElementById("abrirModalLote");
 const cadastrarLoteVazio = document.getElementById("cadastrarLoteVazio");
 const fecharModalLote = document.getElementById("fecharModalLote");
 const cancelarLote = document.getElementById("cancelarLote");
+const cadastrarLote = document.getElementById("cadastrarLote");
+
+const buscarLote = document.getElementById("buscarLote");
+const filtroLote = document.getElementById("filtroLote");
+
+const loteCodigo = document.getElementById("loteCodigo");
+const loteMaterial = document.getElementById("loteMaterial");
+const loteQuantidade = document.getElementById("loteQuantidade");
+const loteCustoUnitario = document.getElementById("loteCustoUnitario");
+const loteDataFabricacao = document.getElementById("loteDataFabricacao");
+const loteDataValidade = document.getElementById("loteDataValidade");
+const loteObservacoes = document.getElementById("loteObservacoes");
+
+// ABRIR MODAL
+
 function abrirModalNovoLote() {
+    if (!modalNovoLote) return;
+    loteEmEdicaoId = null;
     modalNovoLote.classList.add("active");
+    carregarMateriaisSelectLote();
+    tituloModalLote.textContent = "NOVO LOTE";
+    cadastrarLote.textContent = "CADASTRAR";
+    loteMaterial.disabled = false;
+    loteQuantidade.disabled = false;
+    loteCodigo.value = "";
+    loteMaterial.value = "";
+    loteQuantidade.value = "";
+    loteCustoUnitario.value = "";
+    loteDataFabricacao.value = "";
+    loteDataValidade.value = "";
+    loteObservacoes.value = "";
 }
+
+// FECHAR MODAL
+
 function fecharModalNovoLote() {
+    if (!modalNovoLote) return;
+
     modalNovoLote.classList.remove("active");
+
+    loteEmEdicaoId = null;
+
+    loteMaterial.disabled = false;
+    loteQuantidade.disabled = false;
+
+    cadastrarLote.textContent = "CADASTRAR";
+    tituloModalLote.textContent = "NOVO LOTE";
 }
-if (abrirModalLote) {
-    abrirModalLote.addEventListener("click", abrirModalNovoLote);
+
+// CARREGAR MATERIAIS NO SELECT
+
+function carregarMateriaisSelectLote() {
+    if (!loteMaterial) return;
+
+    loteMaterial.innerHTML = `
+        <option value="">Selecione um material</option>
+    `;
+
+    materiais.forEach(material => {
+        const option = document.createElement("option");
+
+        option.value = material.id;
+        option.textContent =
+            `${material.codigo} - ${material.nome}`;
+
+        loteMaterial.appendChild(option);
+    });
 }
-if (cadastrarLoteVazio) {
-    cadastrarLoteVazio.addEventListener("click", abrirModalNovoLote);
+
+// CARREGAR LOTES DA API
+
+async function carregarLotes() {
+    const lista = document.getElementById("listaLotes");
+
+    if (!lista) return;
+
+    try {
+        lista.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align:center;">
+                    CARREGANDO LOTES...
+                </td>
+            </tr>
+        `;
+
+        const resposta = await fetch(`${API_URL}/lotes`);
+
+        if (!resposta.ok) {
+            throw new Error(`Erro HTTP: ${resposta.status}`);
+        }
+
+        lotes = await resposta.json();
+
+        console.log("[LOTES] Dados recebidos:", lotes);
+
+        renderizarLotes();
+
+    } catch (erro) {
+        console.error("[LOTES] Erro ao carregar:", erro);
+
+        lista.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align:center;">
+                    Não foi possível carregar os lotes.
+                </td>
+            </tr>
+        `;
+    }
 }
-if (fecharModalLote) {
-    fecharModalLote.addEventListener("click", fecharModalNovoLote);
+
+// FORMATAR DATA
+
+function formatarDataLote(data) {
+    if (!data) return "-";
+
+    const dataLocal = new Date(data);
+
+    if (Number.isNaN(dataLocal.getTime())) {
+        return "-";
+    }
+
+    return dataLocal.toLocaleDateString("pt-BR", {
+        timeZone: "UTC"
+    });
 }
-if (cancelarLote) {
-    cancelarLote.addEventListener("click", fecharModalNovoLote);
+
+// RENDERIZAR TABELA
+
+function renderizarLotes() {
+    const lista = document.getElementById("listaLotes");
+    if (!lista) return;
+    const termo = (buscarLote?.value || "")
+        .trim()
+        .toLowerCase();
+    const filtro = filtroLote?.value || "todos";
+
+    // INDICADORES GERAIS
+
+    document.getElementById("totalLotes").textContent =
+        lotes.length;
+    document.getElementById("lotesProximos").textContent =
+        lotes.filter(lote => lote.status === "proximo").length;
+    document.getElementById("lotesVencidos").textContent =
+        lotes.filter(lote => lote.status === "vencido").length;
+
+    // PESQUISA E FILTRO
+
+    const lotesFiltrados = lotes.filter(lote => {
+        const correspondeBusca =
+            (lote.codigo || "").toLowerCase().includes(termo) ||
+            (lote.materialNome || "").toLowerCase().includes(termo) ||
+            (lote.materialCodigo || "").toLowerCase().includes(termo);
+        let correspondeFiltro = true;
+        if (filtro === "normal") {
+            correspondeFiltro =
+                lote.status === "ok" ||
+                lote.status === "sem-validade";
+        }
+        if (filtro === "proximo") {
+            correspondeFiltro = lote.status === "proximo";
+        }
+        if (filtro === "vencido") {
+            correspondeFiltro = lote.status === "vencido";
+        }
+        return correspondeBusca && correspondeFiltro;
+    });
+
+    // EVENTOS DO MODAL DE LOTE
+
+    if (abrirModalLote) {
+        abrirModalLote.addEventListener("click", abrirModalNovoLote);
+    }
+    if (fecharModalLote) {
+        fecharModalLote.addEventListener("click", fecharModalNovoLote);
+    }
+    if (cancelarLote) {
+        cancelarLote.addEventListener("click", fecharModalNovoLote);
+    }
+    if (cadastrarLote) {
+        cadastrarLote.addEventListener("click", salvarNovoLote);
+    }
+
+    if (lotesFiltrados.length === 0) {
+        lista.innerHTML = `
+            <tr class="lotes-empty">
+                <td colspan="6">
+                    <div class="empty-state">
+                        <ion-icon name="cube-outline"></ion-icon>
+                        <h3>Nenhum lote encontrado</h3>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    lista.innerHTML = lotesFiltrados.map(lote => {
+        let statusTexto = "DENTRO DA VALIDADE";
+        if (lote.status === "proximo") {
+            statusTexto = "PRÓXIMO DO VENCIMENTO";
+        } else if (lote.status === "vencido") {
+            statusTexto = "VENCIDO";
+        } else if (lote.status === "sem-validade") {
+            statusTexto = "SEM VALIDADE";
+        }
+        return `
+            <tr>
+                <td>
+                    <strong>${lote.codigo}</strong>
+                </td>
+                <td>
+                    <div>
+                        <strong>${lote.materialNome}</strong>
+                        <small>${lote.materialCodigo}</small>
+                    </div>
+                </td>
+                <td>
+                    ${Number(lote.quantidade).toLocaleString("pt-BR", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        })} ${lote.unidade || ""}
+                </td>
+                <td>
+                    ${formatarDataLote(lote.dataFabricacao)}
+                </td>
+                <td>
+                    <div>
+                        ${formatarDataLote(lote.dataValidade)}
+                        <small>${statusTexto}</small>
+                    </div>
+                </td>
+                <td class="lote-acoes">
+                    <button
+                        type="button"
+                        class="btn-editar-lote"
+                        data-lote-id="${lote.id}"
+                        title="Editar lote"
+                        aria-label="Editar lote">
+                        <ion-icon name="create-outline"></ion-icon>
+                    </button>
+                    <button
+                        type="button"
+                        class="btn-excluir-lote"
+                        data-lote-id="${lote.id}"
+                        title="Excluir lote"
+                        aria-label="Excluir lote">
+                        <ion-icon name="trash-outline"></ion-icon>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join("");
 }
-if (modalNovoLote) {
-    modalNovoLote.addEventListener("click", (event) => {
-        if (event.target === modalNovoLote) {
-            fecharModalNovoLote();
+
+
+// AÇÕES DA TABELA DE LOTES
+
+const listaLotes = document.getElementById("listaLotes");
+if (listaLotes) {
+    listaLotes.addEventListener("click", function (event) {
+        const botao = event.target.closest("button[data-lote-id]");
+        if (!botao) return;
+        const loteId = Number(botao.dataset.loteId);
+        if (botao.classList.contains("btn-editar-lote")) {
+            editarLote(loteId);
+            return;
+        }
+        if (botao.classList.contains("btn-excluir-lote")) {
+            excluirLote(loteId, botao);
+        }
+        if (event.target.closest("#cadastrarLoteVazio")) {
+            abrirModalNovoLote();
+            return;
         }
     });
+}
+
+// EDITAR LOTE
+
+function editarLote(id) {
+    const lote = lotes.find(item => item.id === id);
+    if (!lote) {
+        alert("Não foi possível localizar o lote.");
+        return;
+    }
+    loteEmEdicaoId = lote.id;
+    carregarMateriaisSelectLote();
+    tituloModalLote.textContent = "EDITAR LOTE";
+    cadastrarLote.textContent = "SALVAR ALTERAÇÕES";
+    loteCodigo.value = lote.codigo || "";
+    loteMaterial.value = lote.materialId;
+    loteQuantidade.value = lote.quantidade ?? "";
+    loteCustoUnitario.value = lote.custoUnitario ?? "";
+    loteDataFabricacao.value =
+        lote.dataFabricacao
+            ? lote.dataFabricacao.slice(0, 10)
+            : "";
+    loteDataValidade.value =
+        lote.dataValidade
+            ? lote.dataValidade.slice(0, 10)
+            : "";
+    loteObservacoes.value = lote.observacoes || "";
+    loteMaterial.disabled = true;
+    loteQuantidade.disabled = true;
+    modalNovoLote.classList.add("active");
+}
+
+// EXCLUIR LOTE
+
+async function excluirLote(id, botao) {
+    const lote = lotes.find(item => item.id === id);
+    if (!lote) {
+        alert("Não foi possível localizar o lote.");
+        return;
+    }
+    const confirmado = confirm(
+        `Deseja realmente excluir o lote "${lote.codigo}"?\n\n` +
+        `Material: ${lote.materialNome}\n` +
+        `Quantidade: ${lote.quantidade} ${lote.unidade || ""}`
+    );
+    if (!confirmado) {
+        return;
+    }
+    try {
+        botao.disabled = true;
+        const resposta = await fetch(
+            `${API_URL}/lotes/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+        if (!resposta.ok) {
+            const mensagem = await resposta.text();
+            throw new Error(
+                mensagem || `Erro HTTP: ${resposta.status}`
+            );
+        }
+        console.log(`[LOTES] Lote ${id} excluído com sucesso.`);
+        await carregarLotes();
+        await carregarMateriais();
+        alert(`Lote "${lote.codigo}" excluído com sucesso!`);
+    } catch (erro) {
+        console.error("[LOTES] Erro ao excluir:", erro);
+        alert(
+            `Não foi possível excluir o lote.\n\n${erro.message}`
+        );
+        botao.disabled = false;
+    }
+}
+
+// CADASTRAR LOTE
+
+async function salvarNovoLote() {
+    const materialId = Number(loteMaterial.value);
+    const quantidade = Number(loteQuantidade.value);
+    const custoUnitario = Number(loteCustoUnitario.value);
+    if (!loteCodigo.value.trim()) {
+        alert("Informe o código do lote.");
+        loteCodigo.focus();
+        return;
+    }
+    if (!loteEmEdicaoId && !materialId) {
+        alert("Selecione um material.");
+        loteMaterial.focus();
+        return;
+    }
+    if (
+        !loteEmEdicaoId &&
+        (!Number.isFinite(quantidade) || quantidade <= 0)
+    ) {
+        alert("Informe uma quantidade maior que zero.");
+        loteQuantidade.focus();
+        return;
+    }
+    if (!Number.isFinite(custoUnitario) || custoUnitario < 0) {
+        alert("Informe um custo unitário válido.");
+        loteCustoUnitario.focus();
+        return;
+    }
+    const dataFabricacao = loteDataFabricacao.value || null;
+    const dataValidade = loteDataValidade.value || null;
+    if (
+        dataFabricacao &&
+        dataValidade &&
+        dataValidade < dataFabricacao
+    ) {
+        alert("A validade não pode ser anterior à fabricação.");
+        return;
+    }
+    const editando = loteEmEdicaoId !== null;
+    const observacoes = loteObservacoes.value.trim();
+    const dadosLote = editando
+    ? {
+        codigo: loteCodigo.value.trim(),
+        custoUnitario: custoUnitario,
+        dataFabricacao: dataFabricacao,
+        dataValidade: dataValidade,
+        observacoes: observacoes
+    }
+    : {
+        materialId: materialId,
+        codigo: loteCodigo.value.trim(),
+        quantidade: quantidade,
+        custoUnitario: custoUnitario,
+        dataFabricacao: dataFabricacao,
+        dataValidade: dataValidade,
+        observacoes: observacoes
+    };
+    const url = editando
+        ? `${API_URL}/lotes/${loteEmEdicaoId}`
+        : `${API_URL}/lotes`;
+    try {
+        cadastrarLote.disabled = true;
+        cadastrarLote.textContent = editando
+            ? "SALVANDO..."
+            : "CADASTRANDO...";
+        const resposta = await fetch(url, {
+            method: editando ? "PUT" : "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(dadosLote)
+        });
+        if (!resposta.ok) {
+            const mensagem = await resposta.text();
+            throw new Error(
+                mensagem || `Erro HTTP: ${resposta.status}`
+            );
+        }
+        console.log(
+            editando
+                ? "[LOTES] Lote atualizado:"
+                : "[LOTES] Lote cadastrado:",
+            dadosLote
+        );
+        fecharModalNovoLote();
+        await carregarLotes();
+        await carregarMateriais();
+        alert(
+            editando
+                ? "Lote atualizado com sucesso!"
+                : "Lote cadastrado com sucesso!"
+        );
+    } catch (erro) {
+        console.error("[LOTES] Erro ao salvar:", erro);
+        alert(
+            `Não foi possível salvar o lote.\n\n${erro.message}`
+        );
+    } finally {
+        cadastrarLote.disabled = false;
+        cadastrarLote.textContent = "CADASTRAR";
+    }
+}
+
+// PESQUISA E FILTRO
+
+if (buscarLote) {
+    buscarLote.addEventListener("input", renderizarLotes);
+}
+if (filtroLote) {
+    filtroLote.addEventListener("change", renderizarLotes);
 }
 
 // FUNCIONÁRIOS
@@ -2482,6 +2974,7 @@ carregarFuncionarios();
 carregarMaquinas();
 carregarOrdensServico();
 carregarMateriais();
+carregarLotes();
 
 // RELATÓRIOS DE SERVIÇOS
 
