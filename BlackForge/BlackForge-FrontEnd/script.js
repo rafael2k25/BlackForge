@@ -1632,35 +1632,136 @@ const fecharModalMaterial = document.getElementById("fecharModalMaterial");
 const cancelarMaterial = document.getElementById("cancelarMaterial");
 const cadastrarMaterial = document.getElementById("cadastrarMaterial");
 
+let materialEmEdicaoId = null;
+
+const tituloModalMaterial = document.getElementById("tituloModalMaterial");
+const subtituloModalMaterial = document.getElementById("subtituloModalMaterial");
+
+function limparFormularioMaterial() {
+    document
+        .querySelectorAll("#modalNovoMaterial option[data-temporaria]")
+        .forEach(o => o.remove());
+    document.getElementById("materialCodigo").value = "";
+    document.getElementById("materialNome").value = "";
+    document.getElementById("materialCategoria").value = "";
+    document.getElementById("materialUnidade").value = "";
+    document.getElementById("materialEstoqueMinimo").value = "";
+    document.getElementById("materialDescricao").value = "";
+}
+
+function normalizarTexto(texto) {
+    return (texto ?? "")
+        .toString()
+        .trim()
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+}
+
+function selecionarOpcao(select, valor) {
+    const alvo = normalizarTexto(valor);
+    const opcao = Array.from(select.options).find(
+        o => o.value && normalizarTexto(o.value) === alvo
+    );
+    if (opcao) {
+        select.value = opcao.value;
+        return;
+    }
+    if (valor) {
+        const extra = new Option(valor, valor);
+        extra.dataset.temporaria = "true";
+        select.add(extra);
+        select.value = valor;
+    } else {
+        select.value = "";
+    }
+}
+
 function abrirModalNovoMaterial() {
+    materialEmEdicaoId = null;
+    limparFormularioMaterial();
+    tituloModalMaterial.textContent = "NOVO MATERIAL";
+    subtituloModalMaterial.textContent = "Cadastro de material industrial";
+    cadastrarMaterial.textContent = "CADASTRAR";
     modalNovoMaterial.classList.add("active");
 }
+
 function fecharModalNovoMaterial() {
     modalNovoMaterial.classList.remove("active");
+    materialEmEdicaoId = null;
 }
+
+function editarMaterial(id) {
+    const material = materiais.find(item => item.id === id);
+    if (!material) {
+        alert("Não foi possível localizar o material.");
+        return;
+    }
+    materialEmEdicaoId = material.id;
+    limparFormularioMaterial();
+    tituloModalMaterial.textContent = "EDITAR MATERIAL";
+    subtituloModalMaterial.textContent = "Atualização de material industrial";
+    cadastrarMaterial.textContent = "SALVAR ALTERAÇÕES";
+
+    document.getElementById("materialCodigo").value = material.codigo || "";
+    document.getElementById("materialNome").value = material.nome || "";
+    selecionarOpcao(document.getElementById("materialCategoria"), material.categoria);
+    selecionarOpcao(document.getElementById("materialUnidade"), material.unidade);
+    document.getElementById("materialEstoqueMinimo").value = material.estoqueMinimo ?? "";
+    document.getElementById("materialDescricao").value = material.descricao || "";
+
+    modalNovoMaterial.classList.add("active");
+}
+
 async function salvarNovoMaterial() {
     const codigo = document.getElementById("materialCodigo").value.trim();
     const nome = document.getElementById("materialNome").value.trim();
     const categoria = document.getElementById("materialCategoria").value;
     const unidade = document.getElementById("materialUnidade").value;
     const descricao = document.getElementById("materialDescricao").value.trim();
+    const estoqueMinimoTexto = document.getElementById("materialEstoqueMinimo").value;
+    const estoqueMinimo = estoqueMinimoTexto === "" ? 0 : Number(estoqueMinimoTexto);
+
+    if (!Number.isFinite(estoqueMinimo) || estoqueMinimo < 0) {
+        alert("Informe um estoque mínimo válido (zero ou maior).");
+        document.getElementById("materialEstoqueMinimo").focus();
+        return;
+    }
     if (!codigo || !nome || !categoria || !unidade) {
         alert("Preencha todos os campos obrigatórios.");
         return;
     }
+
+    const editando = materialEmEdicaoId !== null;
+    const materialAtual = editando
+        ? materiais.find(item => item.id === materialEmEdicaoId)
+        : null;
+
+    const mesmoValor = (novo, antigo) =>
+        normalizarTexto(novo) === normalizarTexto(antigo);
+
     const material = {
         codigo,
         nome,
-        categoria,
-        unidade,
+        categoria: materialAtual && mesmoValor(categoria, materialAtual.categoria)
+            ? materialAtual.categoria
+            : categoria,
+        unidade: materialAtual && mesmoValor(unidade, materialAtual.unidade)
+            ? materialAtual.unidade
+            : unidade,
         descricao: descricao || null,
-        estoqueMinimo: 0
+        estoqueMinimo: estoqueMinimo
     };
+
+    const url = editando
+        ? `${API_URL}/materiais/${materialEmEdicaoId}`
+        : `${API_URL}/materiais`;
+
     try {
         cadastrarMaterial.disabled = true;
-        cadastrarMaterial.textContent = "CADASTRANDO...";
-        const resposta = await fetch(`${API_URL}/materiais`, {
-            method: "POST",
+        cadastrarMaterial.textContent = editando ? "SALVANDO..." : "CADASTRANDO...";
+        const resposta = await fetch(url, {
+            method: editando ? "PUT" : "POST",
             headers: {
                 "Content-Type": "application/json"
             },
@@ -1671,19 +1772,17 @@ async function salvarNovoMaterial() {
             throw new Error(erro || `Erro HTTP: ${resposta.status}`);
         }
         fecharModalNovoMaterial();
-        document.getElementById("materialCodigo").value = "";
-        document.getElementById("materialNome").value = "";
-        document.getElementById("materialCategoria").value = "";
-        document.getElementById("materialUnidade").value = "";
-        document.getElementById("materialDescricao").value = "";
         await carregarMateriais();
-        alert("Material cadastrado com sucesso!");
+        alert(editando
+            ? "Material atualizado com sucesso!"
+            : "Material cadastrado com sucesso!");
     } catch (erro) {
-        console.error("Erro ao cadastrar material:", erro);
-        alert(`Não foi possível cadastrar o material.\n\n${erro.message}`);
+        console.error("Erro ao salvar material:", erro);
+        alert(`Não foi possível salvar o material.\n\n${erro.message}`);
     } finally {
         cadastrarMaterial.disabled = false;
-        cadastrarMaterial.textContent = "CADASTRAR";
+        cadastrarMaterial.textContent =
+            materialEmEdicaoId !== null ? "SALVAR ALTERAÇÕES" : "CADASTRAR";
     }
 }
 if (abrirModalMaterial) {
@@ -1814,6 +1913,12 @@ function renderizarMateriais() {
                         </strong>
                     </div>
                     <div>
+                        <span>ESTOQUE MÍNIMO</span>
+                        <strong>
+                            ${material.estoqueMinimo ?? 0} ${material.unidade || ""}
+                        </strong>
+                    </div>
+                    <div>
                         <span>CUSTO MÉDIO</span>
                         <strong>
                             ${formatarMoedaMaterial(material.custoMedio)}
@@ -1829,6 +1934,13 @@ function renderizarMateriais() {
                 : ""
             }
                 <div class="material-card-acoes">
+                <button
+                type="button"
+                class="btn-editar-material"
+                data-material-id="${material.id}">
+                <ion-icon name="create-outline"></ion-icon>
+                EDITAR
+                </button>
                     <button
                         type="button"
                         class="btn-excluir-material"
@@ -1847,6 +1959,12 @@ function renderizarMateriais() {
                 const materialId = Number(botao.dataset.materialId);
                 const materialNome = botao.dataset.materialNome;
                 excluirMaterial(materialId, materialNome, botao);
+            });
+        });
+    document.querySelectorAll(".btn-editar-material")
+        .forEach(function (botao) {
+            botao.addEventListener("click", function () {
+                editarMaterial(Number(botao.dataset.materialId));
             });
         });
 }
@@ -2223,11 +2341,7 @@ async function excluirLote(id, botao) {
         alert("Não foi possível localizar o lote.");
         return;
     }
-    const confirmado = confirm(
-        `Deseja realmente excluir o lote "${lote.codigo}"?\n\n` +
-        `Material: ${lote.materialNome}\n` +
-        `Quantidade: ${lote.quantidade} ${lote.unidade || ""}`
-    );
+    const confirmado = await confirmarExclusaoLote(lote);
     if (!confirmado) {
         return;
     }
@@ -2300,22 +2414,22 @@ async function salvarNovoLote() {
     const editando = loteEmEdicaoId !== null;
     const observacoes = loteObservacoes.value.trim();
     const dadosLote = editando
-    ? {
-        codigo: loteCodigo.value.trim(),
-        custoUnitario: custoUnitario,
-        dataFabricacao: dataFabricacao,
-        dataValidade: dataValidade,
-        observacoes: observacoes
-    }
-    : {
-        materialId: materialId,
-        codigo: loteCodigo.value.trim(),
-        quantidade: quantidade,
-        custoUnitario: custoUnitario,
-        dataFabricacao: dataFabricacao,
-        dataValidade: dataValidade,
-        observacoes: observacoes
-    };
+        ? {
+            codigo: loteCodigo.value.trim(),
+            custoUnitario: custoUnitario,
+            dataFabricacao: dataFabricacao,
+            dataValidade: dataValidade,
+            observacoes: observacoes
+        }
+        : {
+            materialId: materialId,
+            codigo: loteCodigo.value.trim(),
+            quantidade: quantidade,
+            custoUnitario: custoUnitario,
+            dataFabricacao: dataFabricacao,
+            dataValidade: dataValidade,
+            observacoes: observacoes
+        };
     const url = editando
         ? `${API_URL}/lotes/${loteEmEdicaoId}`
         : `${API_URL}/lotes`;
@@ -3253,41 +3367,48 @@ if (gerarRelatorioFinanceiro) {
 
 // CONTROLE DO MODAL DE CONFIRMAÇÃO
 
-const modalConfirmacaoExclusao = document.getElementById(
-    "modalConfirmacaoExclusao"
-);
-
-const nomeMaterialExclusao = document.getElementById(
-    "nomeMaterialExclusao"
-);
-
-const btnConfirmarExclusao = document.getElementById(
-    "confirmarExclusaoMaterial"
-);
-
-const btnCancelarExclusao = document.getElementById(
-    "cancelarConfirmacaoExclusao"
-);
-
-const btnFecharConfirmacao = document.getElementById(
-    "fecharConfirmacaoExclusao"
-);
+const modalConfirmacaoExclusao = document.getElementById("modalConfirmacaoExclusao");
+const nomeMaterialExclusao = document.getElementById("nomeMaterialExclusao");
+const btnConfirmarExclusao = document.getElementById("confirmarExclusaoMaterial");
+const tipoExclusao = document.getElementById("tipoExclusao");
+const avisoExclusao = document.getElementById("avisoExclusao");
+const textoBotaoExclusao = document.getElementById("textoBotaoExclusao");
+const btnCancelarExclusao = document.getElementById("cancelarConfirmacaoExclusao");
+const btnFecharConfirmacao = document.getElementById("fecharConfirmacaoExclusao");
 
 let resolverConfirmacaoExclusao = null;
 
-function confirmarExclusaoMaterial(nome) {
+function confirmarExclusao({ tipo, nome, aviso, textoBotao }) {
     return new Promise((resolve) => {
         resolverConfirmacaoExclusao = resolve;
-
+        tipoExclusao.textContent = tipo;
         nomeMaterialExclusao.textContent = nome;
-
+        avisoExclusao.textContent = aviso;
+        textoBotaoExclusao.textContent = textoBotao;
         modalConfirmacaoExclusao.classList.add("ativo");
+    });
+}
+
+function confirmarExclusaoMaterial(nome) {
+    return confirmarExclusao({
+        tipo: "o material",
+        nome,
+        aviso: "Os lotes e as movimentações vinculados a este material também serão excluídos. Esta ação não poderá ser desfeita.",
+        textoBotao: "EXCLUIR MATERIAL"
+    });
+}
+
+function confirmarExclusaoLote(lote) {
+    return confirmarExclusao({
+        tipo: "o lote",
+        nome: lote.codigo,
+        aviso: `Material: ${lote.materialNome} • Quantidade: ${lote.quantidade} ${lote.unidade || ""}. Esta ação não poderá ser desfeita.`,
+        textoBotao: "EXCLUIR LOTE"
     });
 }
 
 function fecharConfirmacaoExclusao(resultado) {
     modalConfirmacaoExclusao.classList.remove("ativo");
-
     if (resolverConfirmacaoExclusao) {
         resolverConfirmacaoExclusao(resultado);
         resolverConfirmacaoExclusao = null;
