@@ -5,6 +5,106 @@
 const API_URL = "https://localhost:7089/api";
 
 // =========================================================
+// NOTIFICAÇÕES (substitui alert())
+// =========================================================
+
+const TOAST_TIPOS = {
+    sucesso: { icone: "checkmark-circle-outline", titulo: "SUCESSO", duracao: 4000 },
+    erro:    { icone: "alert-circle-outline",     titulo: "ERRO",    duracao: 7000 },
+    aviso:   { icone: "warning-outline",          titulo: "ATENÇÃO", duracao: 5000 },
+    info:    { icone: "information-circle-outline", titulo: "INFO",  duracao: 4000 }
+};
+
+function detectarTipoToast(mensagem) {
+    const texto = mensagem.toLowerCase();
+
+    if (texto.includes("não foi possível") || texto.includes("erro")) return "erro";
+    if (texto.includes("sucesso")) return "sucesso";
+    if (
+        texto.includes("informe") || texto.includes("selecione") ||
+        texto.includes("preencha") || texto.includes("não pode") ||
+        texto.includes("bloqueou")
+    ) return "aviso";
+
+    return "info";
+}
+
+function notificar(mensagem, tipo) {
+    tipo = TOAST_TIPOS[tipo] ? tipo : detectarTipoToast(String(mensagem));
+    const config = TOAST_TIPOS[tipo];
+
+    let container = document.getElementById("toastContainer");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toastContainer";
+        container.className = "toast-container";
+        container.setAttribute("aria-live", "polite");
+        document.body.appendChild(container);
+    }
+
+    // Primeira linha vira o texto principal; o resto (ex.: erro.message) vira detalhe
+    const [principal, ...resto] = String(mensagem).split("\n");
+    const detalhe = resto.join("\n").trim();
+
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${tipo}`;
+    toast.setAttribute("role", tipo === "erro" ? "alert" : "status");
+    toast.style.setProperty("--toast-duracao", `${config.duracao}ms`);
+
+    const icone = document.createElement("ion-icon");
+    icone.setAttribute("name", config.icone);
+    icone.className = "toast-icone";
+
+    const corpo = document.createElement("div");
+    corpo.className = "toast-corpo";
+
+    const titulo = document.createElement("span");
+    titulo.className = "toast-titulo";
+    titulo.textContent = config.titulo;
+
+    const texto = document.createElement("span");
+    texto.className = "toast-texto";
+    texto.textContent = principal;
+
+    corpo.append(titulo, texto);
+
+    if (detalhe) {
+        const det = document.createElement("span");
+        det.className = "toast-detalhe";
+        det.textContent = detalhe;
+        corpo.appendChild(det);
+    }
+
+    const fechar = document.createElement("button");
+    fechar.type = "button";
+    fechar.className = "toast-fechar";
+    fechar.setAttribute("aria-label", "Fechar notificação");
+    fechar.innerHTML = '<ion-icon name="close-outline"></ion-icon>';
+
+    const barra = document.createElement("div");
+    barra.className = "toast-barra";
+
+    toast.append(icone, corpo, fechar, barra);
+    container.appendChild(toast);
+
+    let removido = false;
+    function remover() {
+        if (removido) return;
+        removido = true;
+        toast.classList.add("toast-saindo");
+        toast.addEventListener("animationend", () => toast.remove(), { once: true });
+    }
+
+    fechar.addEventListener("click", remover);
+    barra.addEventListener("animationend", remover);
+
+    // Máximo de 5 notificações na tela
+    while (container.children.length > 5) {
+        container.firstElementChild.remove();
+    }
+}
+
+// =========================================================
 // MENUS
 // =========================================================
 
@@ -553,7 +653,7 @@ async function carregarDetalhesOS(id) {
     }
 
     if (!ordem) {
-        alert("Não foi possível carregar os detalhes da ordem de serviço.");
+        notificar("Não foi possível carregar os detalhes da ordem de serviço.");
         return;
     }
     preencherDetalhesOS(ordem);
@@ -620,19 +720,19 @@ function lerFormularioOS() {
 
 function validarOS(ordem) {
     if (!ordem.numeroOS) {
-        alert("Informe o número da OS.");
+        notificar("Informe o número da OS.");
         return false;
     }
     if (!ordem.cliente) {
-        alert("Informe o cliente.");
+        notificar("Informe o cliente.");
         return false;
     }
     if (!ordem.descricaoServico) {
-        alert("Informe a descrição do serviço.");
+        notificar("Informe a descrição do serviço.");
         return false;
     }
     if (!ordem.tipoServico) {
-        alert("Selecione o tipo de serviço.");
+        notificar("Selecione o tipo de serviço.");
         return false;
     }
     return true;
@@ -680,7 +780,7 @@ async function salvarOrdemServico(imprimir = false) {
         if (imprimir) {
             imprimirOS(ordemSalva);
         } else {
-            alert(
+            notificar(
                 editando
                     ? `Ordem de serviço ${ordemSalva.numeroOS || ordem.numeroOS} atualizada com sucesso!`
                     : `Ordem de serviço ${ordemSalva.numeroOS || ordem.numeroOS} criada com sucesso!`
@@ -688,7 +788,7 @@ async function salvarOrdemServico(imprimir = false) {
         }
     } catch (erro) {
         console.error("Erro ao salvar ordem de serviço:", erro);
-        alert(`Não foi possível salvar a ordem de serviço.\n\n${erro.message}`);
+        notificar(`Não foi possível salvar a ordem de serviço.\n\n${erro.message}`);
     } finally {
         if (salvarOS) salvarOS.disabled = false;
         if (salvarImprimirOS) salvarImprimirOS.disabled = false;
@@ -698,7 +798,7 @@ async function salvarOrdemServico(imprimir = false) {
 function imprimirOS(ordem) {
     const janela = window.open("", "_blank");
     if (!janela) {
-        alert("O navegador bloqueou a janela de impressão. Libere os pop-ups para este site.");
+        notificar("O navegador bloqueou a janela de impressão. Libere os pop-ups para este site.");
         return;
     }
 
@@ -822,10 +922,10 @@ async function removerOSSelecionada() {
         fecharModalDetalhesOS();
         ordemSelecionadaOS = null;
         await carregarOrdensServico();
-        alert("Ordem de serviço removida com sucesso!");
+        notificar("Ordem de serviço removida com sucesso!");
     } catch (erro) {
         console.error("Erro ao remover ordem de serviço:", erro);
-        alert(`Não foi possível remover a ordem de serviço.\n\n${erro.message}`);
+        notificar(`Não foi possível remover a ordem de serviço.\n\n${erro.message}`);
     }
 }
 
@@ -969,7 +1069,7 @@ const productionChart = new Chart(ctx, {
                     color: "#9aa4aa",
                     font: {
                         family: "'Share Tech Mono', monospace",
-                        size: 9
+                        size: 13
                     }
                 }
             },
@@ -981,7 +1081,7 @@ const productionChart = new Chart(ctx, {
                     color: "#9aa4aa",
                     font: {
                         family: "'Share Tech Mono', monospace",
-                        size: 10
+                        size: 13
                     }
                 }
             }
@@ -1600,7 +1700,7 @@ async function abrirDetalhesMaquina(id) {
             .classList.add("active");
     } catch (erro) {
         console.error("Erro ao abrir detalhes da máquina:", erro);
-        alert("Não foi possível carregar os detalhes da máquina.");
+        notificar("Não foi possível carregar os detalhes da máquina.");
     }
 }
 
@@ -1694,7 +1794,7 @@ function fecharModalNovoMaterial() {
 function editarMaterial(id) {
     const material = materiais.find(item => item.id === id);
     if (!material) {
-        alert("Não foi possível localizar o material.");
+        notificar("Não foi possível localizar o material.");
         return;
     }
     materialEmEdicaoId = material.id;
@@ -1723,12 +1823,12 @@ async function salvarNovoMaterial() {
     const estoqueMinimo = estoqueMinimoTexto === "" ? 0 : Number(estoqueMinimoTexto);
 
     if (!Number.isFinite(estoqueMinimo) || estoqueMinimo < 0) {
-        alert("Informe um estoque mínimo válido (zero ou maior).");
+        notificar("Informe um estoque mínimo válido (zero ou maior).");
         document.getElementById("materialEstoqueMinimo").focus();
         return;
     }
     if (!codigo || !nome || !categoria || !unidade) {
-        alert("Preencha todos os campos obrigatórios.");
+        notificar("Preencha todos os campos obrigatórios.");
         return;
     }
 
@@ -1773,12 +1873,12 @@ async function salvarNovoMaterial() {
         }
         fecharModalNovoMaterial();
         await carregarMateriais();
-        alert(editando
+        notificar(editando
             ? "Material atualizado com sucesso!"
             : "Material cadastrado com sucesso!");
     } catch (erro) {
         console.error("Erro ao salvar material:", erro);
-        alert(`Não foi possível salvar o material.\n\n${erro.message}`);
+        notificar(`Não foi possível salvar o material.\n\n${erro.message}`);
     } finally {
         cadastrarMaterial.disabled = false;
         cadastrarMaterial.textContent =
@@ -1991,10 +2091,10 @@ async function excluirMaterial(id, nome, botao) {
         }
         console.log(`[MATERIAIS] Material ${id} excluído.`);
         await carregarMateriais();
-        alert(`Material "${nome}" excluído com sucesso!`);
+        notificar(`Material "${nome}" excluído com sucesso!`);
     } catch (erro) {
         console.error("[MATERIAIS] Erro ao excluir:", erro);
-        alert(
+        notificar(
             `Não foi possível excluir o material.\n\n${erro.message}`
         );
         botao.disabled = false;
@@ -2308,7 +2408,7 @@ if (listaLotes) {
 function editarLote(id) {
     const lote = lotes.find(item => item.id === id);
     if (!lote) {
-        alert("Não foi possível localizar o lote.");
+        notificar("Não foi possível localizar o lote.");
         return;
     }
     loteEmEdicaoId = lote.id;
@@ -2338,7 +2438,7 @@ function editarLote(id) {
 async function excluirLote(id, botao) {
     const lote = lotes.find(item => item.id === id);
     if (!lote) {
-        alert("Não foi possível localizar o lote.");
+        notificar("Não foi possível localizar o lote.");
         return;
     }
     const confirmado = await confirmarExclusaoLote(lote);
@@ -2362,10 +2462,10 @@ async function excluirLote(id, botao) {
         console.log(`[LOTES] Lote ${id} excluído com sucesso.`);
         await carregarLotes();
         await carregarMateriais();
-        alert(`Lote "${lote.codigo}" excluído com sucesso!`);
+        notificar(`Lote "${lote.codigo}" excluído com sucesso!`);
     } catch (erro) {
         console.error("[LOTES] Erro ao excluir:", erro);
-        alert(
+        notificar(
             `Não foi possível excluir o lote.\n\n${erro.message}`
         );
         botao.disabled = false;
@@ -2379,12 +2479,12 @@ async function salvarNovoLote() {
     const quantidade = Number(loteQuantidade.value);
     const custoUnitario = Number(loteCustoUnitario.value);
     if (!loteCodigo.value.trim()) {
-        alert("Informe o código do lote.");
+        notificar("Informe o código do lote.");
         loteCodigo.focus();
         return;
     }
     if (!loteEmEdicaoId && !materialId) {
-        alert("Selecione um material.");
+        notificar("Selecione um material.");
         loteMaterial.focus();
         return;
     }
@@ -2392,12 +2492,12 @@ async function salvarNovoLote() {
         !loteEmEdicaoId &&
         (!Number.isFinite(quantidade) || quantidade <= 0)
     ) {
-        alert("Informe uma quantidade maior que zero.");
+        notificar("Informe uma quantidade maior que zero.");
         loteQuantidade.focus();
         return;
     }
     if (!Number.isFinite(custoUnitario) || custoUnitario < 0) {
-        alert("Informe um custo unitário válido.");
+        notificar("Informe um custo unitário válido.");
         loteCustoUnitario.focus();
         return;
     }
@@ -2408,7 +2508,7 @@ async function salvarNovoLote() {
         dataValidade &&
         dataValidade < dataFabricacao
     ) {
-        alert("A validade não pode ser anterior à fabricação.");
+        notificar("A validade não pode ser anterior à fabricação.");
         return;
     }
     const editando = loteEmEdicaoId !== null;
@@ -2460,14 +2560,14 @@ async function salvarNovoLote() {
         fecharModalNovoLote();
         await carregarLotes();
         await carregarMateriais();
-        alert(
+        notificar(
             editando
                 ? "Lote atualizado com sucesso!"
                 : "Lote cadastrado com sucesso!"
         );
     } catch (erro) {
         console.error("[LOTES] Erro ao salvar:", erro);
-        alert(
+        notificar(
             `Não foi possível salvar o lote.\n\n${erro.message}`
         );
     } finally {
@@ -2580,31 +2680,31 @@ async function cadastrarNovoFuncionario() {
     // VALIDAÇÕES
 
     if (!funcionario.nome) {
-        alert("Informe o nome do funcionário.");
+        notificar("Informe o nome do funcionário.");
         return;
     }
     if (!funcionario.matricula) {
-        alert("Informe a matrícula do funcionário.");
+        notificar("Informe a matrícula do funcionário.");
         return;
     }
     if (!funcionario.cpf) {
-        alert("Informe o CPF do funcionário.");
+        notificar("Informe o CPF do funcionário.");
         return;
     }
     if (!funcionario.cargo) {
-        alert("Informe o cargo do funcionário.");
+        notificar("Informe o cargo do funcionário.");
         return;
     }
     if (!funcionario.idade) {
-        alert("Informe a idade do funcionário.");
+        notificar("Informe a idade do funcionário.");
         return;
     }
     if (!funcionario.setor) {
-        alert("Selecione o setor do funcionário.");
+        notificar("Selecione o setor do funcionário.");
         return;
     }
     if (!funcionario.admissao) {
-        alert("Informe a data de admissão.");
+        notificar("Informe a data de admissão.");
         return;
     }
     try {
@@ -2649,11 +2749,11 @@ async function cadastrarNovoFuncionario() {
         fecharCadastroFuncionario();
         limparFormularioFuncionario();
         if (modoEdicaoFuncionario) {
-            alert(
+            notificar(
                 "Funcionário atualizado com sucesso!"
             );
         } else {
-            alert(
+            notificar(
                 "Funcionário cadastrado com sucesso!"
             );
         }
@@ -2663,7 +2763,7 @@ async function cadastrarNovoFuncionario() {
             "Erro ao salvar funcionário:",
             erro
         );
-        alert(
+        notificar(
             `Não foi possível salvar o funcionário.\n\n${erro.message}`
         );
     }
@@ -2916,14 +3016,14 @@ async function removerFuncionarioSelecionado() {
 
         await carregarFuncionarios();
 
-        alert("Funcionário removido com sucesso!");
+        notificar("Funcionário removido com sucesso!");
     } catch (erro) {
         console.error(
             "Erro ao remover funcionário:",
             erro
         );
 
-        alert(
+        notificar(
             `Não foi possível remover o funcionário.\n\n${erro.message}`
         );
     }
@@ -3090,7 +3190,7 @@ carregarOrdensServico();
 carregarMateriais();
 carregarLotes();
 
-// RELATÓRIOS DE SERVIÇOS
+// RELATÓRIO DE SERVIÇOS
 
 const limparFiltrosServicos =
     document.getElementById("limparFiltrosServicos");
@@ -3107,6 +3207,140 @@ const servicosDataFim =
 const servicosStatus =
     document.getElementById("servicosStatus");
 
+
+// VARIÁVEIS DO RELATÓRIO
+
+let graficoServicosStatus = null;
+let graficoServicosTipo = null;
+
+
+// ELEMENTOS DO RELATÓRIO
+
+const secaoRelatorioServicos =
+    document.getElementById("relatorio-servicos");
+
+const indicadoresServicos =
+    secaoRelatorioServicos
+        ? secaoRelatorioServicos.querySelectorAll(".relatorio-indicador strong")
+        : [];
+
+const graficosServicos =
+    secaoRelatorioServicos
+        ? secaoRelatorioServicos.querySelectorAll(".relatorio-grafico")
+        : [];
+
+const tabelaRelatorioServicos =
+    document.getElementById("relatorio-servicosTabela");
+
+const registrosRelatorioServicos =
+    document.getElementById("relatorio-servicosRegistros");
+
+
+// FORMATADORES DO RELATÓRIO
+
+function formatarMoedaRelatorioServicos(valor) {
+    return new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+    }).format(Number(valor) || 0);
+}
+
+
+function formatarDataRelatorioServicos(valor) {
+    if (!valor) {
+        return "-";
+    }
+
+    const texto = String(valor);
+
+    const iso = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    if (iso) {
+        return `${iso[3]}/${iso[2]}/${iso[1]}`;
+    }
+
+    const data = new Date(texto);
+
+    if (Number.isNaN(data.getTime())) {
+        return "-";
+    }
+
+    return data.toLocaleDateString("pt-BR");
+}
+
+
+function obterNomeStatusRelatorioServicos(status) {
+    const nomes = {
+        pendente: "Pendente",
+        em_execucao: "Em execução",
+        concluida: "Concluída"
+    };
+
+    return nomes[status] || status || "-";
+}
+
+
+function obterNomeTipoRelatorioServicos(tipo) {
+    if (!tipo) {
+        return "-";
+    }
+
+    const nomes = {
+        usinagem: "Usinagem",
+        torneamento: "Torneamento",
+        fresagem: "Fresagem",
+        corte: "Corte",
+        solda: "Solda",
+        outro: "Outro"
+    };
+
+    return nomes[String(tipo).toLowerCase()] || formatarTextoLivreOS(tipo);
+}
+
+
+function obterClasseStatusRelatorioServicos(status) {
+    const classes = {
+        pendente: "pendente",
+        em_execucao: "em-execucao",
+        concluida: "concluida"
+    };
+
+    return classes[status] || "pendente";
+}
+
+
+// LIMPAR GRÁFICOS
+
+function limparGraficosRelatorioServicos() {
+
+    if (graficoServicosStatus) {
+        graficoServicosStatus.destroy();
+        graficoServicosStatus = null;
+    }
+
+    if (graficoServicosTipo) {
+        graficoServicosTipo.destroy();
+        graficoServicosTipo = null;
+    }
+
+    graficosServicos.forEach(function (container) {
+
+        container.innerHTML = `
+            <div class="relatorio-sem-dados">
+                <ion-icon name="bar-chart-outline"></ion-icon>
+                <span>SEM DADOS PARA EXIBIR</span>
+                <small>
+                    Gere o relatório para visualizar os dados.
+                </small>
+            </div>
+        `;
+
+    });
+}
+
+
+// LIMPAR FILTROS
+
 function limparFiltrosRelatorioServicos() {
 
     if (servicosDataInicio) {
@@ -3121,34 +3355,490 @@ function limparFiltrosRelatorioServicos() {
         servicosStatus.value = "";
     }
 
+    if (indicadoresServicos.length >= 4) {
+
+        indicadoresServicos[0].textContent = "0";
+        indicadoresServicos[1].textContent = "0";
+        indicadoresServicos[2].textContent = "0";
+        indicadoresServicos[3].textContent = "R$ 0,00";
+
+    }
+
+    if (registrosRelatorioServicos) {
+        registrosRelatorioServicos.textContent = "0 REGISTROS";
+    }
+
+    if (tabelaRelatorioServicos) {
+
+        tabelaRelatorioServicos.innerHTML = `
+            <tr>
+                <td class="relatorio-tabela-vazia" colspan="7">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <span>NENHUM REGISTRO ENCONTRADO</span>
+                    <small>
+                        Defina os filtros e clique em GERAR RELATÓRIO.
+                    </small>
+                </td>
+            </tr>
+        `;
+
+    }
+
+    limparGraficosRelatorioServicos();
 }
 
 
-function gerarRelatorioDeServicos() {
+// RENDERIZAR INDICADORES
 
-    /*
-     * FUTURO BACKEND
-     *
-     * Aqui posteriormente vamos enviar os filtros
-     * para a API e receber os dados das ordens de serviço.
-     *
-     * Exemplo futuro:
-     *
-     * GET /api/relatorios/servicos
-     *
-     * ?dataInicio=
-     * &dataFim=
-     * &status=
-     */
+function renderizarIndicadoresRelatorioServicos(dados) {
 
-    console.log("Gerando relatório de serviços...", {
-        dataInicio: servicosDataInicio?.value || null,
-        dataFim: servicosDataFim?.value || null,
-        status: servicosStatus?.value || null,
+    if (indicadoresServicos.length < 4) {
+        console.warn(
+            "[RELATÓRIO SERVIÇOS] Indicadores não encontrados corretamente."
+        );
+        return;
+    }
+
+    indicadoresServicos[0].textContent =
+        dados.totalOS ?? 0;
+
+    indicadoresServicos[1].textContent =
+        dados.emExecucao ?? 0;
+
+    indicadoresServicos[2].textContent =
+        dados.concluidas ?? 0;
+
+    indicadoresServicos[3].textContent =
+        formatarMoedaRelatorioServicos(dados.valorTotal);
+
+}
+
+
+// RENDERIZAR TABELA
+
+function renderizarTabelaRelatorioServicos(registros) {
+
+    if (!tabelaRelatorioServicos) {
+        return;
+    }
+
+    if (!Array.isArray(registros) || registros.length === 0) {
+
+        tabelaRelatorioServicos.innerHTML = `
+            <tr>
+                <td class="relatorio-tabela-vazia" colspan="7">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <span>NENHUM REGISTRO ENCONTRADO</span>
+                    <small>
+                        Nenhuma ordem de serviço corresponde aos filtros.
+                    </small>
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    tabelaRelatorioServicos.innerHTML = "";
+
+    registros.forEach(function (registro) {
+
+        const linha = document.createElement("tr");
+
+        const statusTexto =
+            obterNomeStatusRelatorioServicos(registro.status);
+
+        const statusClasse =
+            obterClasseStatusRelatorioServicos(registro.status);
+
+        linha.innerHTML = `
+            <td>
+                <strong>
+                    ${escaparHtmlOS(registro.numeroOS || "-")}
+                </strong>
+            </td>
+
+            <td>
+                ${escaparHtmlOS(registro.cliente || "-")}
+            </td>
+
+            <td>
+                ${escaparHtmlOS(
+                    obterNomeTipoRelatorioServicos(registro.tipoServico)
+                )}
+            </td>
+
+            <td>
+                ${escaparHtmlOS(registro.responsavel || "Não definido")}
+            </td>
+
+            <td>
+                ${formatarDataRelatorioServicos(registro.dataEntrega)}
+            </td>
+
+            <td>
+                <span class="relatorio-status ${statusClasse}">
+                    ${escaparHtmlOS(statusTexto)}
+                </span>
+            </td>
+
+            <td>
+                <strong>
+                    ${formatarMoedaRelatorioServicos(registro.valorTotal)}
+                </strong>
+            </td>
+        `;
+
+        tabelaRelatorioServicos.appendChild(linha);
+
     });
 
 }
 
+
+// CRIAR GRÁFICO DE STATUS
+
+function renderizarGraficoStatusRelatorioServicos(dados) {
+
+    if (!graficosServicos[0]) {
+        return;
+    }
+
+    if (graficoServicosStatus) {
+        graficoServicosStatus.destroy();
+        graficoServicosStatus = null;
+    }
+
+    const canvas = document.createElement("canvas");
+
+    graficosServicos[0].innerHTML = "";
+
+    graficosServicos[0].appendChild(canvas);
+
+    const statusDados =
+        Array.isArray(dados.porStatus)
+            ? dados.porStatus
+            : [];
+
+    const labels =
+        statusDados.map(item => item.status);
+
+    const valores =
+        statusDados.map(item => Number(item.quantidade) || 0);
+
+    graficoServicosStatus = new Chart(canvas, {
+
+        type: "doughnut",
+
+        data: {
+            labels: labels,
+
+            datasets: [
+                {
+                    data: valores,
+
+                    backgroundColor: [
+                        "#f5c400",
+                        "#1688ff",
+                        "#00a651"
+                    ],
+
+                    borderWidth: 0
+                }
+            ]
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            cutout: "68%",
+
+            plugins: {
+
+                legend: {
+                    position: "bottom",
+
+                    labels: {
+                        color: "#9aa4aa",
+
+                        font: {
+                            family: "'Share Tech Mono', monospace",
+                            size: 13
+                        },
+
+                        padding: 18
+                    }
+                }
+
+            }
+
+        }
+
+    });
+
+}
+
+// CRIAR GRÁFICO DE TIPOS DE SERVIÇO
+
+function renderizarGraficoTipoRelatorioServicos(dados) {
+
+    if (!graficosServicos[1]) {
+        return;
+    }
+
+    if (graficoServicosTipo) {
+        graficoServicosTipo.destroy();
+        graficoServicosTipo = null;
+    }
+
+    const canvas = document.createElement("canvas");
+
+    graficosServicos[1].innerHTML = "";
+
+    graficosServicos[1].appendChild(canvas);
+
+    const tipoDados =
+        Array.isArray(dados.porTipo)
+            ? dados.porTipo
+            : [];
+
+    const labels =
+        tipoDados.map(item =>
+            obterNomeTipoRelatorioServicos(item.tipoServico)
+        );
+
+    const valores =
+        tipoDados.map(item =>
+            Number(item.quantidade) || 0
+        );
+
+    graficoServicosTipo = new Chart(canvas, {
+
+        type: "bar",
+
+        data: {
+            labels: labels,
+
+            datasets: [
+                {
+                    label: "Ordens de serviço",
+
+                    data: valores,
+
+                    backgroundColor: "#f5c400",
+
+                    borderWidth: 0,
+
+                    borderRadius: 3
+                }
+            ]
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            plugins: {
+
+                legend: {
+                    display: false
+                }
+
+            },
+
+            scales: {
+
+                x: {
+                    grid: {
+                        display: false
+                    },
+
+                    ticks: {
+                        color: "#9aa4aa",
+
+                        font: {
+                            family: "'Share Tech Mono', monospace",
+                            size: 13
+                        }
+                    }
+                },
+
+                y: {
+                    beginAtZero: true,
+
+                    ticks: {
+                        precision: 0,
+
+                        color: "#9aa4aa",
+
+                        font: {
+                            family: "'Share Tech Mono', monospace",
+                            size: 13
+                        }
+                    },
+
+                    grid: {
+                        color: "rgba(255, 255, 255, 0.05)"
+                    }
+                }
+            }
+        }
+    });
+}
+
+// GERAR RELATÓRIO
+
+async function gerarRelatorioDeServicos() {
+
+    const dataInicio =
+        servicosDataInicio?.value || "";
+
+    const dataFim =
+        servicosDataFim?.value || "";
+
+    const status =
+        servicosStatus?.value || "";
+
+    if (dataInicio && dataFim && dataInicio > dataFim) {
+
+        notificar(
+            "A data inicial não pode ser maior que a data final.",
+            "aviso"
+        );
+
+        return;
+    }
+
+    const parametros =
+        new URLSearchParams();
+
+    if (dataInicio) {
+        parametros.append("dataInicio", dataInicio);
+    }
+
+    if (dataFim) {
+        parametros.append("dataFim", dataFim);
+    }
+
+    if (status) {
+        parametros.append("status", status);
+    }
+
+
+    const url =
+        `${API_URL}/relatorios/servicos` +
+        (parametros.toString()
+            ? `?${parametros.toString()}`
+            : "");
+
+    if (gerarRelatorioServicos) {
+
+        gerarRelatorioServicos.disabled = true;
+
+        gerarRelatorioServicos.textContent =
+            "CARREGANDO...";
+    }
+
+
+    try {
+
+        console.log(
+            "[RELATÓRIO SERVIÇOS] Buscando:",
+            url
+        );
+
+
+        const resposta =
+            await fetch(url);
+
+
+        if (!resposta.ok) {
+
+            const mensagem =
+                await resposta.text();
+
+            throw new Error(
+                mensagem ||
+                `Erro HTTP: ${resposta.status}`
+            );
+        }
+
+
+        const dados =
+            await resposta.json();
+
+
+        console.log(
+            "[RELATÓRIO SERVIÇOS] Dados recebidos:",
+            dados
+        );
+
+        renderizarIndicadoresRelatorioServicos(dados);
+
+        renderizarTabelaRelatorioServicos(
+            dados.registros
+        );
+
+        renderizarGraficoStatusRelatorioServicos(
+            dados
+        );
+
+        renderizarGraficoTipoRelatorioServicos(
+            dados
+        );
+
+
+        if (registrosRelatorioServicos) {
+
+            const quantidade =
+                Array.isArray(dados.registros)
+                    ? dados.registros.length
+                    : 0;
+
+            registrosRelatorioServicos.textContent =
+                `${quantidade} REGISTRO${quantidade === 1 ? "" : "S"}`;
+        }
+
+
+        notificar(
+            "Relatório de serviços gerado com sucesso!",
+            "sucesso"
+        );
+
+
+    } catch (erro) {
+
+        console.error(
+            "Erro ao gerar relatório de serviços:",
+            erro
+        );
+
+
+        notificar(
+            `Não foi possível gerar o relatório de serviços.\n\n${erro.message}`,
+            "erro"
+        );
+
+    } finally {
+
+        if (gerarRelatorioServicos) {
+
+            gerarRelatorioServicos.disabled = false;
+
+            gerarRelatorioServicos.textContent =
+                "GERAR RELATÓRIO";
+        }
+
+    }
+
+}
+
+// EVENTOS
 
 if (limparFiltrosServicos) {
 

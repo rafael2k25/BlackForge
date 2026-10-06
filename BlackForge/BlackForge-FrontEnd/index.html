@@ -91,23 +91,31 @@
                 </div>
 
                 <!-- =====================================================
-                     GESTÃO
+                     RELATÓRIOS
                 ====================================================== -->
 
                 <div class="menu-category">
-                    <button type="button" class="menu-category-button" data-category="gestao">
+                    <button type="button" class="menu-category-button" data-category="relatorios">
                         <span class="category-left">
-                            <ion-icon name="people-outline"></ion-icon>
-                            <span>GESTÃO</span>
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+                            <span>RELATÓRIOS</span>
                         </span>
                         <ion-icon class="category-arrow" name="chevron-forward-sharp">
                         </ion-icon>
                     </button>
 
-                    <div class="submenu" data-submenu="gestao">
-                        <button class="menu-item submenu-item" data-section="funcionarios" data-title="Funcionários">
+                    <div class="submenu" data-submenu="relatorios">
+                        <button class="menu-item submenu-item" data-section="relatorio-servicos" data-title="Relatório de Serviços">
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
-                            <span>Funcionários</span>
+                            <span>Serviços</span>
+                        </button>
+                        <button class="menu-item submenu-item" data-section="relatorio-estoque" data-title="Relatório de Estoque">
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+                            <span>Estoque</span>
+                        </button>
+                        <button class="menu-item submenu-item" data-section="relatorio-financeiro" data-title="Relatório Financeiro">
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+                            <span>Financeiro</span>
                         </button>
                     </div>
                 </div>
@@ -536,61 +544,523 @@
 
         <!-- ======================== FIM LOTES ======================== -->
 
-        <!-- ======================== INÍCIO CATEGORIA FUNCIONÁRIOS ======================== -->
+        <!-- ======================== INÍCIO RELATÓRIO SERVIÇOS ======================== -->
 
-        <section id="funcionarios" class="page-section">
+        <section id="relatorio-servicos" class="page-section">
             <div class="section-header">
                 <div>
-                    <span class="section-label">
-                        GESTÃO
-                    </span>
-                    <h1>
-                        Funcionários
-                    </h1>
-                    <p>
-                        Cadastro e gerenciamento dos funcionários da empresa.
-                    </p>
+                    <span class="section-label">RELATÓRIOS</span>
+                    <h1>Relatório de Serviços</h1>
+                    <p>Acompanhe as ordens de serviço executadas e em andamento.</p>
                 </div>
-                <button class="primary-button" id="abrirModalFuncionario" type="button">
-                    + NOVO FUNCIONÁRIO
-                </button>
-            </div>
-
-            <!-- ======================== QUADRO DE FUNCIONÁRIOS ======================== -->
-
-            <div class="funcionarios-panel">
-                <div class="funcionarios-header">
-                    <div>
-                        <span class="funcionarios-label">
-                            QUADRO DE FUNCIONÁRIOS
-                        </span>
-                        <h2>
-                            EQUIPE
-                        </h2>
-                    </div>
-                    <span class="funcionarios-count" id="funcionariosCount">
-                        FUNCIONÁRIOS
-                    </span>
-                </div>
-
-                <!-- ESTADO VAZIO -->
-
-                <div class="funcionarios-empty" id="funcionariosEmpty">
-                    <div class="funcionarios-empty-icon">
-                        <ion-icon name="people-outline"></ion-icon>
-                    </div>
-                    <h3>
-                        NENHUM FUNCIONÁRIO CADASTRADO
-                    </h3>
-                    <button class="secondary-button" id="cadastrarPrimeiroFuncionario" type="button">
-                        CADASTRAR FUNCIONÁRIO
+                <div class="relatorio-header-actions">
+                    <button type="button" class="secondary-button" id="limparFiltrosServicos">
+                        LIMPAR FILTROS
+                    </button>
+                    <button type="button" class="primary-button" id="gerarRelatorioServicos">
+                        GERAR RELATÓRIO
                     </button>
                 </div>
-                <div class="funcionarios-grid" id="funcionariosGrid"></div>
+            </div>
+
+            <!-- FILTROS -->
+
+            <div class="relatorio-filtros">
+                <div class="relatorio-filtros-header">
+                    <h2>FILTROS</h2>
+                    <ion-icon name="funnel-outline"></ion-icon>
+                </div>
+                <div class="relatorio-filtros-grid">
+                    <div>
+                        <label class="relatorio-filtros-label">DATA INICIAL</label>
+                        <input type="date" id="servicosDataInicio">
+                    </div>
+                    <div>
+                        <label class="relatorio-filtros-label">DATA FINAL</label>
+                        <input type="date" id="servicosDataFim">
+                    </div>
+                    <div>
+                        <label class="relatorio-filtros-label">STATUS</label>
+                        <select id="servicosStatus">
+                            <option value="">Todos</option>
+                            <option value="pendente">Pendente</option>
+                            <option value="em_execucao">Em execução</option>
+                            <option value="concluida">Concluída</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INDICADORES -->
+
+            <div class="relatorio-indicadores">
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="document-text-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>TOTAL DE OS</span>
+                        <strong>0</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="play-circle-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>EM EXECUÇÃO</span>
+                        <strong>0</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="checkmark-circle-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>CONCLUÍDAS</span>
+                        <strong>0</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="cash-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>VALOR TOTAL</span>
+                        <strong>R$ 0,00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANÁLISES -->
+
+            <div class="relatorio-analise-grid">
+                <div class="relatorio-card">
+                    <div class="relatorio-card-header">
+                        <div>
+                            <span class="relatorio-card-label">ANÁLISE</span>
+                            <h3>OS POR STATUS</h3>
+                        </div>
+                        <ion-icon name="pie-chart-outline"></ion-icon>
+                    </div>
+                    <div class="relatorio-grafico">
+                        <div class="relatorio-sem-dados">
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+                            <span>SEM DADOS PARA EXIBIR</span>
+                            <small>Gere o relatório para visualizar a distribuição das ordens de serviço.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="relatorio-card">
+                    <div class="relatorio-card-header">
+                        <div>
+                            <span class="relatorio-card-label">ANÁLISE</span>
+                            <h3>SERVIÇOS POR TIPO</h3>
+                        </div>
+                        <ion-icon name="construct-outline"></ion-icon>
+                    </div>
+                    <div class="relatorio-grafico">
+                        <div class="relatorio-sem-dados">
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+                            <span>SEM DADOS PARA EXIBIR</span>
+                            <small>Gere o relatório para visualizar os tipos de serviço mais executados.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELA -->
+
+            <div class="relatorio-card relatorio-tabela-card">
+                <div class="relatorio-card-header">
+                    <div>
+                        <span class="relatorio-card-label">DETALHAMENTO</span>
+                        <h3>ORDENS DE SERVIÇO</h3>
+                    </div>
+                    <span class="relatorio-registros" id="relatorio-servicosRegistros">0 REGISTROS</span>
+                </div>
+                <div class="relatorio-tabela-container">
+                    <table class="relatorio-tabela">
+                        <thead>
+                            <tr>
+                                <th>Nº OS</th>
+                                <th>CLIENTE</th>
+                                <th>SERVIÇO</th>
+                                <th>RESPONSÁVEL</th>
+                                <th>ENTREGA</th>
+                                <th>STATUS</th>
+                                <th>VALOR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="relatorio-servicosTabela">
+                            <tr>
+                                <td class="relatorio-tabela-vazia" colspan="7">
+                                    <ion-icon name="document-text-outline"></ion-icon>
+                                    <span>NENHUM REGISTRO ENCONTRADO</span>
+                                    <small>Defina os filtros e clique em GERAR RELATÓRIO.</small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
-        <!-- ======================== FIM CATEGORIA FUNCIONÁRIOS ======================== -->
+        <!-- ======================== FIM RELATÓRIO SERVIÇOS ======================== -->
+
+        <!-- ======================== INÍCIO RELATÓRIO ESTOQUE ======================== -->
+
+        <section id="relatorio-estoque" class="page-section">
+            <div class="section-header">
+                <div>
+                    <span class="section-label">RELATÓRIOS</span>
+                    <h1>Relatório de Estoque</h1>
+                    <p>Consulte as movimentações e a situação dos materiais em estoque.</p>
+                </div>
+                <div class="relatorio-header-actions">
+                    <button type="button" class="secondary-button" id="limparFiltrosEstoque">
+                        LIMPAR FILTROS
+                    </button>
+                    <button type="button" class="primary-button" id="gerarRelatorioEstoque">
+                        GERAR RELATÓRIO
+                    </button>
+                </div>
+            </div>
+
+            <!-- FILTROS -->
+
+            <div class="relatorio-filtros">
+                <div class="relatorio-filtros-header">
+                    <h2>FILTROS</h2>
+                    <ion-icon name="funnel-outline"></ion-icon>
+                </div>
+                <div class="relatorio-filtros-grid">
+                    <div>
+                        <label class="relatorio-filtros-label">DATA INICIAL</label>
+                        <input type="date" id="estoqueDataInicio">
+                    </div>
+                    <div>
+                        <label class="relatorio-filtros-label">DATA FINAL</label>
+                        <input type="date" id="estoqueDataFim">
+                    </div>
+                    <div>
+                        <label class="relatorio-filtros-label">MOVIMENTAÇÃO</label>
+                        <select id="estoqueTipoMovimentacao">
+                            <option value="">Todas</option>
+                            <option value="entrada">Entrada</option>
+                            <option value="saida">Saída</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="relatorio-filtros-label">MATERIAL</label>
+                        <select id="estoqueMaterial">
+                            <option value="">Todos os materiais</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INDICADORES -->
+
+            <div class="relatorio-indicadores">
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="cube-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>MATERIAIS</span>
+                        <strong>0</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="arrow-down-circle-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>ENTRADAS</span>
+                        <strong>0</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="arrow-up-circle-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>SAÍDAS</span>
+                        <strong>0</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="alert-circle-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>ABAIXO DO MÍNIMO</span>
+                        <strong>0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANÁLISES -->
+
+            <div class="relatorio-analise-grid">
+                <div class="relatorio-card">
+                    <div class="relatorio-card-header">
+                        <div>
+                            <span class="relatorio-card-label">ANÁLISE</span>
+                            <h3>MOVIMENTAÇÃO NO PERÍODO</h3>
+                        </div>
+                        <ion-icon name="swap-vertical-outline"></ion-icon>
+                    </div>
+                    <div class="relatorio-grafico">
+                        <div class="relatorio-sem-dados">
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+                            <span>SEM DADOS PARA EXIBIR</span>
+                            <small>Gere o relatório para visualizar as entradas e saídas de materiais.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="relatorio-card">
+                    <div class="relatorio-card-header">
+                        <div>
+                            <span class="relatorio-card-label">ANÁLISE</span>
+                            <h3>CONSUMO POR MATERIAL</h3>
+                        </div>
+                        <ion-icon name="layers-outline"></ion-icon>
+                    </div>
+                    <div class="relatorio-grafico">
+                        <div class="relatorio-sem-dados">
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+                            <span>SEM DADOS PARA EXIBIR</span>
+                            <small>Gere o relatório para visualizar os materiais mais consumidos.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELA -->
+
+            <div class="relatorio-card relatorio-tabela-card">
+                <div class="relatorio-card-header">
+                    <div>
+                        <span class="relatorio-card-label">DETALHAMENTO</span>
+                        <h3>MOVIMENTAÇÕES DE ESTOQUE</h3>
+                    </div>
+                    <span class="relatorio-registros" id="relatorio-estoqueRegistros">0 REGISTROS</span>
+                </div>
+                <div class="relatorio-tabela-container">
+                    <table class="relatorio-tabela">
+                        <thead>
+                            <tr>
+                                <th>DATA</th>
+                                <th>MATERIAL</th>
+                                <th>LOTE</th>
+                                <th>MOVIMENTAÇÃO</th>
+                                <th>QUANTIDADE</th>
+                                <th>CUSTO UNIT.</th>
+                                <th>TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody id="relatorio-estoqueTabela">
+                            <tr>
+                                <td class="relatorio-tabela-vazia" colspan="7">
+                                    <ion-icon name="document-text-outline"></ion-icon>
+                                    <span>NENHUM REGISTRO ENCONTRADO</span>
+                                    <small>Defina os filtros e clique em GERAR RELATÓRIO.</small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================== FIM RELATÓRIO ESTOQUE ======================== -->
+
+        <!-- ======================== INÍCIO RELATÓRIO FINANCEIRO ======================== -->
+
+        <section id="relatorio-financeiro" class="page-section">
+            <div class="section-header">
+                <div>
+                    <span class="section-label">RELATÓRIOS</span>
+                    <h1>Relatório Financeiro</h1>
+                    <p>Visualize receitas, despesas e o resultado financeiro da empresa.</p>
+                </div>
+                <div class="relatorio-header-actions">
+                    <button type="button" class="secondary-button" id="limparFiltrosFinanceiro">
+                        LIMPAR FILTROS
+                    </button>
+                    <button type="button" class="primary-button" id="gerarRelatorioFinanceiro">
+                        GERAR RELATÓRIO
+                    </button>
+                </div>
+            </div>
+
+            <!-- FILTROS -->
+
+            <div class="relatorio-filtros">
+                <div class="relatorio-filtros-header">
+                    <h2>FILTROS</h2>
+                    <ion-icon name="funnel-outline"></ion-icon>
+                </div>
+                <div class="relatorio-filtros-grid">
+                    <div>
+                        <label class="relatorio-filtros-label">DATA INICIAL</label>
+                        <input type="date" id="financeiroDataInicio">
+                    </div>
+                    <div>
+                        <label class="relatorio-filtros-label">DATA FINAL</label>
+                        <input type="date" id="financeiroDataFim">
+                    </div>
+                    <div>
+                        <label class="relatorio-filtros-label">TIPO</label>
+                        <select id="financeiroTipo">
+                            <option value="">Todos</option>
+                            <option value="receita">Receita</option>
+                            <option value="despesa">Despesa</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="relatorio-filtros-label">STATUS</label>
+                        <select id="financeiroStatus">
+                            <option value="">Todos</option>
+                            <option value="pago">Pago</option>
+                            <option value="pendente">Pendente</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="relatorio-filtros-label">PAGAMENTO</label>
+                        <select id="financeiroPagamento">
+                            <option value="">Todos</option>
+                            <option value="avista">À vista</option>
+                            <option value="pix">PIX</option>
+                            <option value="cartao">Cartão</option>
+                            <option value="boleto">Boleto</option>
+                            <option value="30dias">30 dias</option>
+                            <option value="parcelado">Parcelado</option>
+                            <option value="50% na entrada e 50% na entrega">50% na entrada e 50% na entrega</option>
+                            <option value="outro">Outro</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INDICADORES -->
+
+            <div class="relatorio-indicadores">
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="trending-up-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>RECEITAS</span>
+                        <strong>R$ 0,00</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="trending-down-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>DESPESAS</span>
+                        <strong>R$ 0,00</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="wallet-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>SALDO</span>
+                        <strong>R$ 0,00</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="time-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>A RECEBER</span>
+                        <strong>R$ 0,00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANÁLISES -->
+
+            <div class="relatorio-analise-grid">
+                <div class="relatorio-card">
+                    <div class="relatorio-card-header">
+                        <div>
+                            <span class="relatorio-card-label">ANÁLISE</span>
+                            <h3>RECEITAS X DESPESAS</h3>
+                        </div>
+                        <ion-icon name="stats-chart-outline"></ion-icon>
+                    </div>
+                    <div class="relatorio-grafico">
+                        <div class="relatorio-sem-dados">
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+                            <span>SEM DADOS PARA EXIBIR</span>
+                            <small>Gere o relatório para comparar receitas e despesas no período.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="relatorio-card">
+                    <div class="relatorio-card-header">
+                        <div>
+                            <span class="relatorio-card-label">ANÁLISE</span>
+                            <h3>FORMAS DE PAGAMENTO</h3>
+                        </div>
+                        <ion-icon name="card-outline"></ion-icon>
+                    </div>
+                    <div class="relatorio-grafico">
+                        <div class="relatorio-sem-dados">
+                            <ion-icon name="bar-chart-outline"></ion-icon>
+                            <span>SEM DADOS PARA EXIBIR</span>
+                            <small>Gere o relatório para visualizar a distribuição por forma de pagamento.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELA -->
+
+            <div class="relatorio-card relatorio-tabela-card">
+                <div class="relatorio-card-header">
+                    <div>
+                        <span class="relatorio-card-label">DETALHAMENTO</span>
+                        <h3>LANÇAMENTOS FINANCEIROS</h3>
+                    </div>
+                    <span class="relatorio-registros" id="relatorio-financeiroRegistros">0 REGISTROS</span>
+                </div>
+                <div class="relatorio-tabela-container">
+                    <table class="relatorio-tabela">
+                        <thead>
+                            <tr>
+                                <th>DATA</th>
+                                <th>DESCRIÇÃO</th>
+                                <th>TIPO</th>
+                                <th>PAGAMENTO</th>
+                                <th>STATUS</th>
+                                <th>VALOR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="relatorio-financeiroTabela">
+                            <tr>
+                                <td class="relatorio-tabela-vazia" colspan="6">
+                                    <ion-icon name="document-text-outline"></ion-icon>
+                                    <span>NENHUM REGISTRO ENCONTRADO</span>
+                                    <small>Defina os filtros e clique em GERAR RELATÓRIO.</small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================== FIM RELATÓRIO FINANCEIRO ======================== -->
+
 
         <!-- ======================================= FIM CATEGORIA CONTEÚDO PRINCIPAL ======================================= -->
 

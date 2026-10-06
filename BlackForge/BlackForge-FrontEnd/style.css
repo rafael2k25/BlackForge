@@ -40,7 +40,7 @@
     /* -=-=-=- TEXTO -=-=-=- */
 
     --text-primary: #f2f3f5;
-    --text-secondary: #b5bac1;
+    --text-secondary: #f2f3f5 /*#b5bac1*/;
 
 
     /* -=-=-=- BORDAS -=-=-=- */
