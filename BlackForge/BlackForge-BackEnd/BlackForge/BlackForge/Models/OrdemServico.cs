@@ -21,6 +21,8 @@
         public decimal ValorTotal { get; set; }
         public string? CondicaoPagamento { get; set; }
         public string? Observacoes { get; set; }
+        public string Status { get; set; } = "pendente";
+        public DateTime? DataConclusao { get; set; }
         public ICollection<ProcessoProducao> ProcessosProducao { get; set; }
             = new List<ProcessoProducao>();
     }

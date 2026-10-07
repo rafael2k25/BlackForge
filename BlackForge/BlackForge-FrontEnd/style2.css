@@ -3114,3 +3114,120 @@
         right: 16px;
     }
 }
+
+/* BADGE DE STATUS DA OS */
+.os-titulo-linha {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.os-detalhes-titulo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.os-status {
+    --cor-status: var(--os-pendente);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 20px;
+    padding: 0 8px;
+    border: 1px solid var(--cor-status);
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--cor-status) 8%, transparent);
+    color: var(--cor-status);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.os-status::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: var(--cor-status);
+    clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+}
+
+.os-status-pendente    { --cor-status: var(--os-pendente); }
+.os-status-em-execucao { --cor-status: var(--os-em-execucao); }
+.os-status-concluida   { --cor-status: var(--os-concluida); }
+
+.os-status-em-execucao::before {
+    animation: os-status-pulso 1.4s ease-in-out infinite;
+}
+
+@keyframes os-status-pulso {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.25; }
+}
+
+/* LINHA DE OS CONCLUÍDA */
+.os-row-concluida .os-icon {
+    color: var(--os-concluida);
+}
+
+.os-row-concluida .os-numero,
+.os-row-concluida .os-cliente {
+    opacity: 0.7;
+}
+
+/* BOTÃO DE STATUS (INICIAR / DAR BAIXA / REABRIR) */
+.btn-status-os {
+    --cor-botao: var(--os-em-execucao);
+    height: 40px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid var(--cor-botao);
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--cor-botao) 8%, transparent);
+    color: var(--cor-botao);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-status-os ion-icon {
+    font-size: 17px;
+}
+
+.btn-status-os:hover {
+    background: var(--cor-botao);
+    color: var(--bg-primary);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--cor-botao) 25%, transparent);
+}
+
+.btn-status-os:active {
+    transform: scale(0.97);
+}
+
+.btn-status-os-iniciar { --cor-botao: var(--os-em-execucao); }
+.btn-status-os-baixa   { --cor-botao: var(--os-concluida); }
+.btn-status-os-reabrir { --cor-botao: var(--os-pendente); }
+
+/* BOTÕES DESABILITADOS */
+.btn-status-os:disabled,
+.btn-editar-os:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btn-editar-os:disabled:hover {
+    background: color-mix(in srgb, var(--yellow) 8%, transparent);
+    color: var(--yellow);
+    box-shadow: none;
+}

@@ -48,6 +48,7 @@ namespace BlackForge.Controllers
         [HttpPost]
         public async Task<ActionResult<OrdemServico>> CriarOrdemServico(
             OrdemServico ordem)
+
         {
             if (string.IsNullOrWhiteSpace(ordem.NumeroOS))
                 return BadRequest("O número da OS é obrigatório.");
@@ -106,6 +107,9 @@ namespace BlackForge.Controllers
             if (ordem.ValorTotal < 0)
                 ordem.ValorTotal = 0;
 
+            ordem.Status = "pendente";
+            ordem.DataConclusao = null;
+
             _context.OrdensServico.Add(ordem);
 
             await _context.SaveChangesAsync();
@@ -133,6 +137,11 @@ namespace BlackForge.Controllers
 
             if (ordemExistente == null)
                 return NotFound();
+
+            if (ordemExistente.Status == "concluida")
+                return Conflict(
+                    "Uma OS concluída não pode ser editada. Reabra a OS antes de alterar."
+                );
 
             if (string.IsNullOrWhiteSpace(ordem.NumeroOS))
                 return BadRequest("O número da OS é obrigatório.");
@@ -208,6 +217,35 @@ namespace BlackForge.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        private static readonly string[] StatusValidos =
+        { "pendente", "em_execucao", "concluida" };
+
+        // PATCH: api/ordensservico/1/status
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> AlterarStatus(
+            int id,
+            [FromBody] AlterarStatusOSDto dto)
+        {
+            var status = dto.Status?.Trim().ToLowerInvariant();
+
+            if (string.IsNullOrEmpty(status) || !StatusValidos.Contains(status))
+                return BadRequest("Status inválido.");
+
+            var ordem = await _context.OrdensServico
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (ordem == null)
+                return NotFound("Ordem de serviço não encontrada.");
+
+            ordem.Status = status;
+            ordem.DataConclusao = status == "concluida" ? DateTime.Now : null;
+
+            await _context.SaveChangesAsync();
+
+            // Retorna só o necessário, evitando o ciclo de serialização
+            return Ok(new { ordem.Id, ordem.Status, ordem.DataConclusao });
         }
 
         // DELETE: api/ordensservico/1

@@ -37,6 +37,12 @@
     --danger: #ed4245;
     --info: #4da6ff;
 
+    /* -=-=-=- STATUS DA ORDEM DE SERVIÇO -=-=-=- */
+
+    --os-pendente: #9da3ab;
+    --os-em-execucao: var(--yellow);
+    --os-concluida: var(--success);
+
     /* -=-=-=- TEXTO -=-=-=- */
 
     --text-primary: #f2f3f5;

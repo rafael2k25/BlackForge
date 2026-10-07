@@ -841,6 +841,27 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "BlackForge.Controllers.OrdensServicoController",
+    "Method": "AlterarStatus",
+    "RelativePath": "api/OrdensServico/{id}/status",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "BlackForge.Models.AlterarStatusOSDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "BlackForge.Controllers.ProcessosProducaoController",
     "Method": "GetProcessos",
     "RelativePath": "api/ProcessosProducao",

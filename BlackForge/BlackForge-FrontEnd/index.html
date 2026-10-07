@@ -1244,9 +1244,10 @@
                     <span class="section-label">
                         ORDEM DE SERVIÇO
                     </span>
-                    <h2 id="detalhesOSNumero">
-                        OS-0000
-                    </h2>
+                    <div class="os-detalhes-titulo">
+                        <h2 id="detalhesOSNumero">OS-0000</h2>
+                        <span id="detalhesOSStatus" class="os-status os-status-pendente">PENDENTE</span>
+                    </div>
                     <span id="detalhesOSCliente">
                         Cliente
                     </span>
@@ -1394,6 +1395,10 @@
 
             <div class="modal-footer ordem-detalhes-footer">
                 <div class="ordem-detalhes-acoes">
+                    <button type="button" id="statusOS" class="btn-status-os btn-status-os-iniciar">
+                        <ion-icon name="play-outline"></ion-icon>
+                        INICIAR OS
+                    </button>
                     <button type="button" id="editarOS" class="btn-editar-os">
                         <ion-icon name="create-outline"></ion-icon>
                         EDITAR

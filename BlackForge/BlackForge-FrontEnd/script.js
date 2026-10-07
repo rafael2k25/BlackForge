@@ -278,8 +278,35 @@ let ordensServico = [];
 let ordemSelecionadaOS = null;
 let modoEdicaoOS = false;
 
-// IDs usados no modal de detalhes (se algum id do seu HTML for
-// diferente, ajuste APENAS aqui).
+const STATUS_OS = {
+    pendente:    { texto: "PENDENTE",    classe: "pendente" },
+    em_execucao: { texto: "EM EXECUÇÃO", classe: "em-execucao" },
+    concluida:   { texto: "CONCLUÍDA",   classe: "concluida" }
+};
+
+const ACOES_STATUS_OS = {
+    pendente:    { proximo: "em_execucao", rotulo: "INICIAR OS", icone: "play-outline",            classe: "iniciar" },
+    em_execucao: { proximo: "concluida",   rotulo: "DAR BAIXA",  icone: "checkmark-done-outline", classe: "baixa" },
+    concluida:   { proximo: "em_execucao", rotulo: "REABRIR",    icone: "refresh-outline",        classe: "reabrir" }
+};
+
+const MENSAGENS_STATUS_OS = {
+    pendente:    "OS voltou para pendente.",
+    em_execucao: "OS em execução.",
+    concluida:   "Baixa realizada com sucesso! OS concluída."
+};
+
+function obterStatusOS(ordem) {
+    const chave = String(ordem?.status || "").toLowerCase();
+    return STATUS_OS[chave] ? chave : "pendente";
+}
+
+function htmlBadgeStatusOS(ordem) {
+    const chave = obterStatusOS(ordem);
+    return `<span class="os-status os-status-${STATUS_OS[chave].classe}">${STATUS_OS[chave].texto}</span>`;
+}
+
+// IDs usados no modal de detalhes
 const IDS_DETALHES_OS = {
     numero: "detalhesOSNumero",
     cliente: "detalhesOSCliente",
@@ -299,9 +326,7 @@ const IDS_DETALHES_OS = {
     observacoes: "detalhesOSObservacoes"
 };
 
-// =========================================================
 // FORMATADORES
-// =========================================================
 
 function paraNumeroOS(valor) {
     if (typeof valor === "number") {
@@ -507,17 +532,21 @@ function renderizarOrdensServico() {
 
     ordensServico.forEach(function (ordem) {
         const linha = document.createElement("div");
-        linha.className = "os-row";
+        const statusOS = obterStatusOS(ordem);
+        const icone = statusOS === "concluida" ? "checkmark-done-outline" : "document-text-outline";
+        linha.className = "os-row" + (statusOS === "concluida" ? " os-row-concluida" : "");
         const responsavel = ordem.funcionario?.nome || "Não definido";
 
         linha.innerHTML = `
             <div class="os-identificacao">
                 <div class="os-icon">
-                    <ion-icon name="document-text-outline"></ion-icon>
+                <ion-icon name="${icone}"></ion-icon>
                 </div>
                 <div class="os-info">
-                    <div class="os-numero">${escaparHtmlOS(ordem.numeroOS)}</div>
-                    <div class="os-cliente">${escaparHtmlOS(ordem.cliente)}</div>
+                <div class="os-titulo-linha">
+                <div class="os-numero">${escaparHtmlOS(ordem.numeroOS)}</div>
+                ${htmlBadgeStatusOS(ordem)}</div>
+                <div class="os-cliente">${escaparHtmlOS(ordem.cliente)}</div>
                 </div>
             </div>
             <div class="os-coluna">
@@ -683,11 +712,35 @@ function preencherDetalhesOS(ordem) {
     definirTexto(ids.valorTotal, formatarMoedaOS(calcularTotalOS(ordem)));
     definirTexto(ids.condicaoPagamento, obterCondicaoPagamentoOS(ordem.condicaoPagamento));
     definirTexto(ids.observacoes, ordem.observacoes || "Nenhuma observação registrada.");
+    atualizarStatusModalOS(ordem);
 }
 
-// =========================================================
+function atualizarStatusModalOS(ordem) {
+    const chave = obterStatusOS(ordem);
+
+    const badge = document.getElementById("detalhesOSStatus");
+    if (badge) {
+        badge.className = `os-status os-status-${STATUS_OS[chave].classe}`;
+        badge.textContent = STATUS_OS[chave].texto +
+            (chave === "concluida" && ordem.dataConclusao
+                ? ` · ${formatarDataOS(ordem.dataConclusao)}`
+                : "");
+    }
+
+    const botao = document.getElementById("statusOS");
+    if (botao) {
+        const acao = ACOES_STATUS_OS[chave];
+        botao.className = `btn-status-os btn-status-os-${acao.classe}`;
+        botao.innerHTML = `<ion-icon name="${acao.icone}"></ion-icon> ${acao.rotulo}`;
+    }
+
+    // OS concluída fica travada para edição (precisa reabrir antes)
+    if (editarOS) {
+        editarOS.disabled = chave === "concluida";
+    }
+}
+
 // SALVAR (NOVA / EDIÇÃO) E IMPRIMIR
-// =========================================================
 
 function lerFormularioOS() {
     return {
@@ -929,9 +982,62 @@ async function removerOSSelecionada() {
     }
 }
 
-// =========================================================
+async function avancarStatusOS() {
+    if (!ordemSelecionadaOS) {
+        return;
+    }
+
+    const acao = ACOES_STATUS_OS[obterStatusOS(ordemSelecionadaOS)];
+
+    if (acao.proximo === "concluida") {
+        const confirmar = confirm(
+            `Dar baixa na OS "${ordemSelecionadaOS.numeroOS}"?\n\nEla será marcada como concluída.`
+        );
+        if (!confirmar) {
+            return;
+        }
+    }
+
+    const botao = document.getElementById("statusOS");
+    if (botao) botao.disabled = true;
+
+    try {
+        const resposta = await fetch(
+            `${API_URL}/OrdensServico/${ordemSelecionadaOS.id}/status`,
+            {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: acao.proximo })
+            }
+        );
+        if (!resposta.ok) {
+            const mensagem = await resposta.text();
+            throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
+        }
+        const resultado = await resposta.json();
+
+        [ordemSelecionadaOS, ordensServico.find(o => o.id === ordemSelecionadaOS.id)]
+            .filter(Boolean)
+            .forEach(function (o) {
+                o.status = resultado.status;
+                o.dataConclusao = resultado.dataConclusao;
+            });
+
+        atualizarStatusModalOS(ordemSelecionadaOS);
+        renderizarOrdensServico();
+        notificar(MENSAGENS_STATUS_OS[resultado.status], "sucesso");
+    } catch (erro) {
+        console.error("Erro ao alterar status da OS:", erro);
+        notificar(`Não foi possível alterar o status da OS.\n\n${erro.message}`);
+    } finally {
+        if (botao) botao.disabled = false;
+    }
+}
+
+const btnStatusOS = document.getElementById("statusOS");
+if (btnStatusOS) btnStatusOS.addEventListener("click", avancarStatusOS);
+
 // LIMPAR FORMULÁRIO
-// =========================================================
 
 function limparFormularioOS() {
     document.getElementById("clienteOS").value = "";
@@ -961,9 +1067,7 @@ function limparFormularioOS() {
     }
 }
 
-// =========================================================
 // TOTAL EM TEMPO REAL (materiais + mão de obra - desconto)
-// =========================================================
 
 function atualizarTotalOS() {
     const total =
@@ -3515,16 +3619,71 @@ function renderizarGraficoStatusRelatorioServicos(dados) {
 
     graficosServicos[0].appendChild(canvas);
 
-    const statusDados =
-        Array.isArray(dados.porStatus)
-            ? dados.porStatus
+    // =========================================================
+    // PEGA AS OS DO RELATÓRIO
+    // =========================================================
+
+    const registros =
+        Array.isArray(dados.registros)
+            ? dados.registros
             : [];
 
-    const labels =
-        statusDados.map(item => item.status);
+    // =========================================================
+    // CONTADORES DOS STATUS
+    // =========================================================
 
-    const valores =
-        statusDados.map(item => Number(item.quantidade) || 0);
+    const contadores = {
+        pendente: 0,
+        em_execucao: 0,
+        concluida: 0
+    };
+
+    // =========================================================
+    // CONTA O STATUS ATUAL DE CADA OS
+    // =========================================================
+
+    registros.forEach(function (registro) {
+
+        let status =
+            String(registro.status || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .trim()
+                .replace(/\s+/g, "_")
+                .replace(/-/g, "_");
+
+        if (status === "pendente") {
+            contadores.pendente++;
+        }
+        else if (status === "em_execucao") {
+            contadores.em_execucao++;
+        }
+        else if (status === "concluida") {
+            contadores.concluida++;
+        }
+
+    });
+
+    // =========================================================
+    // DADOS DO GRÁFICO
+    // =========================================================
+
+    const labels = [
+        "Pendente",
+        "Em execução",
+        "Concluída"
+    ];
+
+    const valores = [
+        contadores.pendente,
+        contadores.em_execucao,
+        contadores.concluida
+    ];
+
+    // =========================================================
+    // CRIA O GRÁFICO
+    // =========================================================
 
     graficoServicosStatus = new Chart(canvas, {
 
@@ -3571,6 +3730,26 @@ function renderizarGraficoStatusRelatorioServicos(dados) {
 
                         padding: 18
                     }
+                },
+
+                tooltip: {
+
+                    enabled: true,
+
+                    displayColors: false,
+
+                    callbacks: {
+
+                        title: function (tooltipItems) {
+                            return tooltipItems[0].label;
+                        },
+
+                        label: function (context) {
+                            return `Valor: ${context.raw}`;
+                        }
+
+                    }
+
                 }
 
             }
@@ -3578,7 +3757,6 @@ function renderizarGraficoStatusRelatorioServicos(dados) {
         }
 
     });
-
 }
 
 // CRIAR GRÁFICO DE TIPOS DE SERVIÇO
@@ -3600,41 +3778,153 @@ function renderizarGraficoTipoRelatorioServicos(dados) {
 
     graficosServicos[1].appendChild(canvas);
 
-    const tipoDados =
-        Array.isArray(dados.porTipo)
-            ? dados.porTipo
+    // =========================================================
+    // PEGA AS OS DO RELATÓRIO
+    // =========================================================
+
+    const registros =
+        Array.isArray(dados.registros)
+            ? dados.registros
             : [];
 
+    // =========================================================
+    // CONTADOR DOS TIPOS DE SERVIÇO
+    // =========================================================
+
+    const contadores = {};
+
+    // =========================================================
+    // CONTA O TIPO DE SERVIÇO DE CADA OS
+    // =========================================================
+
+    registros.forEach(function (registro) {
+
+        let tipo =
+            String(registro.tipoServico || "")
+                .trim();
+
+        if (!tipo) {
+            tipo = "outro";
+        }
+
+        // Normaliza apenas para evitar que
+        // "Torneamento", "torneamento" e " TORNEAMENTO "
+        // sejam tratados como categorias diferentes.
+
+        const chave =
+            tipo
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .trim();
+
+        if (!contadores[chave]) {
+            contadores[chave] = 0;
+        }
+
+        contadores[chave]++;
+
+    });
+
+    // =========================================================
+    // ORDENA OS TIPOS
+    // =========================================================
+
+    const ordemTipos = [
+        "usinagem",
+        "torneamento",
+        "fresagem",
+        "corte",
+        "solda",
+        "outro"
+    ];
+
+    const tiposOrdenados = [];
+
+    ordemTipos.forEach(function (tipo) {
+
+        if (contadores[tipo] !== undefined) {
+            tiposOrdenados.push(tipo);
+        }
+
+    });
+
+    // Adiciona qualquer tipo que exista no banco
+    // mas não esteja na lista padrão.
+
+    Object.keys(contadores).forEach(function (tipo) {
+
+        if (!tiposOrdenados.includes(tipo)) {
+            tiposOrdenados.push(tipo);
+        }
+
+    });
+
+    // =========================================================
+    // NOMES EXIBIDOS NO GRÁFICO
+    // =========================================================
+
+    const nomesTipos = {
+
+        usinagem: "Usinagem",
+
+        torneamento: "Torneamento",
+
+        fresagem: "Fresagem",
+
+        corte: "Corte",
+
+        solda: "Solda",
+
+        outro: "Outro"
+
+    };
+
     const labels =
-        tipoDados.map(item =>
-            obterNomeTipoRelatorioServicos(item.tipoServico)
-        );
+        tiposOrdenados.map(function (tipo) {
+
+            return nomesTipos[tipo] || tipo;
+
+        });
 
     const valores =
-        tipoDados.map(item =>
-            Number(item.quantidade) || 0
-        );
+        tiposOrdenados.map(function (tipo) {
+
+            return contadores[tipo];
+
+        });
+
+    // =========================================================
+    // CRIA O GRÁFICO
+    // =========================================================
 
     graficoServicosTipo = new Chart(canvas, {
 
         type: "bar",
 
         data: {
+
             labels: labels,
 
             datasets: [
                 {
-                    label: "Ordens de serviço",
-
                     data: valores,
 
-                    backgroundColor: "#f5c400",
+                    backgroundColor: [
+                        "#1688ff",
+                        "#00a651",
+                        "#f5c400",
+                        "#e4002b",
+                        "#9c27b0",
+                        "#6c757d"
+                    ],
 
                     borderWidth: 0,
-
-                    borderRadius: 3
+                    borderRadius: 4,
+                    barThickness: 35
                 }
             ]
+
         },
 
         options: {
@@ -3647,6 +3937,26 @@ function renderizarGraficoTipoRelatorioServicos(dados) {
 
                 legend: {
                     display: false
+                },
+
+                tooltip: {
+
+                    enabled: true,
+
+                    displayColors: false,
+
+                    callbacks: {
+
+                        title: function (tooltipItems) {
+                            return tooltipItems[0].label;
+                        },
+
+                        label: function (context) {
+                            return `Valor: ${context.raw}`;
+                        }
+
+                    }
+
                 }
 
             },
@@ -3654,9 +3964,6 @@ function renderizarGraficoTipoRelatorioServicos(dados) {
             scales: {
 
                 x: {
-                    grid: {
-                        display: false
-                    },
 
                     ticks: {
                         color: "#9aa4aa",
@@ -3665,16 +3972,22 @@ function renderizarGraficoTipoRelatorioServicos(dados) {
                             family: "'Share Tech Mono', monospace",
                             size: 13
                         }
+                    },
+
+                    grid: {
+                        display: false
                     }
+
                 },
 
                 y: {
+
                     beginAtZero: true,
 
                     ticks: {
-                        precision: 0,
-
                         color: "#9aa4aa",
+
+                        precision: 0,
 
                         font: {
                             family: "'Share Tech Mono', monospace",
@@ -3683,7 +3996,7 @@ function renderizarGraficoTipoRelatorioServicos(dados) {
                     },
 
                     grid: {
-                        color: "rgba(255, 255, 255, 0.05)"
+                        color: "rgba(154, 164, 170, 0.12)"
                     }
                 }
             }
