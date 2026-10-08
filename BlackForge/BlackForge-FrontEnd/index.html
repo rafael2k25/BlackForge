@@ -105,15 +105,18 @@
                     </button>
 
                     <div class="submenu" data-submenu="relatorios">
-                        <button class="menu-item submenu-item" data-section="relatorio-servicos" data-title="Relatório de Serviços">
+                        <button class="menu-item submenu-item" data-section="relatorio-servicos"
+                            data-title="Relatório de Serviços">
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
                             <span>Serviços</span>
                         </button>
-                        <button class="menu-item submenu-item" data-section="relatorio-estoque" data-title="Relatório de Estoque">
+                        <button class="menu-item submenu-item" data-section="relatorio-estoque"
+                            data-title="Relatório de Estoque">
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
                             <span>Estoque</span>
                         </button>
-                        <button class="menu-item submenu-item" data-section="relatorio-financeiro" data-title="Relatório Financeiro">
+                        <button class="menu-item submenu-item" data-section="relatorio-financeiro"
+                            data-title="Relatório Financeiro">
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
                             <span>Financeiro</span>
                         </button>
@@ -1147,13 +1150,17 @@
                             </select>
                         </div>
                         <div class="material-form-group">
+                            <label for="quantidadeOS">QUANTIDADE</label>
+                            <input type="number" id="quantidadeOS" min="1" step="1" placeholder="Ex.: 500">
+                        </div>
+                        <div class="material-form-group">
                             <label for="dataEntregaOS">PREVISÃO DE ENTREGA</label>
                             <input type="date" id="dataEntregaOS">
                         </div>
                         <div class="material-form-group material-form-full">
                             <label for="responsavelOS">RESPONSÁVEL</label>
                             <select id="responsavelOS">
-                                <option value="">Selecione o funcionário</option>
+                                <!-- opções -->
                             </select>
                         </div>
                     </div>
@@ -1309,6 +1316,15 @@
                                 TIPO DE SERVIÇO
                             </span>
                             <strong id="detalhesOSTipoServico">
+                                -
+                            </strong>
+                        </div>
+                    
+                        <div class="ordem-info">
+                            <span>
+                                QUANTIDADE
+                            </span>
+                            <strong id="detalhesOSQuantidade">
                                 -
                             </strong>
                         </div>

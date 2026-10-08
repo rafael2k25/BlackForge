@@ -316,6 +316,7 @@ const IDS_DETALHES_OS = {
     dataAbertura: "detalhesOSDataAbertura",
     dataEntrega: "detalhesOSDataEntrega",
     tipoServico: "detalhesOSTipoServico",
+    quantidade: "detalhesOSQuantidade",
     responsavel: "detalhesOSResponsavel",
     descricao: "detalhesOSDescricao",
     valorMaoObra: "detalhesOSMaoObra",
@@ -704,6 +705,7 @@ function preencherDetalhesOS(ordem) {
     definirTexto(ids.dataAbertura, formatarDataOS(ordem.dataAbertura));
     definirTexto(ids.dataEntrega, formatarDataOS(ordem.dataEntrega));
     definirTexto(ids.tipoServico, obterTipoServicoOS(ordem.tipoServico));
+    definirTexto(ids.quantidade,ordem.quantidade ?? "-");
     definirTexto(ids.responsavel, ordem.funcionario?.nome || "Não definido");
     definirTexto(ids.descricao, ordem.descricaoServico || "-");
     definirTexto(ids.valorMaoObra, formatarMoedaOS(ordem.valorMaoObra));
@@ -751,6 +753,7 @@ function lerFormularioOS() {
         dataAbertura: document.getElementById("dataOS").value,
         descricaoServico: document.getElementById("descricaoOS").value.trim(),
         tipoServico: document.getElementById("tipoServico").value,
+        quantidade: Number(document.getElementById("quantidadeOS").value) || 0,
         dataEntrega: document.getElementById("dataEntregaOS").value,
         funcionarioId: Number(document.getElementById("responsavelOS").value) || null,
         valorMaoObra: Number(document.getElementById("valorMaoObra").value) || 0,
@@ -786,6 +789,10 @@ function validarOS(ordem) {
     }
     if (!ordem.tipoServico) {
         notificar("Selecione o tipo de serviço.");
+        return false;
+    }
+    if (ordem.quantidade <= 0) {
+        notificar("Informe uma quantidade maior que zero.");
         return false;
     }
     return true;
@@ -935,6 +942,7 @@ function editarOSSelecionada() {
     document.getElementById("dataEntregaOS").value = paraInputData(o.dataEntrega);
     document.getElementById("descricaoOS").value = o.descricaoServico || "";
     selecionarOpcaoOS("tipoServico", o.tipoServico);
+    document.getElementById("quantidadeOS").value = o.quantidade ?? 1;
     document.getElementById("responsavelOS").value = o.funcionarioId ?? o.funcionario?.id ?? "";
     document.getElementById("valorMaoObra").value = o.valorMaoObra ?? "0.00";
     document.getElementById("descontoOS").value = obterDescontoOS(o).toFixed(2);
@@ -1047,6 +1055,7 @@ function limparFormularioOS() {
     document.getElementById("dataOS").value = "";
     document.getElementById("descricaoOS").value = "";
     document.getElementById("tipoServico").value = "";
+    document.getElementById("quantidadeOS").value = "";
     document.getElementById("dataEntregaOS").value = "";
     document.getElementById("responsavelOS").value = "";
     document.getElementById("valorMaoObra").value = "0.00";
@@ -3373,6 +3382,97 @@ function formatarDataRelatorioServicos(valor) {
 }
 
 
+// NORMALIZAÇÃO DE STATUS (aceita string em vários formatos, número ou objeto)
+
+const STATUS_NUMERICO_RELATORIO_SERVICOS = {
+    0: "pendente",
+    1: "em_execucao",
+    2: "concluida"
+};
+
+const ALIAS_STATUS_RELATORIO_SERVICOS = {
+    pendente: "pendente",
+    aberta: "pendente",
+    aberto: "pendente",
+    aguardando: "pendente",
+    emexecucao: "em_execucao",
+    emandamento: "em_execucao",
+    execucao: "em_execucao",
+    andamento: "em_execucao",
+    iniciada: "em_execucao",
+    concluida: "concluida",
+    concluido: "concluida",
+    finalizada: "concluida",
+    finalizado: "concluida",
+    baixada: "concluida",
+    encerrada: "concluida"
+};
+
+function normalizarStatusRelatorioServicos(valor) {
+
+    if (valor === null || valor === undefined) {
+        return null;
+    }
+
+    if (typeof valor === "object") {
+        return normalizarStatusRelatorioServicos(
+            valor.nome ?? valor.descricao ?? valor.status ?? valor.valor ?? null
+        );
+    }
+
+    if (typeof valor === "number") {
+        return STATUS_NUMERICO_RELATORIO_SERVICOS[valor] || null;
+    }
+
+    const texto = String(valor).trim();
+
+    if (/^\d+$/.test(texto)) {
+        return STATUS_NUMERICO_RELATORIO_SERVICOS[Number(texto)] || null;
+    }
+
+    const chave =
+        texto
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+
+    return ALIAS_STATUS_RELATORIO_SERVICOS[chave] || null;
+}
+
+
+function lerStatusRegistroRelatorioServicos(registro) {
+
+    if (!registro) {
+        return undefined;
+    }
+
+    return registro.status
+        ?? registro.statusOS
+        ?? registro.situacao
+        ?? registro.Status;
+}
+
+
+function obterRegistrosRelatorioServicos(dados) {
+
+    if (Array.isArray(dados)) {
+        return dados;
+    }
+
+    const candidatos = [
+        dados?.registros,
+        dados?.Registros,
+        dados?.ordens,
+        dados?.ordensServico,
+        dados?.items,
+        dados?.data
+    ];
+
+    return candidatos.find(Array.isArray) || [];
+}
+
+
 function obterNomeStatusRelatorioServicos(status) {
     const nomes = {
         pendente: "Pendente",
@@ -3380,7 +3480,9 @@ function obterNomeStatusRelatorioServicos(status) {
         concluida: "Concluída"
     };
 
-    return nomes[status] || status || "-";
+    const chave = normalizarStatusRelatorioServicos(status);
+
+    return nomes[chave] || status || "-";
 }
 
 
@@ -3409,7 +3511,7 @@ function obterClasseStatusRelatorioServicos(status) {
         concluida: "concluida"
     };
 
-    return classes[status] || "pendente";
+    return classes[normalizarStatusRelatorioServicos(status)] || "pendente";
 }
 
 
@@ -3550,10 +3652,10 @@ function renderizarTabelaRelatorioServicos(registros) {
         const linha = document.createElement("tr");
 
         const statusTexto =
-            obterNomeStatusRelatorioServicos(registro.status);
+            obterNomeStatusRelatorioServicos(lerStatusRegistroRelatorioServicos(registro));
 
         const statusClasse =
-            obterClasseStatusRelatorioServicos(registro.status);
+            obterClasseStatusRelatorioServicos(lerStatusRegistroRelatorioServicos(registro));
 
         linha.innerHTML = `
             <td>
@@ -3604,7 +3706,9 @@ function renderizarTabelaRelatorioServicos(registros) {
 
 function renderizarGraficoStatusRelatorioServicos(dados) {
 
-    if (!graficosServicos[0]) {
+    const container = graficosServicos[0];
+
+    if (!container) {
         return;
     }
 
@@ -3613,24 +3717,7 @@ function renderizarGraficoStatusRelatorioServicos(dados) {
         graficoServicosStatus = null;
     }
 
-    const canvas = document.createElement("canvas");
-
-    graficosServicos[0].innerHTML = "";
-
-    graficosServicos[0].appendChild(canvas);
-
-    // =========================================================
-    // PEGA AS OS DO RELATÓRIO
-    // =========================================================
-
-    const registros =
-        Array.isArray(dados.registros)
-            ? dados.registros
-            : [];
-
-    // =========================================================
-    // CONTADORES DOS STATUS
-    // =========================================================
+    const registros = obterRegistrosRelatorioServicos(dados);
 
     const contadores = {
         pendente: 0,
@@ -3638,63 +3725,88 @@ function renderizarGraficoStatusRelatorioServicos(dados) {
         concluida: 0
     };
 
-    // =========================================================
-    // CONTA O STATUS ATUAL DE CADA OS
-    // =========================================================
+    const naoReconhecidos = new Set();
 
     registros.forEach(function (registro) {
 
-        let status =
-            String(registro.status || "")
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .toLowerCase()
-                .trim()
-                .replace(/\s+/g, "_")
-                .replace(/-/g, "_");
+        const bruto = lerStatusRegistroRelatorioServicos(registro);
+        const status = normalizarStatusRelatorioServicos(bruto);
 
-        if (status === "pendente") {
-            contadores.pendente++;
-        }
-        else if (status === "em_execucao") {
-            contadores.em_execucao++;
-        }
-        else if (status === "concluida") {
-            contadores.concluida++;
+        if (status) {
+            contadores[status]++;
+        } else {
+            naoReconhecidos.add(JSON.stringify(bruto));
         }
 
     });
 
-    // =========================================================
-    // DADOS DO GRÁFICO
-    // =========================================================
+    if (naoReconhecidos.size > 0) {
+        console.warn(
+            "[RELATÓRIO SERVIÇOS] Status não reconhecidos:",
+            Array.from(naoReconhecidos)
+        );
+    }
 
-    const labels = [
-        "Pendente",
-        "Em execução",
-        "Concluída"
-    ];
+    let total =
+        contadores.pendente +
+        contadores.em_execucao +
+        contadores.concluida;
 
-    const valores = [
-        contadores.pendente,
-        contadores.em_execucao,
-        contadores.concluida
-    ];
+    // Plano B: usa os totais agregados enviados pela API
 
-    // =========================================================
-    // CRIA O GRÁFICO
-    // =========================================================
+    if (total === 0 && !Array.isArray(dados)) {
+
+        contadores.pendente = Number(dados?.pendentes ?? dados?.pendente ?? 0) || 0;
+        contadores.em_execucao = Number(dados?.emExecucao ?? 0) || 0;
+        contadores.concluida = Number(dados?.concluidas ?? dados?.concluida ?? 0) || 0;
+
+        total =
+            contadores.pendente +
+            contadores.em_execucao +
+            contadores.concluida;
+    }
+
+    if (total === 0) {
+
+        container.innerHTML = `
+            <div class="relatorio-sem-dados">
+                <ion-icon name="bar-chart-outline"></ion-icon>
+                <span>Nenhuma ordem de serviço encontrada.</span>
+                <small>Ajuste os filtros e gere o relatório novamente.</small>
+            </div>
+        `;
+
+        return;
+    }
+
+    // Wrapper com altura definida para o Chart.js dimensionar o canvas
+
+    container.innerHTML = "";
+
+    const wrapper = document.createElement("div");
+    wrapper.style.position = "relative";
+    wrapper.style.width = "100%";
+    wrapper.style.height = "270px";
+
+    const canvas = document.createElement("canvas");
+
+    wrapper.appendChild(canvas);
+    container.appendChild(wrapper);
 
     graficoServicosStatus = new Chart(canvas, {
 
         type: "doughnut",
 
         data: {
-            labels: labels,
+            labels: ["Pendente", "Em execução", "Concluída"],
 
             datasets: [
                 {
-                    data: valores,
+                    data: [
+                        contadores.pendente,
+                        contadores.em_execucao,
+                        contadores.concluida
+                    ],
 
                     backgroundColor: [
                         "#f5c400",
@@ -3745,7 +3857,7 @@ function renderizarGraficoStatusRelatorioServicos(dados) {
                         },
 
                         label: function (context) {
-                            return `Valor: ${context.raw}`;
+                            return `Quantidade: ${context.raw}`;
                         }
 
                     }
@@ -3783,9 +3895,7 @@ function renderizarGraficoTipoRelatorioServicos(dados) {
     // =========================================================
 
     const registros =
-        Array.isArray(dados.registros)
-            ? dados.registros
-            : [];
+        obterRegistrosRelatorioServicos(dados);
 
     // =========================================================
     // CONTADOR DOS TIPOS DE SERVIÇO
@@ -4094,7 +4204,7 @@ async function gerarRelatorioDeServicos() {
         renderizarIndicadoresRelatorioServicos(dados);
 
         renderizarTabelaRelatorioServicos(
-            dados.registros
+            obterRegistrosRelatorioServicos(dados)
         );
 
         renderizarGraficoStatusRelatorioServicos(
@@ -4109,9 +4219,7 @@ async function gerarRelatorioDeServicos() {
         if (registrosRelatorioServicos) {
 
             const quantidade =
-                Array.isArray(dados.registros)
-                    ? dados.registros.length
-                    : 0;
+                obterRegistrosRelatorioServicos(dados).length;
 
             registrosRelatorioServicos.textContent =
                 `${quantidade} REGISTRO${quantidade === 1 ? "" : "S"}`;

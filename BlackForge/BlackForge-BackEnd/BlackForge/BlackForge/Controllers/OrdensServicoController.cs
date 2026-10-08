@@ -62,6 +62,11 @@ namespace BlackForge.Controllers
             if (string.IsNullOrWhiteSpace(ordem.TipoServico))
                 return BadRequest("O tipo de serviço é obrigatório.");
 
+            if (ordem.Quantidade <= 0)
+                return BadRequest(
+                    "A quantidade da OS deve ser maior que zero."
+                );
+
             var numeroExiste = await _context.OrdensServico
                 .AnyAsync(o => o.NumeroOS == ordem.NumeroOS);
 
@@ -155,6 +160,11 @@ namespace BlackForge.Controllers
             if (string.IsNullOrWhiteSpace(ordem.TipoServico))
                 return BadRequest("O tipo de serviço é obrigatório.");
 
+            if (ordem.Quantidade <= 0)
+                return BadRequest(
+                    "A quantidade da OS deve ser maior que zero."
+                );
+
             var numeroExiste = await _context.OrdensServico
                 .AnyAsync(o =>
                     o.NumeroOS == ordem.NumeroOS &&
@@ -198,6 +208,7 @@ namespace BlackForge.Controllers
             ordemExistente.DataAbertura = ordem.DataAbertura;
             ordemExistente.DescricaoServico = ordem.DescricaoServico;
             ordemExistente.TipoServico = ordem.TipoServico;
+            ordemExistente.Quantidade = ordem.Quantidade;
             ordemExistente.DataEntrega = ordem.DataEntrega;
             ordemExistente.FuncionarioId = ordem.FuncionarioId;
             ordemExistente.ValorMateriais = ordem.ValorMateriais;
@@ -219,10 +230,16 @@ namespace BlackForge.Controllers
             return NoContent();
         }
 
-        private static readonly string[] StatusValidos =
-        { "pendente", "em_execucao", "concluida" };
+        private const int ProducaoPorMinutoPadrao = 10;
+        private const decimal ConsumoPorUnidadePadrao = 1m;
 
-        // PATCH: api/ordensservico/1/status
+        private static readonly string[] StatusValidos =
+        {
+    "pendente",
+    "em_execucao",
+    "concluida"
+};
+
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> AlterarStatus(
             int id,
@@ -230,8 +247,11 @@ namespace BlackForge.Controllers
         {
             var status = dto.Status?.Trim().ToLowerInvariant();
 
-            if (string.IsNullOrEmpty(status) || !StatusValidos.Contains(status))
+            if (string.IsNullOrEmpty(status) ||
+                !StatusValidos.Contains(status))
+            {
                 return BadRequest("Status inválido.");
+            }
 
             var ordem = await _context.OrdensServico
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -239,13 +259,189 @@ namespace BlackForge.Controllers
             if (ordem == null)
                 return NotFound("Ordem de serviço não encontrada.");
 
+            var processosAtivos = await _context.ProcessosProducao
+                .Where(p =>
+                    p.OrdemServicoId == id &&
+                    p.Status == "EM_EXECUCAO")
+                .ToListAsync();
+
+            string? maquinaNome = null;
+            int? maquinaIdSelecionada = null;
+
+            if (status == "em_execucao")
+            {
+
+                if (ordem.Quantidade <= 0)
+                {
+                    return BadRequest(
+                        "A quantidade da OS deve ser maior que zero."
+                    );
+                }
+
+                if (processosAtivos.Count > 0)
+                {
+                    var processoExistente = processosAtivos[0];
+
+                    maquinaIdSelecionada = processoExistente.MaquinaId;
+
+                    maquinaNome = await _context.Maquinas
+                        .Where(m => m.Id == processoExistente.MaquinaId)
+                        .Select(m => m.Nome)
+                        .FirstOrDefaultAsync();
+                }
+
+                else
+                {
+
+                    var maquinasOcupadas = _context.ProcessosProducao
+                        .Where(p => p.Status == "EM_EXECUCAO")
+                        .Select(p => p.MaquinaId);
+
+                    var tipoServicoOS = ordem.TipoServico
+                        .Trim()
+                        .ToLowerInvariant();
+
+                    var maquinaComConfiguracao =
+                        await _context.ConfiguracoesMaquina
+                            .Include(c => c.Maquina)
+                            .Where(c =>
+                                c.Ativa &&
+                                c.Maquina != null &&
+                                !maquinasOcupadas.Contains(c.MaquinaId))
+                            .OrderBy(c => c.Id)
+                            .ToListAsync();
+
+                    ConfiguracaoMaquina? configuracaoSelecionada = null;
+
+                    configuracaoSelecionada =
+                        maquinaComConfiguracao
+                            .FirstOrDefault(c =>
+                                c.TipoServico != null &&
+                                c.TipoServico
+                                    .Trim()
+                                    .ToLowerInvariant()
+                                    == tipoServicoOS);
+
+                    if (configuracaoSelecionada == null)
+                    {
+                        configuracaoSelecionada =
+                            maquinaComConfiguracao.FirstOrDefault();
+                    }
+
+                    if (configuracaoSelecionada == null ||
+                        configuracaoSelecionada.Maquina == null)
+                    {
+                        return Conflict(
+                            "Nenhuma máquina livre e configurada está disponível no momento. " +
+                            "Finalize um processo em andamento ou cadastre uma configuração de máquina."
+                        );
+                    }
+
+                    var maquina = configuracaoSelecionada.Maquina;
+
+                    maquinaIdSelecionada = maquina.Id;
+                    maquinaNome = maquina.Nome;
+
+                    var producaoPorMinuto =
+                        configuracaoSelecionada.ProducaoPorMinuto > 0
+                            ? configuracaoSelecionada.ProducaoPorMinuto
+                            : ProducaoPorMinutoPadrao;
+
+                    var consumoPorUnidade =
+                        configuracaoSelecionada.ConsumoPorUnidade > 0
+                            ? configuracaoSelecionada.ConsumoPorUnidade
+                            : ConsumoPorUnidadePadrao;
+
+                    var processo = new ProcessoProducao
+                    {
+                        OrdemServicoId = ordem.Id,
+
+                        MaquinaId = maquina.Id,
+
+                        DataInicio = DateTime.Now,
+
+                        QuantidadePlanejada = ordem.Quantidade,
+
+                        QuantidadeProduzida = 0,
+                     
+                        ProducaoPorMinuto = producaoPorMinuto,
+
+                        ConsumoPorUnidade = consumoPorUnidade,
+
+                        MaterialConsumido = 0,
+
+                        Status = "EM_EXECUCAO"
+                    };
+
+                    _context.ProcessosProducao.Add(processo);
+                }
+            }
+
+            else if (status == "concluida")
+            {
+                foreach (var processo in processosAtivos)
+                {
+                    processo.QuantidadeProduzida =
+                        processo.QuantidadePlanejada;
+
+                    processo.MaterialConsumido =
+                        processo.QuantidadeProduzida *
+                        processo.ConsumoPorUnidade;
+
+                    processo.DataFim = DateTime.Now;
+
+                    processo.Status = "CONCLUIDO";
+                 
+                    maquinaIdSelecionada = processo.MaquinaId;
+
+                    if (string.IsNullOrEmpty(maquinaNome))
+                    {
+                        maquinaNome = await _context.Maquinas
+                            .Where(m => m.Id == processo.MaquinaId)
+                            .Select(m => m.Nome)
+                            .FirstOrDefaultAsync();
+                    }
+                }
+            }
+
+            else if (status == "pendente")
+            {
+                foreach (var processo in processosAtivos)
+                {
+                    processo.DataFim = DateTime.Now;
+
+                    processo.Status = "CANCELADO";
+
+                    maquinaIdSelecionada = processo.MaquinaId;
+
+                    if (string.IsNullOrEmpty(maquinaNome))
+                    {
+                        maquinaNome = await _context.Maquinas
+                            .Where(m => m.Id == processo.MaquinaId)
+                            .Select(m => m.Nome)
+                            .FirstOrDefaultAsync();
+                    }
+                }
+            }
+
             ordem.Status = status;
-            ordem.DataConclusao = status == "concluida" ? DateTime.Now : null;
+
+            ordem.DataConclusao =
+                status == "concluida"
+                    ? DateTime.Now
+                    : null;
 
             await _context.SaveChangesAsync();
 
-            // Retorna só o necessário, evitando o ciclo de serialização
-            return Ok(new { ordem.Id, ordem.Status, ordem.DataConclusao });
+            return Ok(new
+            {
+                ordem.Id,
+                ordem.Status,
+                ordem.DataConclusao,
+                ordem.Quantidade,
+                MaquinaId = maquinaIdSelecionada,
+                MaquinaNome = maquinaNome
+            });
         }
 
         // DELETE: api/ordensservico/1
@@ -256,7 +452,16 @@ namespace BlackForge.Controllers
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (ordem == null)
-                return NotFound();
+                return NotFound("Ordem de serviço não encontrada.");
+        
+            var processos = await _context.ProcessosProducao
+                .Where(p => p.OrdemServicoId == id)
+                .ToListAsync();
+
+            if (processos.Any())
+            {
+                _context.ProcessosProducao.RemoveRange(processos);
+            }
 
             _context.OrdensServico.Remove(ordem);
 

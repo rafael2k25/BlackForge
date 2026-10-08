@@ -10,6 +10,7 @@
         public DateTime DataAbertura { get; set; }
         public string DescricaoServico { get; set; } = string.Empty;
         public string TipoServico { get; set; } = string.Empty;
+        public int Quantidade { get; set; }
         public DateTime? DataEntrega { get; set; }
         public int? FuncionarioId { get; set; }
         public Funcionario? Funcionario { get; set; }

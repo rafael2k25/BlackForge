@@ -9,6 +9,9 @@ namespace BlackForge.Controllers
     [Route("api/[controller]")]
     public class RelatoriosController : ControllerBase
     {
+        private static readonly string[] StatusValidos =
+            { "pendente", "em_execucao", "concluida" };
+
         private readonly BlackForgeDbContext _context;
 
         public RelatoriosController(BlackForgeDbContext context)
@@ -31,10 +34,11 @@ namespace BlackForge.Controllers
                 );
             }
 
+            // O status vem da própria Ordem de Serviço.
+            // ProcessosProducao não é mais consultado aqui.
             var query = _context.OrdensServico
                 .AsNoTracking()
                 .Include(o => o.Funcionario)
-                .Include(o => o.ProcessosProducao)
                 .AsQueryable();
 
             if (dataInicio.HasValue)
@@ -60,27 +64,12 @@ namespace BlackForge.Controllers
             var itens = ordens
                 .Select(o =>
                 {
-                    string statusCalculado;
+                    var statusOS = (o.Status ?? string.Empty)
+                        .Trim()
+                        .ToLowerInvariant();
 
-                    if (o.ProcessosProducao == null ||
-                        !o.ProcessosProducao.Any())
-                    {
-                        statusCalculado = "pendente";
-                    }
-                    else if (o.ProcessosProducao.Any(p =>
-                        p.Status == "EM_EXECUCAO"))
-                    {
-                        statusCalculado = "em_execucao";
-                    }
-                    else if (o.ProcessosProducao.All(p =>
-                        p.Status == "CONCLUIDO"))
-                    {
-                        statusCalculado = "concluida";
-                    }
-                    else
-                    {
-                        statusCalculado = "pendente";
-                    }
+                    if (!StatusValidos.Contains(statusOS))
+                        statusOS = "pendente";
 
                     return new RelatorioServicoItemDTO
                     {
@@ -93,7 +82,7 @@ namespace BlackForge.Controllers
                             : "Não informado",
                         DataAbertura = o.DataAbertura,
                         DataEntrega = o.DataEntrega,
-                        Status = statusCalculado,
+                        Status = statusOS,
                         ValorTotal = o.ValorTotal
                     };
                 })
@@ -101,10 +90,10 @@ namespace BlackForge.Controllers
 
             if (!string.IsNullOrWhiteSpace(status))
             {
-                status = status.Trim().ToLower();
+                var filtro = status.Trim().ToLowerInvariant();
 
                 itens = itens
-                    .Where(i => i.Status == status)
+                    .Where(i => i.Status == filtro)
                     .ToList();
             }
 
@@ -131,15 +120,13 @@ namespace BlackForge.Controllers
                 new RelatorioStatusDTO
                 {
                     Status = "Em execução",
-                    Quantidade = itens.Count(i =>
-                        i.Status == "em_execucao")
+                    Quantidade = emExecucao
                 },
 
                 new RelatorioStatusDTO
                 {
                     Status = "Concluída",
-                    Quantidade = itens.Count(i =>
-                        i.Status == "concluida")
+                    Quantidade = concluidas
                 }
             };
 
