@@ -15,5 +15,10 @@
         public string Status { get; set; } = string.Empty;
         public Maquina Maquina { get; set; } = null!;
         public OrdemServico OrdemServico { get; set; } = null!;
+        public int? MaterialId { get; set; }
+        public Material? Material { get; set; }
+        public decimal QuantidadeConsumidaRegistrada { get; set; }
+        public decimal TempoProducaoSegundos { get; set; } = 0;
+        public DateTime? UltimaAtualizacaoProducao { get; set; }
     }
 }

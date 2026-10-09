@@ -1245,8 +1245,6 @@ let processosAtivos = [];
 let configuracoesMaquina = [];
 let intervaloProgressoLista = null;
 
-const VELOCIDADE_SIMULACAO_LISTA = 0.15;
-
 // CARREGAR MÁQUINAS
 
 async function carregarMaquinas() {
@@ -1397,47 +1395,53 @@ function renderizarMaquinas() {
     });
     adicionarEventosDetalhesMaquinas();
 }
-function atualizarContadoresListaMaquinas() {
-    processosAtivos.forEach(processo => {
-        if (processo.status !== "EM_EXECUCAO") {
-            return;
-        }
-        const maquinaId = processo.maquinaId;
-        const produzida =
-            Number(processo.quantidadeProduzida) || 0;
-        const planejada =
-            Number(processo.quantidadePlanejada) || 0;
-        const producaoPorMinuto =
-            Number(processo.producaoPorMinuto) || 0;
-        if (
-            planejada <= 0 ||
-            producaoPorMinuto <= 0 ||
-            produzida >= planejada
-        ) {
-            return;
-        }
-        processo.quantidadeProduzida = Math.min(
-            produzida +
-            producaoPorMinuto * VELOCIDADE_SIMULACAO_LISTA,
-            planejada
+
+let atualizandoProgressoLista = false;
+
+async function atualizarContadoresListaMaquinas() {
+    if (atualizandoProgressoLista) {
+        return;
+    }
+
+    atualizandoProgressoLista = true;
+
+    try {
+        const resposta = await fetch(
+            `${API_URL}/ProcessosProducao/ativos`
         );
-        const contador = document.querySelector(
-            `[data-producao-maquina="${maquinaId}"]`
-        );
-        if (contador) {
-            contador.textContent =
-                `${Math.round(processo.quantidadeProduzida)} / ${Math.round(planejada)}`;
+
+        if (!resposta.ok) {
+            throw new Error(`Erro HTTP: ${resposta.status}`);
         }
-    });
+
+        processosAtivos = await resposta.json();
+
+        // Atualiza os cartões com os valores recebidos da API.
+        renderizarMaquinas();
+
+    } catch (erro) {
+        console.error(
+            "Erro ao atualizar o progresso das máquinas:",
+            erro
+        );
+    } finally {
+        atualizandoProgressoLista = false;
+    }
 }
+
 function iniciarProgressoListaMaquinas() {
     if (intervaloProgressoLista) {
         clearInterval(intervaloProgressoLista);
     }
+
+    // Primeira consulta e atualizações a cada 5 segundos.
+    atualizarContadoresListaMaquinas();
+
     intervaloProgressoLista = setInterval(() => {
         atualizarContadoresListaMaquinas();
-    }, 1000);
+    }, 5000);
 }
+
 function adicionarEventosDetalhesMaquinas() {
     const botoes =
         document.querySelectorAll(
@@ -1576,119 +1580,40 @@ function atualizarVisualProgresso(produzida, planejada) {
     );
 }
 
-
-function iniciarSimulacaoProgresso(
-    produzidaInicial,
-    planejada,
-    producaoPorMinuto,
-    consumoPorUnidade
-) {
-
-    pararSimulacaoProgresso();
-
-    if (
-        planejada <= 0 ||
-        producaoPorMinuto === null ||
-        producaoPorMinuto <= 0
-    ) {
-        return;
-    }
-
-    progressoSimulado =
-        Math.min(
-            produzidaInicial,
-            planejada
-        );
-
-    // 1 segundo real = 1 minuto simulado
-    const MINUTOS_SIMULADOS_POR_SEGUNDO = 0.15;
-
-    intervaloProgressoMaquina =
-        setInterval(() => {
-
-            if (
-                progressoSimulado >=
-                planejada
-            ) {
-
-                progressoSimulado =
-                    planejada;
-
-                atualizarVisualProgresso(
-                    progressoSimulado,
-                    planejada
-                );
-
-                atualizarDadosProducaoVisual(
-                    progressoSimulado,
-                    consumoPorUnidade
-                );
-
-                pararSimulacaoProgresso();
-
-                return;
-            }
-
-            progressoSimulado +=
-                producaoPorMinuto *
-                MINUTOS_SIMULADOS_POR_SEGUNDO;
-
-            if (
-                progressoSimulado >
-                planejada
-            ) {
-                progressoSimulado =
-                    planejada;
-            }
-
-            atualizarVisualProgresso(
-                progressoSimulado,
-                planejada
-            );
-
-            atualizarDadosProducaoVisual(
-                progressoSimulado,
-                consumoPorUnidade
-            );
-
-        }, 1000);
-}
-
+let intervaloAtualizacaoDetalhes = null;
+let maquinaDetalhesAbertaId = null;
 
 function pararSimulacaoProgresso() {
+    if (intervaloAtualizacaoDetalhes) {
+        clearInterval(intervaloAtualizacaoDetalhes);
+        intervaloAtualizacaoDetalhes = null;
+    }
 
-    if (intervaloProgressoMaquina) {
+    maquinaDetalhesAbertaId = null;
+}
 
-        clearInterval(
-            intervaloProgressoMaquina
+function agendarAtualizacaoDetalhesMaquina(maquinaId) {
+    if (intervaloAtualizacaoDetalhes) {
+        clearInterval(intervaloAtualizacaoDetalhes);
+    }
+
+    maquinaDetalhesAbertaId = maquinaId;
+
+    intervaloAtualizacaoDetalhes = setInterval(() => {
+        const modal = document.getElementById(
+            "modalDetalhesMaquina"
         );
 
-        intervaloProgressoMaquina = null;
-    }
+        if (
+            modal &&
+            modal.classList.contains("active") &&
+            maquinaDetalhesAbertaId === maquinaId
+        ) {
+            abrirDetalhesMaquina(maquinaId);
+        }
+    }, 5000);
 }
 
-
-function atualizarDadosProducaoVisual(
-    produzida,
-    consumoPorUnidade
-) {
-
-    if (
-        consumoPorUnidade === null ||
-        consumoPorUnidade === undefined
-    ) {
-        return;
-    }
-
-    const materialConsumido =
-        produzida *
-        consumoPorUnidade;
-
-    definirTexto(
-        "detalhesMaquinaMaterial",
-        materialConsumido.toFixed(2)
-    );
-}
 let intervaloProgressoMaquina = null;
 let progressoSimulado = 0;
 async function abrirDetalhesMaquina(id) {
@@ -1807,10 +1732,11 @@ async function abrirDetalhesMaquina(id) {
                 porMinuto,
                 consumoPorUnidade
             );
-        }
+        }    
         document
             .getElementById("modalDetalhesMaquina")
             .classList.add("active");
+        agendarAtualizacaoDetalhesMaquina(id);
     } catch (erro) {
         console.error("Erro ao abrir detalhes da máquina:", erro);
         notificar("Não foi possível carregar os detalhes da máquina.");
@@ -4284,6 +4210,14 @@ if (gerarRelatorioServicos) {
 // RELATÓRIO DE ESTOQUE
 // =========================================================
 
+// VARIÁVEIS DO RELATÓRIO
+
+let graficoEstoqueMovimentacao = null;
+let graficoEstoqueConsumo = null;
+
+
+// ELEMENTOS DO RELATÓRIO
+
 const limparFiltrosEstoque =
     document.getElementById("limparFiltrosEstoque");
 
@@ -4302,10 +4236,157 @@ const estoqueTipoMovimentacao =
 const estoqueMaterial =
     document.getElementById("estoqueMaterial");
 
+const secaoRelatorioEstoque =
+    document.getElementById("relatorio-estoque");
 
-// =========================================================
-// LIMPAR FILTROS
-// =========================================================
+const indicadoresEstoque =
+    secaoRelatorioEstoque
+        ? secaoRelatorioEstoque.querySelectorAll(".relatorio-indicador strong")
+        : [];
+
+const graficosEstoque =
+    secaoRelatorioEstoque
+        ? secaoRelatorioEstoque.querySelectorAll(".relatorio-grafico")
+        : [];
+
+const tabelaRelatorioEstoque =
+    document.getElementById("relatorio-estoqueTabela");
+
+const registrosRelatorioEstoque =
+    document.getElementById("relatorio-estoqueRegistros");
+
+
+// FORMATADORES
+
+function formatarQuantidadeRelatorioEstoque(valor) {
+    return new Intl.NumberFormat("pt-BR", {
+        maximumFractionDigits: 2
+    }).format(Number(valor) || 0);
+}
+
+
+function formatarDataHoraRelatorioEstoque(valor) {
+
+    if (!valor) {
+        return "-";
+    }
+
+    const data = new Date(valor);
+
+    if (Number.isNaN(data.getTime())) {
+        return "-";
+    }
+
+    const dia = data.toLocaleDateString("pt-BR");
+
+    const hora = data.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    return `${dia} ${hora}`;
+}
+
+
+function normalizarTipoRelatorioEstoque(tipo) {
+
+    const texto =
+        String(tipo ?? "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .trim();
+
+    return texto === "entrada" || texto === "saida"
+        ? texto
+        : "";
+}
+
+
+function obterNomeTipoRelatorioEstoque(tipo) {
+
+    const nomes = {
+        entrada: "Entrada",
+        saida: "Saída"
+    };
+
+    return nomes[normalizarTipoRelatorioEstoque(tipo)] || "-";
+}
+
+function obterClasseTipoRelatorioEstoque(tipo) {
+
+    const classes = {
+        entrada: "concluida",
+        saida: "pendente"
+    };
+
+    return classes[normalizarTipoRelatorioEstoque(tipo)] || "pendente";
+}
+
+function obterRegistrosRelatorioEstoque(dados) {
+    return Array.isArray(dados?.registros)
+        ? dados.registros
+        : [];
+}
+
+function htmlSemDadosRelatorioEstoque(mensagem) {
+    return `
+        <div class="relatorio-sem-dados">
+            <ion-icon name="bar-chart-outline"></ion-icon>
+            <span>SEM DADOS PARA EXIBIR</span>
+            <small>${mensagem}</small>
+        </div>
+    `;
+}
+
+
+// SELECT DE MATERIAIS
+
+function preencherSelectMaterialRelatorioEstoque() {
+    if (!estoqueMaterial) {
+        return;
+    }
+    const selecionado = estoqueMaterial.value;
+    estoqueMaterial.innerHTML =
+        `<option value="">Todos os materiais</option>`;
+    [...materiais]
+        .sort(function (a, b) {
+            return String(a.nome).localeCompare(String(b.nome), "pt-BR");
+        })
+        .forEach(function (material) {
+            const opcao = document.createElement("option");
+            opcao.value = material.id;
+            opcao.textContent = `${material.codigo} - ${material.nome}`;
+
+            estoqueMaterial.appendChild(opcao);
+        });
+    estoqueMaterial.value = selecionado;
+}
+
+
+// LIMPAR
+
+function limparGraficosRelatorioEstoque() {
+
+    if (graficoEstoqueMovimentacao) {
+        graficoEstoqueMovimentacao.destroy();
+        graficoEstoqueMovimentacao = null;
+    }
+
+    if (graficoEstoqueConsumo) {
+        graficoEstoqueConsumo.destroy();
+        graficoEstoqueConsumo = null;
+    }
+
+    graficosEstoque.forEach(function (container) {
+
+        container.innerHTML = htmlSemDadosRelatorioEstoque(
+            "Gere o relatório para visualizar os dados."
+        );
+
+    });
+}
+
 
 function limparFiltrosRelatorioEstoque() {
 
@@ -4325,38 +4406,475 @@ function limparFiltrosRelatorioEstoque() {
         estoqueMaterial.value = "";
     }
 
+    indicadoresEstoque.forEach(function (indicador) {
+        indicador.textContent = "0";
+    });
+
+    if (registrosRelatorioEstoque) {
+        registrosRelatorioEstoque.textContent = "0 REGISTROS";
+    }
+
+    if (tabelaRelatorioEstoque) {
+
+        tabelaRelatorioEstoque.innerHTML = `
+            <tr>
+                <td class="relatorio-tabela-vazia" colspan="7">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <span>NENHUM REGISTRO ENCONTRADO</span>
+                    <small>
+                        Defina os filtros e clique em GERAR RELATÓRIO.
+                    </small>
+                </td>
+            </tr>
+        `;
+
+    }
+
+    limparGraficosRelatorioEstoque();
 }
 
 
-// =========================================================
-// GERAR RELATÓRIO
-// =========================================================
+// INDICADORES
 
-function gerarRelatorioDeEstoque() {
+function renderizarIndicadoresRelatorioEstoque(dados) {
 
-    console.log(
-        "Gerando relatório de estoque...",
-        {
-            dataInicio:
-                estoqueDataInicio?.value || null,
+    if (indicadoresEstoque.length < 4) {
+        console.warn(
+            "[RELATÓRIO ESTOQUE] Indicadores não encontrados corretamente."
+        );
+        return;
+    }
 
-            dataFim:
-                estoqueDataFim?.value || null,
+    indicadoresEstoque[0].textContent =
+        dados.totalMateriais ?? 0;
 
-            tipoMovimentacao:
-                estoqueTipoMovimentacao?.value || null,
+    indicadoresEstoque[1].textContent =
+        formatarQuantidadeRelatorioEstoque(dados.totalEntradas);
 
-            material:
-                estoqueMaterial?.value || null
+    indicadoresEstoque[2].textContent =
+        formatarQuantidadeRelatorioEstoque(dados.totalSaidas);
+
+    indicadoresEstoque[3].textContent =
+        dados.abaixoDoMinimo ?? 0;
+}
+
+
+// TABELA
+
+function renderizarTabelaRelatorioEstoque(registros) {
+
+    if (!tabelaRelatorioEstoque) {
+        return;
+    }
+
+    if (!Array.isArray(registros) || registros.length === 0) {
+
+        tabelaRelatorioEstoque.innerHTML = `
+            <tr>
+                <td class="relatorio-tabela-vazia" colspan="7">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <span>NENHUM REGISTRO ENCONTRADO</span>
+                    <small>
+                        Nenhuma movimentação corresponde aos filtros.
+                    </small>
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+    tabelaRelatorioEstoque.innerHTML = "";
+
+    registros.forEach(function (registro) {
+
+        const linha = document.createElement("tr");
+
+        linha.innerHTML = `
+            <td>
+                ${formatarDataHoraRelatorioEstoque(registro.data)}
+            </td>
+
+            <td>
+                <strong>
+                    ${escaparHtmlOS(registro.material || "-")}
+                </strong>
+            </td>
+
+            <td>
+                ${escaparHtmlOS(registro.lote || "-")}
+            </td>
+
+            <td>
+                <span class="relatorio-status ${obterClasseTipoRelatorioEstoque(registro.tipo)}">
+                    ${obterNomeTipoRelatorioEstoque(registro.tipo)}
+                </span>
+            </td>
+
+            <td>
+                ${formatarQuantidadeRelatorioEstoque(registro.quantidade)}
+                ${escaparHtmlOS(registro.unidade || "")}
+            </td>
+
+            <td>
+                ${formatarMoedaRelatorioServicos(registro.custoUnitario)}
+            </td>
+
+            <td>
+                <strong>
+                    ${formatarMoedaRelatorioServicos(registro.total)}
+                </strong>
+            </td>
+        `;
+
+        tabelaRelatorioEstoque.appendChild(linha);
+
+    });
+}
+
+
+// GRÁFICOS ESTOQUE
+
+const FONTE_GRAFICO_RELATORIO_ESTOQUE = {
+    family: "'Share Tech Mono', monospace",
+    size: 13
+};
+
+
+function criarCanvasGraficoRelatorioEstoque(container) {
+
+    container.innerHTML = "";
+
+    const wrapper = document.createElement("div");
+
+    wrapper.style.position = "relative";
+    wrapper.style.width = "100%";
+    wrapper.style.height = "270px";
+
+    const canvas = document.createElement("canvas");
+
+    wrapper.appendChild(canvas);
+    container.appendChild(wrapper);
+
+    return canvas;
+}
+
+
+// ENTRADAS x SAÍDAS NO PERÍODO
+
+function renderizarGraficoMovimentacaoRelatorioEstoque(dados) {
+
+    const container = graficosEstoque[0];
+
+    if (!container) {
+        return;
+    }
+
+    if (graficoEstoqueMovimentacao) {
+        graficoEstoqueMovimentacao.destroy();
+        graficoEstoqueMovimentacao = null;
+    }
+
+    const periodos = Array.isArray(dados?.porPeriodo)
+        ? dados.porPeriodo
+        : [];
+
+    if (periodos.length === 0) {
+
+        container.innerHTML = htmlSemDadosRelatorioEstoque(
+            "Nenhuma movimentação encontrada no período."
+        );
+
+        return;
+    }
+
+    const canvas = criarCanvasGraficoRelatorioEstoque(container);
+
+    graficoEstoqueMovimentacao = new Chart(canvas, {
+
+        type: "bar",
+
+        data: {
+
+            labels: periodos.map(function (p) {
+                return p.periodo;
+            }),
+
+            datasets: [
+                {
+                    label: "Entradas",
+                    data: periodos.map(function (p) {
+                        return p.entradas;
+                    }),
+                    backgroundColor: "#00a651",
+                    borderWidth: 0,
+                    borderRadius: 4
+                },
+                {
+                    label: "Saídas",
+                    data: periodos.map(function (p) {
+                        return p.saidas;
+                    }),
+                    backgroundColor: "#e4002b",
+                    borderWidth: 0,
+                    borderRadius: 4
+                }
+            ]
+        },
+
+        options: {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            plugins: {
+
+                legend: {
+                    position: "bottom",
+                    labels: {
+                        color: "#9aa4aa",
+                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE,
+                        padding: 18
+                    }
+                },
+
+                tooltip: {
+                    enabled: true,
+                    callbacks: {
+                        label: function (context) {
+                            return `${context.dataset.label}: ${formatarQuantidadeRelatorioEstoque(context.raw)}`;
+                        }
+                    }
+                }
+            },
+
+            scales: {
+
+                x: {
+                    ticks: {
+                        color: "#9aa4aa",
+                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE
+                    },
+                    grid: {
+                        display: false
+                    }
+                },
+
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: "#9aa4aa",
+                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE
+                    },
+                    grid: {
+                        color: "rgba(154, 164, 170, 0.12)"
+                    }
+                }
+            }
         }
-    );
-
+    });
 }
 
 
-// =========================================================
-// EVENTOS
-// =========================================================
+// CONSUMO POR MATERIAL
+
+function renderizarGraficoConsumoRelatorioEstoque(dados) {
+    const container = graficosEstoque[1];
+    if (!container) {
+        return;
+    }
+    if (graficoEstoqueConsumo) {
+        graficoEstoqueConsumo.destroy();
+        graficoEstoqueConsumo = null;
+    }
+    const consumo = Array.isArray(dados?.consumoPorMaterial)
+        ? dados.consumoPorMaterial
+        : [];
+
+    if (consumo.length === 0) {
+        container.innerHTML = htmlSemDadosRelatorioEstoque(
+            "Nenhuma saída de material encontrada no período."
+        );
+
+        return;
+    }
+    const canvas = criarCanvasGraficoRelatorioEstoque(container);
+    graficoEstoqueConsumo = new Chart(canvas, {
+        type: "bar",
+        data: {
+            labels: consumo.map(function (c) {
+                return c.unidade
+                    ? `${c.material} (${c.unidade})`
+                    : c.material;
+            }),
+            datasets: [
+                {
+                    data: consumo.map(function (c) {
+                        return c.quantidade;
+                    }),
+                    backgroundColor: "#f5c400",
+                    borderWidth: 0,
+                    borderRadius: 4,
+                    barThickness: 22
+                }
+            ]
+        },
+
+        options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+
+                tooltip: {
+                    enabled: true,
+                    displayColors: false,
+                    callbacks: {
+                        label: function (context) {
+                            return `Consumo: ${formatarQuantidadeRelatorioEstoque(context.raw)}`;
+                        }
+                    }
+                }
+            },
+
+            scales: {
+
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: "#9aa4aa",
+                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE
+                    },
+                    grid: {
+                        color: "rgba(154, 164, 170, 0.12)"
+                    }
+                },
+
+                y: {
+                    ticks: {
+                        color: "#9aa4aa",
+                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+}
+
+// GERAR RELATÓRIO ESTOQUE
+
+async function gerarRelatorioDeEstoque() {
+
+    const dataInicio = estoqueDataInicio?.value || "";
+    const dataFim = estoqueDataFim?.value || "";
+    const tipo = estoqueTipoMovimentacao?.value || "";
+    const materialId = estoqueMaterial?.value || "";
+
+    if (dataInicio && dataFim && dataInicio > dataFim) {
+
+        notificar(
+            "A data inicial não pode ser maior que a data final.",
+            "aviso"
+        );
+
+        return;
+    }
+
+    const parametros = new URLSearchParams();
+
+    if (dataInicio) {
+        parametros.append("dataInicio", dataInicio);
+    }
+
+    if (dataFim) {
+        parametros.append("dataFim", dataFim);
+    }
+
+    if (tipo) {
+        parametros.append("tipo", tipo);
+    }
+
+    if (materialId) {
+        parametros.append("materialId", materialId);
+    }
+
+    const url =
+        `${API_URL}/relatorios/estoque` +
+        (parametros.toString()
+            ? `?${parametros.toString()}`
+            : "");
+
+    if (gerarRelatorioEstoque) {
+        gerarRelatorioEstoque.disabled = true;
+        gerarRelatorioEstoque.textContent = "CARREGANDO...";
+    }
+
+    try {
+
+        console.log("[RELATÓRIO ESTOQUE] Buscando:", url);
+
+        const resposta = await fetch(url);
+
+        if (!resposta.ok) {
+
+            const mensagem = await resposta.text();
+
+            throw new Error(
+                mensagem || `Erro HTTP: ${resposta.status}`
+            );
+        }
+
+        const dados = await resposta.json();
+
+        console.log("[RELATÓRIO ESTOQUE] Dados recebidos:", dados);
+
+        const registros = obterRegistrosRelatorioEstoque(dados);
+
+        renderizarIndicadoresRelatorioEstoque(dados);
+
+        renderizarTabelaRelatorioEstoque(registros);
+
+        renderizarGraficoMovimentacaoRelatorioEstoque(dados);
+
+        renderizarGraficoConsumoRelatorioEstoque(dados);
+
+        if (registrosRelatorioEstoque) {
+            registrosRelatorioEstoque.textContent =
+                `${registros.length} REGISTRO${registros.length === 1 ? "" : "S"}`;
+        }
+
+        notificar(
+            "Relatório de estoque gerado com sucesso!",
+            "sucesso"
+        );
+
+    } catch (erro) {
+
+        console.error("Erro ao gerar relatório de estoque:", erro);
+
+        notificar(
+            `Não foi possível gerar o relatório de estoque.\n\n${erro.message}`,
+            "erro"
+        );
+
+    } finally {
+
+        if (gerarRelatorioEstoque) {
+            gerarRelatorioEstoque.disabled = false;
+            gerarRelatorioEstoque.textContent = "GERAR RELATÓRIO";
+        }
+
+    }
+}
+
+// EVENTOS ESTOQUE
 
 if (limparFiltrosEstoque) {
 

@@ -11,5 +11,7 @@
         public Material Material { get; set; } = null!;
         public int? LoteId { get; set; }
         public Lote? Lote { get; set; }
+        public int? ProcessoProducaoId { get; set; }
+        public ProcessoProducao? ProcessoProducao { get; set; }
     }
 }

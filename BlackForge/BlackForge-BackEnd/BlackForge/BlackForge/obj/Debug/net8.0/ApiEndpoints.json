@@ -955,6 +955,47 @@
   },
   {
     "ContainingType": "BlackForge.Controllers.RelatoriosController",
+    "Method": "GetRelatorioEstoque",
+    "RelativePath": "api/Relatorios/estoque",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dataInicio",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "dataFim",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "tipo",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "materialId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.RelatorioEstoqueDTO",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.RelatoriosController",
     "Method": "GetRelatorioServicos",
     "RelativePath": "api/Relatorios/servicos",
     "HttpMethod": "GET",
@@ -980,6 +1021,32 @@
     "ReturnTypes": [
       {
         "Type": "BlackForge.Models.RelatorioServicosDTO",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.SimulacaoController",
+    "Method": "SimularConsumo",
+    "RelativePath": "api/Simulacao/consumo",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "BlackForge.Controllers.SimulacaoConsumoDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Controllers.SimulacaoConsumoResultadoDTO",
         "MediaTypes": [
           "text/plain",
           "application/json",

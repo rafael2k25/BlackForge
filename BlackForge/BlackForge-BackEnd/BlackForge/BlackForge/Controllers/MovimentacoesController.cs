@@ -30,6 +30,22 @@ namespace BlackForge.Controllers
             return Ok(movimentacoes);
         }
 
+        // Services/MovimentacaoQuery.cs (ou um método estático/extensão)
+        //   public static IQueryable<Movimentacao> Filtrar(
+        //      this IQueryable<Movimentacao> query,
+        //  DateTime? dataInicio, DateTime? dataFim, string? tipo, int? materialId)
+        //{
+        //if (dataInicio.HasValue)
+        //query = query.Where(m => m.DataMovimentacao >= dataInicio.Value.Date);
+        //if (dataFim.HasValue)
+        //query = query.Where(m => m.DataMovimentacao < dataFim.Value.Date.AddDays(1));
+        //if (!string.IsNullOrWhiteSpace(tipo))
+        //query = query.Where(m => m.Tipo == tipo); // ajustar conforme string/enum
+        //if (materialId.HasValue)
+        //query = query.Where(m => m.MaterialId == materialId.Value);
+        //return query;
+        //}
+
         [HttpGet("{id}")]
         public async Task<ActionResult<Movimentacao>> GetMovimentacao(int id)
         {

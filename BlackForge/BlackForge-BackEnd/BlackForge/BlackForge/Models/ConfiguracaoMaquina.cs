@@ -9,5 +9,7 @@
         public decimal ProducaoPorMinuto { get; set; }
         public decimal ConsumoPorUnidade { get; set; }
         public bool Ativa { get; set; } = true;
+        public int? MaterialId { get; set; }
+        public Material? Material { get; set; }
     }
 }

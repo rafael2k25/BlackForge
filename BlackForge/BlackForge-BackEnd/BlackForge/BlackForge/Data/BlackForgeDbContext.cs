@@ -84,7 +84,7 @@ namespace BlackForge.Data
 
             modelBuilder.Entity<Lote>()
                 .Property(l => l.Quantidade)
-                .HasPrecision(18, 2)
+                .HasPrecision(18, 4)
                 .IsRequired();
 
             modelBuilder.Entity<Lote>()
@@ -140,7 +140,7 @@ namespace BlackForge.Data
 
             modelBuilder.Entity<Movimentacao>()
                 .Property(m => m.Quantidade)
-                .HasPrecision(18, 2)
+                .HasPrecision(18, 4)
                 .IsRequired();
 
             modelBuilder.Entity<Movimentacao>()
@@ -425,6 +425,32 @@ namespace BlackForge.Data
                 .HasPrincipalKey(o => o.Id)
                 .OnDelete(DeleteBehavior.Restrict);
 
+
+            modelBuilder.Entity<ConfiguracaoMaquina>()
+                .HasOne(c => c.Material)
+                .WithMany()
+                .HasForeignKey(c => c.MaterialId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProcessoProducao>()
+                .HasOne(p => p.Material)
+                .WithMany()
+                .HasForeignKey(p => p.MaterialId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.QuantidadeConsumidaRegistrada)
+                .HasPrecision(18, 4)
+                .IsRequired();
+
+
+            modelBuilder.Entity<Movimentacao>()
+                .HasOne(m => m.ProcessoProducao)
+                .WithMany()
+                .HasForeignKey(m => m.ProcessoProducaoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
             // =========================================================
             // CONFIGURAÇÃO DA MÁQUINA
             // =========================================================
@@ -456,6 +482,10 @@ namespace BlackForge.Data
                 .WithMany(m => m.Configuracoes)
                 .HasForeignKey(c => c.MaquinaId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ConfiguracaoMaquina>()
+                .Property(c => c.MaterialId)
+                .IsRequired(false);
 
             // =========================================================
             // TEMAS
