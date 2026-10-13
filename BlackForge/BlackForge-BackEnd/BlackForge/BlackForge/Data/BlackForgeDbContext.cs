@@ -361,13 +361,6 @@ namespace BlackForge.Data
                 .HasForeignKey(o => o.FuncionarioId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            modelBuilder.Entity<OrdemServico>()
-                .HasOne(o => o.Maquina)
-                .WithMany()
-                .HasForeignKey(o => o.MaquinaId)
-                .HasPrincipalKey(m => m.Id)
-                .OnDelete(DeleteBehavior.SetNull);
-
             // =========================================================
             // PROCESSOS DE PRODUÇÃO
             // =========================================================
@@ -443,6 +436,14 @@ namespace BlackForge.Data
                 .HasPrecision(18, 4)
                 .IsRequired();
 
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.TempoProducaoSegundos)
+                .HasPrecision(18, 4)
+                .IsRequired();
+
+            modelBuilder.Entity<ProcessoProducao>()
+                .Property(p => p.UltimaAtualizacaoProducao)
+                .IsRequired(false);
 
             modelBuilder.Entity<Movimentacao>()
                 .HasOne(m => m.ProcessoProducao)

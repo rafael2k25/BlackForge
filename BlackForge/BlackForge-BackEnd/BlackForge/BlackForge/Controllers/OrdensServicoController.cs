@@ -9,6 +9,13 @@ namespace BlackForge.Controllers
     [Route("api/[controller]")]
     public class OrdensServicoController : ControllerBase
     {
+        private static readonly string[] StatusValidos =
+        {
+            "pendente",
+            "em_execucao",
+            "concluida"
+        };
+
         private readonly BlackForgeDbContext _context;
 
         public OrdensServicoController(BlackForgeDbContext context)
@@ -48,7 +55,6 @@ namespace BlackForge.Controllers
         [HttpPost]
         public async Task<ActionResult<OrdemServico>> CriarOrdemServico(
             OrdemServico ordem)
-
         {
             if (string.IsNullOrWhiteSpace(ordem.NumeroOS))
                 return BadRequest("O número da OS é obrigatório.");
@@ -85,6 +91,14 @@ namespace BlackForge.Controllers
                         "O funcionário responsável informado não existe."
                     );
             }
+
+            var erroMaterial = await ValidarMaterialAsync(ordem.MaterialId);
+
+            if (erroMaterial != null)
+                return BadRequest(erroMaterial);
+
+            // Só o MaterialId importa; evita o EF tentar inserir um Material.
+            ordem.Material = null;
 
             if (ordem.DataAbertura == default)
                 ordem.DataAbertura = DateTime.Now;
@@ -165,6 +179,28 @@ namespace BlackForge.Controllers
                     "A quantidade da OS deve ser maior que zero."
                 );
 
+            // O processo de produção copia quantidade, serviço e material
+            // ao iniciar. Alterar esses campos durante a execução deixaria
+            // a OS e o processo com valores diferentes.
+            if (ordemExistente.Status == "em_execucao")
+            {
+                var tipoAlterado = !string.Equals(
+                    ordem.TipoServico.Trim(),
+                    ordemExistente.TipoServico?.Trim(),
+                    StringComparison.OrdinalIgnoreCase);
+
+                if (ordem.Quantidade != ordemExistente.Quantidade ||
+                    tipoAlterado ||
+                    ordem.MaterialId != ordemExistente.MaterialId)
+                {
+                    return Conflict(
+                        "Não é possível alterar a quantidade, o tipo de serviço " +
+                        "ou o material de uma OS em execução. " +
+                        "Volte a OS para pendente antes de alterar."
+                    );
+                }
+            }
+
             var numeroExiste = await _context.OrdensServico
                 .AnyAsync(o =>
                     o.NumeroOS == ordem.NumeroOS &&
@@ -185,6 +221,11 @@ namespace BlackForge.Controllers
                         "O funcionário responsável informado não existe."
                     );
             }
+
+            var erroMaterial = await ValidarMaterialAsync(ordem.MaterialId);
+
+            if (erroMaterial != null)
+                return BadRequest(erroMaterial);
 
             if (ordem.ValorMateriais < 0)
                 return BadRequest(
@@ -209,6 +250,7 @@ namespace BlackForge.Controllers
             ordemExistente.DescricaoServico = ordem.DescricaoServico;
             ordemExistente.TipoServico = ordem.TipoServico;
             ordemExistente.Quantidade = ordem.Quantidade;
+            ordemExistente.MaterialId = ordem.MaterialId;
             ordemExistente.DataEntrega = ordem.DataEntrega;
             ordemExistente.FuncionarioId = ordem.FuncionarioId;
             ordemExistente.ValorMateriais = ordem.ValorMateriais;
@@ -230,17 +272,7 @@ namespace BlackForge.Controllers
             return NoContent();
         }
 
-        private const int ProducaoPorMinutoPadrao = 10;
-        private const decimal ConsumoPorUnidadePadrao = 1m;
-
-        private static readonly string[] StatusValidos =
-        {
-    "pendente",
-    "em_execucao",
-    "concluida"
-};
-
-
+        // PATCH: api/ordensservico/1/status
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> AlterarStatus(
             int id,
@@ -355,31 +387,63 @@ namespace BlackForge.Controllers
                         );
                     }
 
-                    if (configuracaoSelecionada.ConsumoPorUnidade < 0)
+                    var consumoPorUnidade =
+                        configuracaoSelecionada.ConsumoPorUnidade;
+
+                    if (consumoPorUnidade < 0)
                     {
                         return Conflict(
                             "O consumo por unidade não pode ser negativo."
                         );
                     }
 
-                    if (configuracaoSelecionada.ConsumoPorUnidade > 0 &&
-                        !configuracaoSelecionada.MaterialId.HasValue)
+                    // O material vem da OS. O material da configuração da
+                    // máquina é apenas um valor padrão opcional.
+                    var materialId =
+                        ordem.MaterialId ??
+                        configuracaoSelecionada.MaterialId;
+
+                    if (consumoPorUnidade > 0 && !materialId.HasValue)
                     {
                         return Conflict(
-                            "Associe um material à configuração da máquina."
+                            "Selecione o material da OS antes de iniciar a produção."
                         );
                     }
 
-                    if (configuracaoSelecionada.MaterialId.HasValue)
+                    if (materialId.HasValue)
                     {
-                        var materialExiste = await _context.Materiais
-                            .AnyAsync(m =>
-                                m.Id == configuracaoSelecionada.MaterialId.Value);
+                        var material = await _context.Materiais
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(m =>
+                                m.Id == materialId.Value);
 
-                        if (!materialExiste)
+                        if (material == null)
                         {
                             return Conflict(
-                                "O material configurado não foi encontrado."
+                                "O material da OS não foi encontrado."
+                            );
+                        }
+
+                        // Confere o estoque total antes de iniciar, para a OS
+                        // não ficar "em execução" sem conseguir terminar.
+                        var hoje = DateTime.Today;
+
+                        var saldo = await _context.Lotes
+                            .Where(l =>
+                                l.MaterialId == materialId.Value &&
+                                l.Quantidade > 0 &&
+                                (l.DataValidade == null ||
+                                 l.DataValidade >= hoje))
+                            .SumAsync(l => (decimal?)l.Quantidade) ?? 0m;
+
+                        var necessario = ordem.Quantidade * consumoPorUnidade;
+
+                        if (saldo < necessario)
+                        {
+                            return Conflict(
+                                $"Estoque insuficiente de '{material.Nome}'. " +
+                                $"Necessário: {necessario:0.####} {material.Unidade}; " +
+                                $"disponível: {saldo:0.####} {material.Unidade}."
                             );
                         }
                     }
@@ -393,7 +457,7 @@ namespace BlackForge.Controllers
                     {
                         OrdemServicoId = ordem.Id,
                         MaquinaId = maquina.Id,
-                        MaterialId = configuracaoSelecionada.MaterialId,
+                        MaterialId = materialId,
 
                         DataInicio = DateTime.Now,
                         QuantidadePlanejada = ordem.Quantidade,
@@ -402,8 +466,7 @@ namespace BlackForge.Controllers
                         ProducaoPorMinuto =
                             configuracaoSelecionada.ProducaoPorMinuto,
 
-                        ConsumoPorUnidade =
-                            configuracaoSelecionada.ConsumoPorUnidade,
+                        ConsumoPorUnidade = consumoPorUnidade,
 
                         MaterialConsumido = 0,
                         QuantidadeConsumidaRegistrada = 0,
@@ -449,7 +512,6 @@ namespace BlackForge.Controllers
             });
         }
 
-
         // DELETE: api/ordensservico/1
         [HttpDelete("{id}")]
         public async Task<IActionResult> ExcluirOrdemServico(int id)
@@ -459,13 +521,33 @@ namespace BlackForge.Controllers
 
             if (ordem == null)
                 return NotFound("Ordem de serviço não encontrada.");
-        
+
             var processos = await _context.ProcessosProducao
                 .Where(p => p.OrdemServicoId == id)
                 .ToListAsync();
 
-            if (processos.Any())
+            if (processos.Any(p => p.Status == "EM_EXECUCAO"))
+                return Conflict(
+                    "A OS está em execução. Volte a OS para pendente antes de excluir."
+                );
+
+            var processosIds = processos.Select(p => p.Id).ToList();
+
+            // Movimentações de estoque ligadas aos processos fazem parte
+            // do histórico e não podem ficar sem o processo de origem.
+            if (processosIds.Count > 0)
             {
+                var consumiuEstoque = await _context.Movimentacoes
+                    .AnyAsync(m =>
+                        m.ProcessoProducaoId != null &&
+                        processosIds.Contains(m.ProcessoProducaoId.Value));
+
+                if (consumiuEstoque)
+                    return Conflict(
+                        "Esta OS já consumiu material do estoque e não pode ser " +
+                        "excluída, pois o histórico de estoque ficaria incoerente."
+                    );
+
                 _context.ProcessosProducao.RemoveRange(processos);
             }
 
@@ -474,6 +556,21 @@ namespace BlackForge.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // ================= AUXILIARES =================
+
+        private async Task<string?> ValidarMaterialAsync(int? materialId)
+        {
+            if (!materialId.HasValue)
+                return null;
+
+            var existe = await _context.Materiais
+                .AnyAsync(m => m.Id == materialId.Value);
+
+            return existe
+                ? null
+                : "O material informado não existe.";
         }
     }
 }

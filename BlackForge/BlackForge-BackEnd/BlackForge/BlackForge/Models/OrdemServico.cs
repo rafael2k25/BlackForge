@@ -14,8 +14,8 @@
         public DateTime? DataEntrega { get; set; }
         public int? FuncionarioId { get; set; }
         public Funcionario? Funcionario { get; set; }
-        public int? MaquinaId { get; set; }
-        public Maquina? Maquina { get; set; }
+        public int? MaterialId { get; set; }
+        public Material? Material { get; set; }
         public decimal ValorMateriais { get; set; }
         public decimal ValorMaoObra { get; set; }
         public decimal Desconto { get; set; }

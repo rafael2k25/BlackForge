@@ -1,5 +1,4 @@
-﻿
-using BlackForge.Data;
+﻿using BlackForge.Data;
 using BlackForge.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -253,6 +252,21 @@ namespace BlackForge.Services
                     return;
                 }
 
+                // Saídas já registradas hoje por este processo, por lote.
+                // O consumo é somado nelas, em vez de criar uma movimentação
+                // nova a cada ciclo: uma linha por processo, lote e dia.
+                var saidasDoDia = consumoAdicional > 0
+                    ? (await context.Movimentacoes
+                        .Where(m =>
+                            m.ProcessoProducaoId == processo.Id &&
+                            m.Tipo == "saida" &&
+                            m.DataMovimentacao >= hoje &&
+                            m.LoteId != null)
+                        .ToListAsync(cancellationToken))
+                        .GroupBy(m => m.LoteId!.Value)
+                        .ToDictionary(g => g.Key, g => g.First())
+                    : new Dictionary<int, Movimentacao>();
+
                 var restante = consumoAdicional;
 
                 foreach (var lote in lotes)
@@ -278,19 +292,29 @@ namespace BlackForge.Services
                         4,
                         MidpointRounding.AwayFromZero);
 
-                    context.Movimentacoes.Add(new Movimentacao
+                    if (saidasDoDia.TryGetValue(lote.Id, out var saida))
                     {
-                        Tipo = "saida",
-                        Quantidade = retirar,
-                        DataMovimentacao = agora,
-                        MaterialId = materialId,
-                        LoteId = lote.Id,
-                        ProcessoProducaoId = processo.Id,
-                        Observacoes =
-                            $"Consumo automático da produção. " +
-                            $"Processo #{processo.Id}; " +
-                            $"OS #{processo.OrdemServicoId}."
-                    });
+                        saida.Quantidade = Math.Round(
+                            saida.Quantidade + retirar,
+                            4,
+                            MidpointRounding.AwayFromZero);
+                    }
+                    else
+                    {
+                        context.Movimentacoes.Add(new Movimentacao
+                        {
+                            Tipo = "saida",
+                            Quantidade = retirar,
+                            DataMovimentacao = agora,
+                            MaterialId = materialId,
+                            LoteId = lote.Id,
+                            ProcessoProducaoId = processo.Id,
+                            Observacoes =
+                                $"Consumo automático da produção. " +
+                                $"Processo #{processo.Id}; " +
+                                $"OS #{processo.OrdemServicoId}."
+                        });
+                    }
                 }
 
                 if (restante > 0)
