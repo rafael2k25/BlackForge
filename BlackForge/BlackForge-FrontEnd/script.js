@@ -1238,6 +1238,119 @@ if (modalMaquina) {
     });
 }
 
+// CADASTRAR MÁQUINA
+
+const cadastrarMaquina = document.getElementById("cadastrarMaquina");
+
+function limparFormularioMaquina() {
+    [
+        "nomeMaquina",
+        "codigoMaquina",
+        "tipoMaquina",
+        "fabricanteMaquina",
+        "modeloMaquina",
+        "serieMaquina",
+        "dataAquisicaoMaquina",
+        "observacoesMaquina"
+    ].forEach(function (id) {
+        const campo = document.getElementById(id);
+        if (campo) {
+            campo.value = "";
+        }
+    });
+}
+
+async function salvarNovaMaquina() {
+    const valor = function (id) {
+        return (document.getElementById(id)?.value || "").trim();
+    };
+
+    const nome = valor("nomeMaquina");
+    const codigo = valor("codigoMaquina");
+    const fabricante = valor("fabricanteMaquina");
+    const modelo = valor("modeloMaquina");
+    const numeroSerie = valor("serieMaquina");
+
+    const obrigatorios = [
+        [nome, "nomeMaquina", "o nome da máquina"],
+        [codigo, "codigoMaquina", "o código"],
+        [fabricante, "fabricanteMaquina", "o fabricante"],
+        [modelo, "modeloMaquina", "o modelo"],
+        [numeroSerie, "serieMaquina", "o número de série"]
+    ];
+
+    for (const [conteudo, id, descricao] of obrigatorios) {
+        if (!conteudo) {
+            notificar(`Informe ${descricao}.`, "aviso");
+            document.getElementById(id)?.focus();
+            return;
+        }
+    }
+
+    const maquina = {
+        nome: nome,
+        codigo: codigo,
+        tipo: valor("tipoMaquina"),
+        fabricante: fabricante,
+        modelo: modelo,
+        numeroSerie: numeroSerie,
+        observacoes: valor("observacoesMaquina")
+    };
+
+    const dataAquisicao = valor("dataAquisicaoMaquina");
+
+    if (dataAquisicao) {
+        maquina.dataAquisicao = dataAquisicao;
+    }
+
+    cadastrarMaquina.disabled = true;
+    cadastrarMaquina.textContent = "CADASTRANDO...";
+
+    try {
+        const resposta = await fetch(`${API_URL}/Maquinas`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(maquina)
+        });
+
+        if (!resposta.ok) {
+            let mensagem = await resposta.text();
+
+            // Erros de validação do ASP.NET vêm como JSON (ProblemDetails)
+            try {
+                const json = JSON.parse(mensagem);
+                if (json.errors) {
+                    mensagem = Object.values(json.errors).flat().join("\n");
+                } else if (json.title) {
+                    mensagem = json.title;
+                }
+            } catch (e) {
+                // resposta em texto simples: usa como veio
+            }
+
+            throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
+        }
+
+        modalMaquina.classList.remove("active");
+        limparFormularioMaquina();
+
+        await carregarMaquinas();
+
+        notificar("Máquina cadastrada com sucesso!", "sucesso");
+
+    } catch (erro) {
+        console.error("Erro ao cadastrar máquina:", erro);
+        notificar(`Não foi possível cadastrar a máquina.\n\n${erro.message}`, "erro");
+    } finally {
+        cadastrarMaquina.disabled = false;
+        cadastrarMaquina.textContent = "CADASTRAR MÁQUINA";
+    }
+}
+
+if (cadastrarMaquina) {
+    cadastrarMaquina.addEventListener("click", salvarNovaMaquina);
+}
+
 // VARIÁVEIS DAS MÁQUINAS
 
 let maquinas = [];
@@ -1726,12 +1839,6 @@ async function abrirDetalhesMaquina(id) {
                 produzida,
                 planejada
             );
-            iniciarSimulacaoProgresso(
-                produzida,
-                planejada,
-                porMinuto,
-                consumoPorUnidade
-            );
         }    
         document
             .getElementById("modalDetalhesMaquina")
@@ -1972,6 +2079,7 @@ async function carregarMateriais() {
         materiais = await response.json();
         console.log("[MATERIAIS] Dados recebidos:", materiais);
         renderizarMateriais();
+        preencherSelectMaterialRelatorioEstoque();
     } catch (error) {
         console.error("[MATERIAIS] Erro ao carregar:", error);
         lista.innerHTML = `
@@ -2048,7 +2156,7 @@ function renderizarMateriais() {
                     <div>
                         <span>ESTOQUE</span>
                         <strong>
-                            ${material.quantidadeTotal} ${material.unidade || ""}
+                            ${Number(material.quantidadeTotal ?? 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} ${material.unidade || ""}
                         </strong>
                     </div>
                     <div>
@@ -4260,7 +4368,7 @@ const registrosRelatorioEstoque =
 
 function formatarQuantidadeRelatorioEstoque(valor) {
     return new Intl.NumberFormat("pt-BR", {
-        maximumFractionDigits: 2
+        maximumFractionDigits: 4
     }).format(Number(valor) || 0);
 }
 
@@ -4297,7 +4405,7 @@ function normalizarTipoRelatorioEstoque(tipo) {
             .toLowerCase()
             .trim();
 
-    return texto === "entrada" || texto === "saida"
+    return texto === "entrada" || texto === "saida" || texto === "ajuste"
         ? texto
         : "";
 }
@@ -4307,7 +4415,8 @@ function obterNomeTipoRelatorioEstoque(tipo) {
 
     const nomes = {
         entrada: "Entrada",
-        saida: "Saída"
+        saida: "Saída",
+        ajuste: "Ajuste"
     };
 
     return nomes[normalizarTipoRelatorioEstoque(tipo)] || "-";
