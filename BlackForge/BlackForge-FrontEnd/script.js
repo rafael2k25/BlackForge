@@ -2148,7 +2148,7 @@ function renderizarMateriais() {
                         </strong>
                     </div>
                     <div>
-                        <span>UNIDADE</span>
+                        <span>UNIDADE DE MEDIDA</span>
                         <strong>
                             ${material.unidade || "-"}
                         </strong>

@@ -1,975 +1,437 @@
-/* ============================================================
-   BLACKFORGE
-   CRIAÇÃO DO BANCO DE DADOS
-   ============================================================ */
-
-USE master;
+USE [master]
 GO
-
-/* ============================================================
-   APAGA O BANCO CASO JÁ EXISTA
-   ============================================================ */
-
-IF DB_ID('BANCOBLACKFORGE') IS NOT NULL
-BEGIN
-    ALTER DATABASE BANCOBLACKFORGE
-    SET SINGLE_USER
-    WITH ROLLBACK IMMEDIATE;
-
-    DROP DATABASE BANCOBLACKFORGE;
-END;
+/****** Object:  Database [BANCOBLACKFORGE]    Script Date: 14/10/2026 13:45:03 ******/
+CREATE DATABASE [BANCOBLACKFORGE]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'BANCOBLACKFORGE', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL15.SENAI\MSSQL\DATA\BANCOBLACKFORGE.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'BANCOBLACKFORGE_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL15.SENAI\MSSQL\DATA\BANCOBLACKFORGE_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT
 GO
-
-/* ============================================================
-   CRIA O BANCO
-   ============================================================ */
-
-CREATE DATABASE BANCOBLACKFORGE;
+ALTER DATABASE [BANCOBLACKFORGE] SET COMPATIBILITY_LEVEL = 150
 GO
-
-USE BANCOBLACKFORGE;
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [BANCOBLACKFORGE].[dbo].[sp_fulltext_database] @action = 'enable'
+end
 GO
-
-
-/* ============================================================
-   1. MATERIAIS
-   ============================================================ */
-
-CREATE TABLE Materiais
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-
-    Codigo NVARCHAR(50) NOT NULL,
-    Nome NVARCHAR(150) NOT NULL,
-    Categoria NVARCHAR(50) NOT NULL,
-    Unidade NVARCHAR(20) NOT NULL,
-    Descricao NVARCHAR(500) NULL,
-
-    EstoqueMinimo DECIMAL(18,2) NOT NULL
-        CONSTRAINT DF_Materiais_EstoqueMinimo DEFAULT 0,
-
-    CONSTRAINT PK_Materiais
-        PRIMARY KEY (Id),
-
-    CONSTRAINT UQ_Materiais_Codigo
-        UNIQUE (Codigo)
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET ANSI_NULL_DEFAULT OFF 
 GO
-
-
-/* ============================================================
-   2. FUNCIONÁRIOS
-   ============================================================ */
-
-CREATE TABLE Funcionarios
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-
-    Nome NVARCHAR(150) NOT NULL,
-    Matricula NVARCHAR(50) NOT NULL,
-    CPF NVARCHAR(14) NOT NULL,
-    Cargo NVARCHAR(100) NOT NULL,
-    Idade INT NOT NULL,
-
-    Telefone NVARCHAR(20) NULL,
-    Setor NVARCHAR(100) NOT NULL,
-
-    DataAdmissao DATETIME2 NOT NULL,
-
-    Email NVARCHAR(150) NULL,
-    Observacoes NVARCHAR(500) NULL,
-
-    CONSTRAINT PK_Funcionarios
-        PRIMARY KEY (Id),
-
-    CONSTRAINT UQ_Funcionarios_Matricula
-        UNIQUE (Matricula),
-
-    CONSTRAINT UQ_Funcionarios_CPF
-        UNIQUE (CPF)
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET ANSI_NULLS OFF 
 GO
-
-
-/* ============================================================
-   3. MÁQUINAS
-   ============================================================ */
-
-CREATE TABLE Maquinas
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-
-    Nome NVARCHAR(150) NOT NULL,
-    Codigo NVARCHAR(50) NOT NULL,
-    Fabricante NVARCHAR(100) NOT NULL,
-    Modelo NVARCHAR(100) NOT NULL,
-    NumeroSerie NVARCHAR(100) NOT NULL,
-
-    DataAquisicao DATETIME2 NOT NULL,
-
-    CONSTRAINT PK_Maquinas
-        PRIMARY KEY (Id),
-
-    CONSTRAINT UQ_Maquinas_Codigo
-        UNIQUE (Codigo),
-
-    CONSTRAINT UQ_Maquinas_NumeroSerie
-        UNIQUE (NumeroSerie)
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET ANSI_PADDING OFF 
 GO
-
-
-/* ============================================================
-   4. TEMAS
-   ============================================================ */
-
-CREATE TABLE Temas
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-
-    Nome NVARCHAR(100) NOT NULL,
-    Codigo NVARCHAR(50) NOT NULL,
-    Ativo BIT NOT NULL
-        CONSTRAINT DF_Temas_Ativo DEFAULT 1,
-
-    CONSTRAINT PK_Temas
-        PRIMARY KEY (Id),
-
-    CONSTRAINT UQ_Temas_Codigo
-        UNIQUE (Codigo)
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET ANSI_WARNINGS OFF 
 GO
-
-
-/* ============================================================
-   5. CONFIGURAÇÃO DO SISTEMA
-   ============================================================ */
-
-CREATE TABLE ConfiguracaoSistema
-(
-    Id INT NOT NULL,
-    TemaId INT NOT NULL,
-
-    CONSTRAINT PK_ConfiguracaoSistema
-        PRIMARY KEY (Id),
-
-    CONSTRAINT FK_ConfiguracaoSistema_Temas
-        FOREIGN KEY (TemaId)
-        REFERENCES Temas(Id)
-        ON DELETE NO ACTION
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET ARITHABORT OFF 
 GO
-
-
-/* ============================================================
-   6. LOTES
-   ============================================================ */
-
-CREATE TABLE Lotes
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-
-    Codigo NVARCHAR(50) NOT NULL,
-
-    Quantidade DECIMAL(18,2) NOT NULL,
-
-    CustoUnitario DECIMAL(18,2) NOT NULL,
-
-    DataEntrada DATETIME2 NOT NULL,
-
-    DataFabricacao DATETIME2 NULL,
-    DataValidade DATETIME2 NULL,
-
-    MaterialId INT NOT NULL,
-
-    Observacoes NVARCHAR(500) NULL,
-
-    CONSTRAINT PK_Lotes
-        PRIMARY KEY (Id),
-
-    CONSTRAINT FK_Lotes_Materiais
-        FOREIGN KEY (MaterialId)
-        REFERENCES Materiais(Id)
-        ON DELETE NO ACTION,
-
-    CONSTRAINT UQ_Lotes_Material_Codigo
-        UNIQUE (MaterialId, Codigo)
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET AUTO_CLOSE ON 
 GO
-
-
-/* ============================================================
-   7. MOVIMENTAÇÕES
-   ============================================================ */
-
-CREATE TABLE Movimentacoes
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-
-    Tipo NVARCHAR(20) NOT NULL,
-
-    Quantidade DECIMAL(18,2) NOT NULL,
-
-    DataMovimentacao DATETIME2 NOT NULL,
-
-    Observacoes NVARCHAR(500) NULL,
-
-    MaterialId INT NOT NULL,
-
-    LoteId INT NULL,
-
-    CONSTRAINT PK_Movimentacoes
-        PRIMARY KEY (Id),
-
-    CONSTRAINT FK_Movimentacoes_Materiais
-        FOREIGN KEY (MaterialId)
-        REFERENCES Materiais(Id)
-        ON DELETE NO ACTION,
-
-    CONSTRAINT FK_Movimentacoes_Lotes
-        FOREIGN KEY (LoteId)
-        REFERENCES Lotes(Id)
-        ON DELETE NO ACTION
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET AUTO_SHRINK OFF 
 GO
-
-
-/* ============================================================
-   8. ORDENS DE SERVIÇO
-   ============================================================ */
-
-CREATE TABLE OrdensServico
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-
-    NumeroOS NVARCHAR(50) NOT NULL,
-
-    Cliente NVARCHAR(150) NOT NULL,
-
-    Contato NVARCHAR(100) NULL,
-
-    Endereco NVARCHAR(300) NULL,
-
-    DataAbertura DATETIME2 NOT NULL,
-
-    DescricaoServico NVARCHAR(1000) NOT NULL,
-
-    TipoServico NVARCHAR(50) NOT NULL,
-
-    DataEntrega DATETIME2 NULL,
-
-    FuncionarioId INT NULL,
-
-    MaquinaId INT NULL,
-
-    ValorMateriais DECIMAL(18,2) NOT NULL
-        CONSTRAINT DF_OS_ValorMateriais DEFAULT 0,
-
-    ValorMaoObra DECIMAL(18,2) NOT NULL
-        CONSTRAINT DF_OS_ValorMaoObra DEFAULT 0,
-
-    Desconto DECIMAL(18,2) NOT NULL
-        CONSTRAINT DF_OS_Desconto DEFAULT 0,
-
-    ValorTotal DECIMAL(18,2) NOT NULL
-        CONSTRAINT DF_OS_ValorTotal DEFAULT 0,
-
-    CondicaoPagamento NVARCHAR(MAX) NULL,
-
-    Observacoes NVARCHAR(500) NULL,
-
-    CONSTRAINT PK_OrdensServico
-        PRIMARY KEY (Id),
-
-    CONSTRAINT UQ_OrdensServico_NumeroOS
-        UNIQUE (NumeroOS),
-
-    CONSTRAINT FK_OrdensServico_Funcionarios
-        FOREIGN KEY (FuncionarioId)
-        REFERENCES Funcionarios(Id)
-        ON DELETE SET NULL,
-
-    CONSTRAINT FK_OrdensServico_Maquinas
-        FOREIGN KEY (MaquinaId)
-        REFERENCES Maquinas(Id)
-        ON DELETE SET NULL
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET AUTO_UPDATE_STATISTICS ON 
 GO
-
-
-/* ============================================================
-   9. ORDEM DE SERVIÇO + MATERIAIS
-   ============================================================ */
-
-CREATE TABLE OrdensServicoMateriais
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-
-    OrdemServicoId INT NOT NULL,
-
-    MaterialId INT NOT NULL,
-
-    Quantidade DECIMAL(18,2) NOT NULL,
-
-    Unidade NVARCHAR(20) NOT NULL,
-
-    ValorUnitario DECIMAL(18,2) NOT NULL,
-
-    Subtotal DECIMAL(18,2) NOT NULL,
-
-    CONSTRAINT PK_OrdensServicoMateriais
-        PRIMARY KEY (Id),
-
-    CONSTRAINT FK_OSMateriais_OrdensServico
-        FOREIGN KEY (OrdemServicoId)
-        REFERENCES OrdensServico(Id)
-        ON DELETE CASCADE,
-
-    CONSTRAINT FK_OSMateriais_Materiais
-        FOREIGN KEY (MaterialId)
-        REFERENCES Materiais(Id)
-        ON DELETE NO ACTION
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET CURSOR_CLOSE_ON_COMMIT OFF 
 GO
-
-
-/* ============================================================
-   10. PROCESSOS DE PRODUÇÃO
-   ============================================================ */
-
-CREATE TABLE ProcessosProducao
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-
-    OrdemServicoId INT NOT NULL,
-
-    MaquinaId INT NOT NULL,
-
-    DataInicio DATETIME2 NOT NULL,
-
-    DataFim DATETIME2 NULL,
-
-    QuantidadePlanejada INT NOT NULL,
-
-    QuantidadeProduzida INT NOT NULL,
-
-    ProducaoPorMinuto DECIMAL(18,2) NOT NULL,
-
-    ConsumoPorUnidade DECIMAL(18,4) NOT NULL,
-
-    MaterialConsumido DECIMAL(18,4) NOT NULL,
-
-    Status NVARCHAR(30) NOT NULL,
-
-    CONSTRAINT PK_ProcessosProducao
-        PRIMARY KEY (Id),
-
-    CONSTRAINT FK_ProcessosProducao_OrdensServico
-        FOREIGN KEY (OrdemServicoId)
-        REFERENCES OrdensServico(Id)
-        ON DELETE NO ACTION,
-
-    CONSTRAINT FK_ProcessosProducao_Maquinas
-        FOREIGN KEY (MaquinaId)
-        REFERENCES Maquinas(Id)
-        ON DELETE NO ACTION
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET CURSOR_DEFAULT  GLOBAL 
 GO
-
-
-/* ============================================================
-   11. CONFIGURAÇÕES DAS MÁQUINAS
-   ============================================================ */
-
-CREATE TABLE ConfiguracoesMaquina
-(
-    Id INT IDENTITY(1,1) NOT NULL,
-
-    MaquinaId INT NOT NULL,
-
-    TipoServico NVARCHAR(50) NOT NULL,
-
-    ProducaoPorMinuto DECIMAL(18,2) NOT NULL,
-
-    ConsumoPorUnidade DECIMAL(18,4) NOT NULL,
-
-    Ativa BIT NOT NULL
-        CONSTRAINT DF_ConfiguracoesMaquina_Ativa DEFAULT 1,
-
-    CONSTRAINT PK_ConfiguracoesMaquina
-        PRIMARY KEY (Id),
-
-    CONSTRAINT FK_ConfiguracoesMaquina_Maquinas
-        FOREIGN KEY (MaquinaId)
-        REFERENCES Maquinas(Id)
-        ON DELETE CASCADE
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET CONCAT_NULL_YIELDS_NULL OFF 
 GO
-
-
-/* ============================================================
-   DADOS INICIAIS
-   ============================================================ */
-
-
-/* ============================================================
-   TEMAS
-   ============================================================ */
-
-INSERT INTO Temas
-(
-    Nome,
-    Codigo,
-    Ativo
-)
-VALUES
-(
-    'Tema Escuro',
-    'escuro',
-    1
-),
-(
-    'Tema Claro',
-    'claro',
-    1
-),
-(
-    'PlayStation',
-    'playstation',
-    1
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET NUMERIC_ROUNDABORT OFF 
 GO
-
-
-/* ============================================================
-   CONFIGURAÇÃO INICIAL
-   ============================================================ */
-
-INSERT INTO ConfiguracaoSistema
-(
-    Id,
-    TemaId
-)
-SELECT
-    1,
-    Id
-FROM Temas
-WHERE Codigo = 'escuro';
+ALTER DATABASE [BANCOBLACKFORGE] SET QUOTED_IDENTIFIER OFF 
 GO
-
-
-/* ============================================================
-   FUNCIONÁRIOS
-   ============================================================ */
-
-INSERT INTO Funcionarios
-(
-    Nome,
-    Matricula,
-    CPF,
-    Cargo,
-    Idade,
-    Telefone,
-    Setor,
-    DataAdmissao,
-    Email,
-    Observacoes
-)
-VALUES
-(
-    'Carlos Henrique',
-    'FUNC-001',
-    '111.111.111-11',
-    'Operador CNC',
-    32,
-    '(79) 99999-0001',
-    'Produção',
-    '2023-02-15',
-    'carlos@blackforge.com',
-    'Operador principal de máquinas CNC.'
-),
-(
-    'Marcos Oliveira',
-    'FUNC-002',
-    '222.222.222-22',
-    'Torneiro Mecânico',
-    41,
-    '(79) 99999-0002',
-    'Produção',
-    '2022-08-10',
-    'marcos@blackforge.com',
-    'Responsável por operações de torneamento.'
-),
-(
-    'Rafael Santos',
-    'FUNC-003',
-    '333.333.333-33',
-    'Supervisor de Produção',
-    38,
-    '(79) 99999-0003',
-    'Produção',
-    '2021-05-20',
-    'rafael@blackforge.com',
-    'Supervisão das atividades de produção.'
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET RECURSIVE_TRIGGERS OFF 
 GO
-
-
-/* ============================================================
-   MÁQUINAS
-   ============================================================ */
-
-INSERT INTO Maquinas
-(
-    Nome,
-    Codigo,
-    Fabricante,
-    Modelo,
-    NumeroSerie,
-    DataAquisicao
-)
-VALUES
-(
-    'Torno CNC 01',
-    'MC-001',
-    'Romi',
-    'T 240',
-    'ROMI-T240-001',
-    '2022-03-15'
-),
-(
-    'Torno CNC 02',
-    'MC-002',
-    'Romi',
-    'T 240',
-    'ROMI-T240-002',
-    '2023-01-20'
-),
-(
-    'Fresadora CNC 01',
-    'MC-003',
-    'Romi',
-    'D 600',
-    'ROMI-D600-001',
-    '2023-08-10'
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET  ENABLE_BROKER 
 GO
-
-
-/* ============================================================
-   MATERIAIS
-   ============================================================ */
-
-INSERT INTO Materiais
-(
-    Codigo,
-    Nome,
-    Categoria,
-    Unidade,
-    Descricao,
-    EstoqueMinimo
-)
-VALUES
-(
-    'MAT-001',
-    'Aço Carbono SAE 1020',
-    'Aço',
-    'KG',
-    'Aço carbono utilizado em operações de usinagem.',
-    100.00
-),
-(
-    'MAT-002',
-    'Aço Inox 304',
-    'Aço Inox',
-    'KG',
-    'Aço inoxidável para fabricação de componentes.',
-    50.00
-),
-(
-    'MAT-003',
-    'Alumínio 6061',
-    'Alumínio',
-    'KG',
-    'Alumínio para componentes usinados.',
-    30.00
-);
+ALTER DATABASE [BANCOBLACKFORGE] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
 GO
-
-
-/* ============================================================
-   LOTES
-   ============================================================ */
-
-INSERT INTO Lotes
-(
-    Codigo,
-    Quantidade,
-    CustoUnitario,
-    DataEntrada,
-    DataFabricacao,
-    DataValidade,
-    MaterialId,
-    Observacoes
-)
-SELECT
-    'LOTE-1020-001',
-    500.00,
-    12.50,
-    GETDATE(),
-    NULL,
-    NULL,
-    Id,
-    'Lote inicial para testes do sistema.'
-FROM Materiais
-WHERE Codigo = 'MAT-001';
-
-
-INSERT INTO Lotes
-(
-    Codigo,
-    Quantidade,
-    CustoUnitario,
-    DataEntrada,
-    DataFabricacao,
-    DataValidade,
-    MaterialId,
-    Observacoes
-)
-SELECT
-    'LOTE-INOX-001',
-    200.00,
-    28.90,
-    GETDATE(),
-    NULL,
-    NULL,
-    Id,
-    'Lote inicial de aço inox.'
-FROM Materiais
-WHERE Codigo = 'MAT-002';
-
-
-INSERT INTO Lotes
-(
-    Codigo,
-    Quantidade,
-    CustoUnitario,
-    DataEntrada,
-    DataFabricacao,
-    DataValidade,
-    MaterialId,
-    Observacoes
-)
-SELECT
-    'LOTE-AL-001',
-    150.00,
-    19.75,
-    GETDATE(),
-    NULL,
-    NULL,
-    Id,
-    'Lote inicial de alumínio.'
-FROM Materiais
-WHERE Codigo = 'MAT-003';
+ALTER DATABASE [BANCOBLACKFORGE] SET DATE_CORRELATION_OPTIMIZATION OFF 
 GO
-
-
-/* ============================================================
-   MOVIMENTAÇÕES INICIAIS
-   ============================================================ */
-
-INSERT INTO Movimentacoes
-(
-    Tipo,
-    Quantidade,
-    DataMovimentacao,
-    Observacoes,
-    MaterialId,
-    LoteId
-)
-SELECT
-    'entrada',
-    500.00,
-    GETDATE(),
-    'Entrada inicial de estoque.',
-    m.Id,
-    l.Id
-FROM Materiais m
-INNER JOIN Lotes l
-    ON l.MaterialId = m.Id
-WHERE m.Codigo = 'MAT-001'
-AND l.Codigo = 'LOTE-1020-001';
-
-
-INSERT INTO Movimentacoes
-(
-    Tipo,
-    Quantidade,
-    DataMovimentacao,
-    Observacoes,
-    MaterialId,
-    LoteId
-)
-SELECT
-    'entrada',
-    200.00,
-    GETDATE(),
-    'Entrada inicial de estoque.',
-    m.Id,
-    l.Id
-FROM Materiais m
-INNER JOIN Lotes l
-    ON l.MaterialId = m.Id
-WHERE m.Codigo = 'MAT-002'
-AND l.Codigo = 'LOTE-INOX-001';
-
-
-INSERT INTO Movimentacoes
-(
-    Tipo,
-    Quantidade,
-    DataMovimentacao,
-    Observacoes,
-    MaterialId,
-    LoteId
-)
-SELECT
-    'entrada',
-    150.00,
-    GETDATE(),
-    'Entrada inicial de estoque.',
-    m.Id,
-    l.Id
-FROM Materiais m
-INNER JOIN Lotes l
-    ON l.MaterialId = m.Id
-WHERE m.Codigo = 'MAT-003'
-AND l.Codigo = 'LOTE-AL-001';
+ALTER DATABASE [BANCOBLACKFORGE] SET TRUSTWORTHY OFF 
 GO
-
-
-/* ============================================================
-   CONFIGURAÇÕES DAS MÁQUINAS
-   ============================================================ */
-
-INSERT INTO ConfiguracoesMaquina
-(
-    MaquinaId,
-    TipoServico,
-    ProducaoPorMinuto,
-    ConsumoPorUnidade,
-    Ativa
-)
-SELECT
-    Id,
-    'torneamento',
-    15.00,
-    0.8000,
-    1
-FROM Maquinas
-WHERE Codigo = 'MC-001';
-
-
-INSERT INTO ConfiguracoesMaquina
-(
-    MaquinaId,
-    TipoServico,
-    ProducaoPorMinuto,
-    ConsumoPorUnidade,
-    Ativa
-)
-SELECT
-    Id,
-    'torneamento',
-    12.00,
-    0.8500,
-    1
-FROM Maquinas
-WHERE Codigo = 'MC-002';
-
-
-INSERT INTO ConfiguracoesMaquina
-(
-    MaquinaId,
-    TipoServico,
-    ProducaoPorMinuto,
-    ConsumoPorUnidade,
-    Ativa
-)
-SELECT
-    Id,
-    'fresagem',
-    8.00,
-    1.2000,
-    1
-FROM Maquinas
-WHERE Codigo = 'MC-003';
+ALTER DATABASE [BANCOBLACKFORGE] SET ALLOW_SNAPSHOT_ISOLATION OFF 
 GO
-
-
-/* ============================================================
-   ORDEM DE SERVIÇO DE TESTE
-   ============================================================ */
-
-INSERT INTO OrdensServico
-(
-    NumeroOS,
-    Cliente,
-    Contato,
-    Endereco,
-    DataAbertura,
-    DescricaoServico,
-    TipoServico,
-    DataEntrega,
-    FuncionarioId,
-    MaquinaId,
-    ValorMateriais,
-    ValorMaoObra,
-    Desconto,
-    ValorTotal,
-    CondicaoPagamento,
-    Observacoes
-)
-SELECT
-    'OS-0001',
-    'Metalúrgica Alpha',
-    '(79) 98888-1111',
-    'Aracaju - SE',
-    GETDATE(),
-    'Fabricação de cilindros em aço carbono.',
-    'torneamento',
-    DATEADD(DAY, 7, GETDATE()),
-    f.Id,
-    m.Id,
-    6250.00,
-    1800.00,
-    0.00,
-    8050.00,
-    '50% na entrada e 50% na entrega.',
-    'OS criada para teste inicial do sistema.'
-FROM Funcionarios f
-CROSS JOIN Maquinas m
-WHERE f.Matricula = 'FUNC-001'
-AND m.Codigo = 'MC-001';
+ALTER DATABASE [BANCOBLACKFORGE] SET PARAMETERIZATION SIMPLE 
 GO
-
-
-/* ============================================================
-   MATERIAL DA ORDEM DE SERVIÇO
-   ============================================================ */
-
-INSERT INTO OrdensServicoMateriais
-(
-    OrdemServicoId,
-    MaterialId,
-    Quantidade,
-    Unidade,
-    ValorUnitario,
-    Subtotal
-)
-SELECT
-    os.Id,
-    m.Id,
-    500.00,
-    'KG',
-    12.50,
-    6250.00
-FROM OrdensServico os
-INNER JOIN Materiais m
-    ON m.Codigo = 'MAT-001'
-WHERE os.NumeroOS = 'OS-0001';
+ALTER DATABASE [BANCOBLACKFORGE] SET READ_COMMITTED_SNAPSHOT OFF 
 GO
-
-
-/* ============================================================
-   PROCESSO DE PRODUÇÃO DE TESTE
-   ============================================================ */
-
-INSERT INTO ProcessosProducao
-(
-    OrdemServicoId,
-    MaquinaId,
-    DataInicio,
-    DataFim,
-    QuantidadePlanejada,
-    QuantidadeProduzida,
-    ProducaoPorMinuto,
-    ConsumoPorUnidade,
-    MaterialConsumido,
-    Status
-)
-SELECT
-    os.Id,
-    m.Id,
-    GETDATE(),
-    NULL,
-    500,
-    0,
-    15.00,
-    0.8000,
-    0.0000,
-    'EM_EXECUCAO'
-FROM OrdensServico os
-INNER JOIN Maquinas m
-    ON m.Codigo = 'MC-001'
-WHERE os.NumeroOS = 'OS-0001';
+ALTER DATABASE [BANCOBLACKFORGE] SET HONOR_BROKER_PRIORITY OFF 
 GO
-
-
-/* ============================================================
-   VERIFICAÇÃO FINAL
-   ============================================================ */
-
-SELECT 'Materiais' AS Tabela, COUNT(*) AS Quantidade
-FROM Materiais
-
-UNION ALL
-
-SELECT 'Lotes', COUNT(*)
-FROM Lotes
-
-UNION ALL
-
-SELECT 'Movimentacoes', COUNT(*)
-FROM Movimentacoes
-
-UNION ALL
-
-SELECT 'Funcionarios', COUNT(*)
-FROM Funcionarios
-
-UNION ALL
-
-SELECT 'Maquinas', COUNT(*)
-FROM Maquinas
-
-UNION ALL
-
-SELECT 'OrdensServico', COUNT(*)
-FROM OrdensServico
-
-UNION ALL
-
-SELECT 'OrdensServicoMateriais', COUNT(*)
-FROM OrdensServicoMateriais
-
-UNION ALL
-
-SELECT 'ProcessosProducao', COUNT(*)
-FROM ProcessosProducao
-
-UNION ALL
-
-SELECT 'Temas', COUNT(*)
-FROM Temas
-
-UNION ALL
-
-SELECT 'ConfiguracaoSistema', COUNT(*)
-FROM ConfiguracaoSistema
-
-UNION ALL
-
-SELECT 'ConfiguracoesMaquina', COUNT(*)
-FROM ConfiguracoesMaquina;
+ALTER DATABASE [BANCOBLACKFORGE] SET RECOVERY SIMPLE 
+GO
+ALTER DATABASE [BANCOBLACKFORGE] SET  MULTI_USER 
+GO
+ALTER DATABASE [BANCOBLACKFORGE] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [BANCOBLACKFORGE] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [BANCOBLACKFORGE] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [BANCOBLACKFORGE] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [BANCOBLACKFORGE] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [BANCOBLACKFORGE] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+ALTER DATABASE [BANCOBLACKFORGE] SET QUERY_STORE = OFF
+GO
+USE [BANCOBLACKFORGE]
+GO
+/****** Object:  Table [dbo].[__EFMigrationsHistory]    Script Date: 14/10/2026 13:45:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[__EFMigrationsHistory](
+	[MigrationId] [nvarchar](150) NOT NULL,
+	[ProductVersion] [nvarchar](32) NOT NULL,
+ CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY CLUSTERED 
+(
+	[MigrationId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ConfiguracaoSistema]    Script Date: 14/10/2026 13:45:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ConfiguracaoSistema](
+	[Id] [int] NOT NULL,
+	[TemaId] [int] NOT NULL,
+ CONSTRAINT [PK_ConfiguracaoSistema] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ConfiguracoesMaquina]    Script Date: 14/10/2026 13:45:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ConfiguracoesMaquina](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[MaquinaId] [int] NOT NULL,
+	[TipoServico] [nvarchar](50) NOT NULL,
+	[ProducaoPorMinuto] [decimal](18, 2) NOT NULL,
+	[ConsumoPorUnidade] [decimal](18, 4) NOT NULL,
+	[Ativa] [bit] NOT NULL,
+	[MaterialId] [int] NULL,
+ CONSTRAINT [PK_ConfiguracoesMaquina] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Funcionarios]    Script Date: 14/10/2026 13:45:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Funcionarios](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Nome] [nvarchar](150) NOT NULL,
+	[Matricula] [nvarchar](50) NOT NULL,
+	[CPF] [nvarchar](14) NOT NULL,
+	[Cargo] [nvarchar](100) NOT NULL,
+	[Idade] [int] NOT NULL,
+	[Telefone] [nvarchar](20) NULL,
+	[Setor] [nvarchar](100) NOT NULL,
+	[DataAdmissao] [datetime2](7) NOT NULL,
+	[Email] [nvarchar](150) NULL,
+	[Observacoes] [nvarchar](500) NULL,
+ CONSTRAINT [PK_Funcionarios] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Funcionarios_CPF] UNIQUE NONCLUSTERED 
+(
+	[CPF] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Funcionarios_Matricula] UNIQUE NONCLUSTERED 
+(
+	[Matricula] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Lotes]    Script Date: 14/10/2026 13:45:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Lotes](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Codigo] [nvarchar](50) NOT NULL,
+	[Quantidade] [decimal](18, 4) NOT NULL,
+	[CustoUnitario] [decimal](18, 2) NOT NULL,
+	[DataEntrada] [datetime2](7) NOT NULL,
+	[DataFabricacao] [datetime2](7) NULL,
+	[DataValidade] [datetime2](7) NULL,
+	[MaterialId] [int] NOT NULL,
+	[Observacoes] [nvarchar](500) NULL,
+ CONSTRAINT [PK_Lotes] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Lotes_Material_Codigo] UNIQUE NONCLUSTERED 
+(
+	[MaterialId] ASC,
+	[Codigo] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Maquinas]    Script Date: 14/10/2026 13:45:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Maquinas](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Nome] [nvarchar](150) NOT NULL,
+	[Codigo] [nvarchar](50) NOT NULL,
+	[Fabricante] [nvarchar](100) NOT NULL,
+	[Modelo] [nvarchar](100) NOT NULL,
+	[NumeroSerie] [nvarchar](100) NOT NULL,
+	[DataAquisicao] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_Maquinas] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Maquinas_Codigo] UNIQUE NONCLUSTERED 
+(
+	[Codigo] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Maquinas_NumeroSerie] UNIQUE NONCLUSTERED 
+(
+	[NumeroSerie] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Materiais]    Script Date: 14/10/2026 13:45:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Materiais](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Codigo] [nvarchar](50) NOT NULL,
+	[Nome] [nvarchar](150) NOT NULL,
+	[Categoria] [nvarchar](50) NOT NULL,
+	[Unidade] [nvarchar](20) NOT NULL,
+	[Descricao] [nvarchar](500) NULL,
+	[EstoqueMinimo] [decimal](18, 2) NOT NULL,
+ CONSTRAINT [PK_Materiais] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Materiais_Codigo] UNIQUE NONCLUSTERED 
+(
+	[Codigo] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Movimentacoes]    Script Date: 14/10/2026 13:45:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Movimentacoes](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Tipo] [nvarchar](20) NOT NULL,
+	[Quantidade] [decimal](18, 4) NOT NULL,
+	[DataMovimentacao] [datetime2](7) NOT NULL,
+	[Observacoes] [nvarchar](500) NULL,
+	[MaterialId] [int] NOT NULL,
+	[LoteId] [int] NULL,
+	[ProcessoProducaoId] [int] NULL,
+ CONSTRAINT [PK_Movimentacoes] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[OrdensServico]    Script Date: 14/10/2026 13:45:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[OrdensServico](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[NumeroOS] [nvarchar](50) NOT NULL,
+	[Cliente] [nvarchar](150) NOT NULL,
+	[Contato] [nvarchar](100) NULL,
+	[Endereco] [nvarchar](300) NULL,
+	[DataAbertura] [datetime2](7) NOT NULL,
+	[DescricaoServico] [nvarchar](1000) NOT NULL,
+	[TipoServico] [nvarchar](50) NOT NULL,
+	[DataEntrega] [datetime2](7) NULL,
+	[FuncionarioId] [int] NULL,
+	[MaquinaId] [int] NULL,
+	[ValorMateriais] [decimal](18, 2) NOT NULL,
+	[ValorMaoObra] [decimal](18, 2) NOT NULL,
+	[Desconto] [decimal](18, 2) NOT NULL,
+	[ValorTotal] [decimal](18, 2) NOT NULL,
+	[CondicaoPagamento] [nvarchar](max) NULL,
+	[Observacoes] [nvarchar](500) NULL,
+	[Status] [nvarchar](max) NOT NULL,
+	[DataConclusao] [datetime2](7) NULL,
+	[Quantidade] [int] NOT NULL,
+	[MaterialId] [int] NULL,
+ CONSTRAINT [PK_OrdensServico] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_OrdensServico_NumeroOS] UNIQUE NONCLUSTERED 
+(
+	[NumeroOS] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ProcessosProducao]    Script Date: 14/10/2026 13:45:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ProcessosProducao](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[OrdemServicoId] [int] NOT NULL,
+	[MaquinaId] [int] NOT NULL,
+	[DataInicio] [datetime2](7) NOT NULL,
+	[DataFim] [datetime2](7) NULL,
+	[QuantidadePlanejada] [int] NOT NULL,
+	[QuantidadeProduzida] [int] NOT NULL,
+	[ProducaoPorMinuto] [decimal](18, 2) NOT NULL,
+	[ConsumoPorUnidade] [decimal](18, 4) NOT NULL,
+	[MaterialConsumido] [decimal](18, 4) NOT NULL,
+	[Status] [nvarchar](30) NOT NULL,
+	[MaterialId] [int] NULL,
+	[QuantidadeConsumidaRegistrada] [decimal](18, 4) NOT NULL,
+	[TempoProducaoSegundos] [decimal](18, 4) NOT NULL,
+	[UltimaAtualizacaoProducao] [datetime2](7) NULL,
+ CONSTRAINT [PK_ProcessosProducao] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[Temas]    Script Date: 14/10/2026 13:45:03 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Temas](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Nome] [nvarchar](100) NOT NULL,
+	[Codigo] [nvarchar](50) NOT NULL,
+	[Ativo] [bit] NOT NULL,
+ CONSTRAINT [PK_Temas] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Temas_Codigo] UNIQUE NONCLUSTERED 
+(
+	[Codigo] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Index [IX_Movimentacoes_ProcessoProducaoId]    Script Date: 14/10/2026 13:45:03 ******/
+CREATE NONCLUSTERED INDEX [IX_Movimentacoes_ProcessoProducaoId] ON [dbo].[Movimentacoes]
+(
+	[ProcessoProducaoId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[ConfiguracoesMaquina] ADD  CONSTRAINT [DF_ConfiguracoesMaquina_Ativa]  DEFAULT ((1)) FOR [Ativa]
+GO
+ALTER TABLE [dbo].[Materiais] ADD  CONSTRAINT [DF_Materiais_EstoqueMinimo]  DEFAULT ((0)) FOR [EstoqueMinimo]
+GO
+ALTER TABLE [dbo].[OrdensServico] ADD  CONSTRAINT [DF_OS_ValorMateriais]  DEFAULT ((0)) FOR [ValorMateriais]
+GO
+ALTER TABLE [dbo].[OrdensServico] ADD  CONSTRAINT [DF_OS_ValorMaoObra]  DEFAULT ((0)) FOR [ValorMaoObra]
+GO
+ALTER TABLE [dbo].[OrdensServico] ADD  CONSTRAINT [DF_OS_Desconto]  DEFAULT ((0)) FOR [Desconto]
+GO
+ALTER TABLE [dbo].[OrdensServico] ADD  CONSTRAINT [DF_OS_ValorTotal]  DEFAULT ((0)) FOR [ValorTotal]
+GO
+ALTER TABLE [dbo].[OrdensServico] ADD  DEFAULT (N'pendente') FOR [Status]
+GO
+ALTER TABLE [dbo].[OrdensServico] ADD  DEFAULT ((1)) FOR [Quantidade]
+GO
+ALTER TABLE [dbo].[ProcessosProducao] ADD  CONSTRAINT [DF_ProcessosProducao_QuantidadeConsumidaRegistrada]  DEFAULT ((0)) FOR [QuantidadeConsumidaRegistrada]
+GO
+ALTER TABLE [dbo].[ProcessosProducao] ADD  CONSTRAINT [DF_ProcessosProducao_TempoProducaoSegundos]  DEFAULT ((0)) FOR [TempoProducaoSegundos]
+GO
+ALTER TABLE [dbo].[Temas] ADD  CONSTRAINT [DF_Temas_Ativo]  DEFAULT ((1)) FOR [Ativo]
+GO
+ALTER TABLE [dbo].[ConfiguracaoSistema]  WITH CHECK ADD  CONSTRAINT [FK_ConfiguracaoSistema_Temas] FOREIGN KEY([TemaId])
+REFERENCES [dbo].[Temas] ([Id])
+GO
+ALTER TABLE [dbo].[ConfiguracaoSistema] CHECK CONSTRAINT [FK_ConfiguracaoSistema_Temas]
+GO
+ALTER TABLE [dbo].[ConfiguracoesMaquina]  WITH CHECK ADD  CONSTRAINT [FK_ConfiguracoesMaquina_Maquinas] FOREIGN KEY([MaquinaId])
+REFERENCES [dbo].[Maquinas] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[ConfiguracoesMaquina] CHECK CONSTRAINT [FK_ConfiguracoesMaquina_Maquinas]
+GO
+ALTER TABLE [dbo].[ConfiguracoesMaquina]  WITH CHECK ADD  CONSTRAINT [FK_ConfiguracoesMaquina_Materiais] FOREIGN KEY([MaterialId])
+REFERENCES [dbo].[Materiais] ([Id])
+GO
+ALTER TABLE [dbo].[ConfiguracoesMaquina] CHECK CONSTRAINT [FK_ConfiguracoesMaquina_Materiais]
+GO
+ALTER TABLE [dbo].[Lotes]  WITH CHECK ADD  CONSTRAINT [FK_Lotes_Materiais] FOREIGN KEY([MaterialId])
+REFERENCES [dbo].[Materiais] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[Lotes] CHECK CONSTRAINT [FK_Lotes_Materiais]
+GO
+ALTER TABLE [dbo].[Movimentacoes]  WITH CHECK ADD  CONSTRAINT [FK_Movimentacoes_Lotes] FOREIGN KEY([LoteId])
+REFERENCES [dbo].[Lotes] ([Id])
+GO
+ALTER TABLE [dbo].[Movimentacoes] CHECK CONSTRAINT [FK_Movimentacoes_Lotes]
+GO
+ALTER TABLE [dbo].[Movimentacoes]  WITH CHECK ADD  CONSTRAINT [FK_Movimentacoes_Materiais] FOREIGN KEY([MaterialId])
+REFERENCES [dbo].[Materiais] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[Movimentacoes] CHECK CONSTRAINT [FK_Movimentacoes_Materiais]
+GO
+ALTER TABLE [dbo].[Movimentacoes]  WITH CHECK ADD  CONSTRAINT [FK_Movimentacoes_ProcessosProducao] FOREIGN KEY([ProcessoProducaoId])
+REFERENCES [dbo].[ProcessosProducao] ([Id])
+GO
+ALTER TABLE [dbo].[Movimentacoes] CHECK CONSTRAINT [FK_Movimentacoes_ProcessosProducao]
+GO
+ALTER TABLE [dbo].[OrdensServico]  WITH CHECK ADD  CONSTRAINT [FK_OrdensServico_Funcionarios] FOREIGN KEY([FuncionarioId])
+REFERENCES [dbo].[Funcionarios] ([Id])
+ON DELETE SET NULL
+GO
+ALTER TABLE [dbo].[OrdensServico] CHECK CONSTRAINT [FK_OrdensServico_Funcionarios]
+GO
+ALTER TABLE [dbo].[OrdensServico]  WITH CHECK ADD  CONSTRAINT [FK_OrdensServico_Maquinas] FOREIGN KEY([MaquinaId])
+REFERENCES [dbo].[Maquinas] ([Id])
+ON DELETE SET NULL
+GO
+ALTER TABLE [dbo].[OrdensServico] CHECK CONSTRAINT [FK_OrdensServico_Maquinas]
+GO
+ALTER TABLE [dbo].[ProcessosProducao]  WITH CHECK ADD  CONSTRAINT [FK_ProcessosProducao_Maquinas] FOREIGN KEY([MaquinaId])
+REFERENCES [dbo].[Maquinas] ([Id])
+GO
+ALTER TABLE [dbo].[ProcessosProducao] CHECK CONSTRAINT [FK_ProcessosProducao_Maquinas]
+GO
+ALTER TABLE [dbo].[ProcessosProducao]  WITH CHECK ADD  CONSTRAINT [FK_ProcessosProducao_Materiais] FOREIGN KEY([MaterialId])
+REFERENCES [dbo].[Materiais] ([Id])
+GO
+ALTER TABLE [dbo].[ProcessosProducao] CHECK CONSTRAINT [FK_ProcessosProducao_Materiais]
+GO
+ALTER TABLE [dbo].[ProcessosProducao]  WITH CHECK ADD  CONSTRAINT [FK_ProcessosProducao_OrdensServico] FOREIGN KEY([OrdemServicoId])
+REFERENCES [dbo].[OrdensServico] ([Id])
+GO
+ALTER TABLE [dbo].[ProcessosProducao] CHECK CONSTRAINT [FK_ProcessosProducao_OrdensServico]
+GO
+USE [master]
+GO
+ALTER DATABASE [BANCOBLACKFORGE] SET  READ_WRITE 
 GO
