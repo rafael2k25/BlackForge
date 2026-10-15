@@ -4994,112 +4994,10 @@ if (limparFiltrosEstoque) {
 
 }
 
-
 if (gerarRelatorioEstoque) {
-
     gerarRelatorioEstoque.addEventListener(
         "click",
         gerarRelatorioDeEstoque
-    );
-
-}
-
-// =========================================================
-// RELATÓRIO FINANCEIRO
-// =========================================================
-
-const limparFiltrosFinanceiro =
-    document.getElementById("limparFiltrosFinanceiro");
-
-const gerarRelatorioFinanceiro =
-    document.getElementById("gerarRelatorioFinanceiro");
-
-const financeiroDataInicio =
-    document.getElementById("financeiroDataInicio");
-
-const financeiroDataFim =
-    document.getElementById("financeiroDataFim");
-
-const financeiroTipo =
-    document.getElementById("financeiroTipo");
-
-const financeiroStatus =
-    document.getElementById("financeiroStatus");
-
-const financeiroPagamento =
-    document.getElementById("financeiroPagamento");
-
-
-// =========================================================
-// LIMPAR FILTROS
-// =========================================================
-
-function limparFiltrosRelatorioFinanceiro() {
-
-    if (financeiroDataInicio) {
-        financeiroDataInicio.value = "";
-    }
-
-    if (financeiroDataFim) {
-        financeiroDataFim.value = "";
-    }
-
-    if (financeiroTipo) {
-        financeiroTipo.value = "";
-    }
-
-    if (financeiroStatus) {
-        financeiroStatus.value = "";
-    }
-
-    if (financeiroPagamento) {
-        financeiroPagamento.value = "";
-    }
-
-}
-
-
-// =========================================================
-// GERAR RELATÓRIO
-// =========================================================
-
-function gerarRelatorioDeFinanceiro() {
-
-    console.log(
-        "Gerando relatório financeiro...",
-        {
-            dataInicio:
-                financeiroDataInicio?.value || null,
-
-            dataFim:
-                financeiroDataFim?.value || null,
-
-            tipo:
-                financeiroTipo?.value || null,
-
-            status:
-                financeiroStatus?.value || null,
-
-            pagamento:
-                financeiroPagamento?.value || null
-        }
-    );
-
-}
-
-// EVENTOS
-
-if (limparFiltrosFinanceiro) {
-    limparFiltrosFinanceiro.addEventListener(
-        "click",
-        limparFiltrosRelatorioFinanceiro
-    );
-}
-
-if (gerarRelatorioFinanceiro) {
-    gerarRelatorioFinanceiro.addEventListener(
-        "click",
-        gerarRelatorioDeFinanceiro
     );
 }
 
@@ -5179,3 +5077,596 @@ document.addEventListener("keydown", (event) => {
         fecharConfirmacaoExclusao(false);
     }
 });
+
+const limparFiltrosFinanceiro =
+    document.getElementById("limparFiltrosFinanceiro");
+
+const gerarRelatorioFinanceiro =
+    document.getElementById("gerarRelatorioFinanceiro");
+
+const financeiroDataInicio =
+    document.getElementById("financeiroDataInicio");
+
+const financeiroDataFim =
+    document.getElementById("financeiroDataFim");
+
+const financeiroTipo =
+    document.getElementById("financeiroTipo");
+
+const financeiroStatus =
+    document.getElementById("financeiroStatus");
+
+const financeiroPagamento =
+    document.getElementById("financeiroPagamento");
+
+// Elementos novos (ids que você precisa adicionar no index.html)
+const financeiroReceitasEl = document.getElementById("finReceitas");
+const financeiroDespesasEl = document.getElementById("finDespesas");
+const financeiroSaldoEl = document.getElementById("finSaldo");
+const financeiroAReceberEl = document.getElementById("finAReceber");
+const financeiroRegistrosEl = document.getElementById("relatorio-financeiroRegistros");
+const financeiroTabelaEl = document.getElementById("relatorio-financeiroTabela");
+const financeiroGraficoResultadoEl = document.getElementById("finGraficoResultado");
+const financeiroGraficoPagamentoEl = document.getElementById("finGraficoPagamento");
+
+let graficoFinanceiroResultado = null;
+let graficoFinanceiroPagamento = null;
+
+
+// =========================================================
+// AUXILIARES
+// =========================================================
+
+function chaveFinanceira(valor) {
+    return String(valor ?? "").trim().toLowerCase();
+}
+
+// yyyy-MM-dd sem passar por new Date() (evita voltar um dia por causa do fuso)
+function dataFinanceiraISO(valor) {
+    const m = String(valor ?? "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? `${m[1]}-${m[2]}-${m[3]}` : "";
+}
+
+function corCssFinanceiro(variavel, reserva) {
+    return getComputedStyle(document.documentElement)
+        .getPropertyValue(variavel)
+        .trim() || reserva;
+}
+
+
+// =========================================================
+// MONTAGEM DOS LANÇAMENTOS
+// Cada lançamento: { data, descricao, tipo, pagamento, status, valor }
+// =========================================================
+
+function montarReceitasFinanceiro(ordens) {
+
+    return ordens.map(function (os) {
+
+        const concluida = chaveFinanceira(os.status) === "concluida";
+
+        const numero =
+            lerCampoOS(os, ["numeroOS", "numeroOs", "numero"]) || "OS";
+
+        const cliente =
+            lerCampoOS(os, ["cliente", "clienteNome"]) || "Cliente não informado";
+
+        // Concluída usa a data da baixa; as demais usam a entrega prevista
+        const data =
+            (concluida ? dataFinanceiraISO(os.dataConclusao) : "") ||
+            dataFinanceiraISO(os.dataEntrega) ||
+            dataFinanceiraISO(os.dataAbertura);
+
+        return {
+            data: data,
+            descricao: `${numero} — ${cliente}`,
+            tipo: "receita",
+            pagamento: chaveFinanceira(os.condicaoPagamento),
+            status: concluida ? "pago" : "pendente",
+            valor: Number(calcularTotalOS(os)) || 0
+        };
+
+    });
+
+}
+
+function montarDespesasFinanceiro(registrosEstoque) {
+
+    return registrosEstoque
+        .filter(function (r) {
+            return normalizarTipoRelatorioEstoque(r.tipo) === "entrada";
+        })
+        .map(function (r) {
+
+            const quantidade = Number(r.quantidade) || 0;
+            const custoUnitario = Number(r.custoUnitario) || 0;
+
+            return {
+                data: dataFinanceiraISO(r.data),
+                descricao:
+                    `Compra de ${r.material || "material"}` +
+                    (r.lote ? ` · Lote ${r.lote}` : ""),
+                tipo: "despesa",
+                pagamento: "",
+                status: "pago",
+                valor: quantidade * custoUnitario
+            };
+
+        });
+
+}
+
+
+// =========================================================
+// FILTROS E CÁLCULOS
+// =========================================================
+
+function filtrarLancamentosFinanceiro(lancamentos, filtros) {
+
+    return lancamentos.filter(function (l) {
+
+        if (filtros.dataInicio && (!l.data || l.data < filtros.dataInicio)) {
+            return false;
+        }
+
+        if (filtros.dataFim && (!l.data || l.data > filtros.dataFim)) {
+            return false;
+        }
+
+        if (filtros.tipo && l.tipo !== filtros.tipo) {
+            return false;
+        }
+
+        if (filtros.status && l.status !== filtros.status) {
+            return false;
+        }
+
+        // Despesas de material não têm forma de pagamento,
+        // então saem quando esse filtro está ativo
+        if (filtros.pagamento &&
+            l.pagamento !== chaveFinanceira(filtros.pagamento)) {
+            return false;
+        }
+
+        return true;
+
+    });
+
+}
+
+function calcularResumoFinanceiro(lancamentos) {
+
+    function somar(condicao) {
+        return lancamentos
+            .filter(condicao)
+            .reduce(function (total, l) { return total + l.valor; }, 0);
+    }
+
+    const receitas = somar(function (l) {
+        return l.tipo === "receita" && l.status === "pago";
+    });
+
+    const aReceber = somar(function (l) {
+        return l.tipo === "receita" && l.status === "pendente";
+    });
+
+    const despesas = somar(function (l) {
+        return l.tipo === "despesa";
+    });
+
+    return {
+        receitas: receitas,
+        aReceber: aReceber,
+        despesas: despesas,
+        saldo: receitas - despesas
+    };
+
+}
+
+
+// =========================================================
+// RENDERIZAÇÃO
+// =========================================================
+
+function renderizarIndicadoresFinanceiro(resumo) {
+
+    if (financeiroReceitasEl) {
+        financeiroReceitasEl.textContent =
+            formatarMoedaRelatorioServicos(resumo.receitas);
+    }
+
+    if (financeiroDespesasEl) {
+        financeiroDespesasEl.textContent =
+            formatarMoedaRelatorioServicos(resumo.despesas);
+    }
+
+    if (financeiroSaldoEl) {
+        financeiroSaldoEl.textContent =
+            formatarMoedaRelatorioServicos(resumo.saldo);
+    }
+
+    if (financeiroAReceberEl) {
+        financeiroAReceberEl.textContent =
+            formatarMoedaRelatorioServicos(resumo.aReceber);
+    }
+
+}
+
+function renderizarTabelaFinanceiro(lancamentos) {
+
+    if (financeiroRegistrosEl) {
+        financeiroRegistrosEl.textContent =
+            `${lancamentos.length} REGISTRO${lancamentos.length === 1 ? "" : "S"}`;
+    }
+
+    if (!financeiroTabelaEl) {
+        return;
+    }
+
+    if (lancamentos.length === 0) {
+
+        financeiroTabelaEl.innerHTML = `
+            <tr>
+                <td class="relatorio-tabela-vazia" colspan="6">
+                    <ion-icon name="document-text-outline"></ion-icon>
+                    <span>NENHUM REGISTRO ENCONTRADO</span>
+                    <small>Nenhum lançamento corresponde aos filtros.</small>
+                </td>
+            </tr>
+        `;
+
+        return;
+
+    }
+
+    const ordenados = lancamentos.slice().sort(function (a, b) {
+        return String(b.data).localeCompare(String(a.data));
+    });
+
+    financeiroTabelaEl.innerHTML = "";
+
+    ordenados.forEach(function (l) {
+
+        const linha = document.createElement("tr");
+
+        const sinal = l.tipo === "despesa" ? "- " : "+ ";
+
+        linha.innerHTML = `
+            <td>${formatarDataRelatorioServicos(l.data)}</td>
+            <td><strong>${escaparHtmlOS(l.descricao)}</strong></td>
+            <td>${l.tipo === "receita" ? "Receita" : "Despesa"}</td>
+            <td>${l.pagamento ? escaparHtmlOS(obterCondicaoPagamentoOS(l.pagamento)) : "-"}</td>
+            <td>
+                <span class="relatorio-status ${l.status === "pago" ? "concluida" : "pendente"}">
+                    ${l.status === "pago" ? "Pago" : "Pendente"}
+                </span>
+            </td>
+            <td><strong>${sinal}${formatarMoedaRelatorioServicos(l.valor)}</strong></td>
+        `;
+
+        financeiroTabelaEl.appendChild(linha);
+
+    });
+
+}
+
+function limparGraficosFinanceiro() {
+
+    if (graficoFinanceiroResultado) {
+        graficoFinanceiroResultado.destroy();
+        graficoFinanceiroResultado = null;
+    }
+
+    if (graficoFinanceiroPagamento) {
+        graficoFinanceiroPagamento.destroy();
+        graficoFinanceiroPagamento = null;
+    }
+
+}
+
+const CORES_GRAFICO_FINANCEIRO = {
+    receita: "#00a651",
+    aReceber: "#f5c400",
+    despesa: "#e4002b"
+};
+
+const PALETA_GRAFICO_FINANCEIRO = [
+    "#f5c400",
+    "#1688ff",
+    "#00a651",
+    "#e4002b",
+    "#9c27b0",
+    "#6c757d",
+    "#ff7043",
+    "#26a69a"
+];
+ 
+const COR_TEXTO_GRAFICO_FINANCEIRO = "#9aa4aa";
+const COR_GRADE_GRAFICO_FINANCEIRO = "rgba(154, 164, 170, 0.12)";
+ 
+function opcoesGraficoFinanceiro() {
+    return {
+        responsive: true,
+        maintainAspectRatio: false
+    };
+}
+
+function tooltipGraficoFinanceiro(rotulo) {
+    return {
+        enabled: true,
+        displayColors: false,
+        callbacks: {
+            title: function (itens) {
+                return itens[0].label;
+            },
+            label: function (contexto) {
+                return `${rotulo}: ${formatarMoedaRelatorioServicos(contexto.raw)}`;
+            }
+        }
+    };
+}
+
+function renderizarGraficoResultadoFinanceiro(resumo) {
+    if (!financeiroGraficoResultadoEl) {
+        return;
+    }
+    if (graficoFinanceiroResultado) {
+        graficoFinanceiroResultado.destroy();
+        graficoFinanceiroResultado = null;
+    }
+    if (resumo.receitas + resumo.aReceber + resumo.despesas === 0) {
+        financeiroGraficoResultadoEl.innerHTML =
+            htmlSemDadosRelatorioEstoque("Nenhum valor no período selecionado.");
+        return;
+    }
+    const canvas =
+        criarCanvasGraficoRelatorioEstoque(financeiroGraficoResultadoEl);
+    graficoFinanceiroResultado = new Chart(canvas, { 
+        type: "bar",
+        data: {
+            labels: ["Receitas", "A receber", "Despesas"],
+            datasets: [
+                {
+                    data: [
+                        resumo.receitas,
+                        resumo.aReceber,
+                        resumo.despesas
+                    ],
+                    backgroundColor: [
+                        CORES_GRAFICO_FINANCEIRO.receita,
+                        CORES_GRAFICO_FINANCEIRO.aReceber,
+                        CORES_GRAFICO_FINANCEIRO.despesa
+                    ],
+                    borderWidth: 0,
+                    borderRadius: 4,
+                    barThickness: 35
+                }
+            ]
+        },
+        options: {
+            ...opcoesGraficoFinanceiro(),
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: tooltipGraficoFinanceiro("Valor")
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: COR_TEXTO_GRAFICO_FINANCEIRO,
+                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE
+                    },
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: COR_TEXTO_GRAFICO_FINANCEIRO,
+                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE,
+                        callback: function (valor) {
+                            return formatarMoedaRelatorioServicos(valor);
+                        }
+                    },
+                    grid: {
+                        color: COR_GRADE_GRAFICO_FINANCEIRO
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderizarGraficoPagamentoFinanceiro(lancamentos) {
+    if (!financeiroGraficoPagamentoEl) {
+        return;
+    }
+    if (graficoFinanceiroPagamento) {
+        graficoFinanceiroPagamento.destroy();
+        graficoFinanceiroPagamento = null;
+    }
+
+    // Soma o valor das OS por forma de pagamento
+    const porPagamento = {};
+    lancamentos
+        .filter(function (l) { return l.tipo === "receita"; })
+        .forEach(function (l) {
+            const chave = l.pagamento || "outro";
+            porPagamento[chave] = (porPagamento[chave] || 0) + l.valor;
+        });
+    const chaves = Object.keys(porPagamento);
+    if (chaves.length === 0) {
+        financeiroGraficoPagamentoEl.innerHTML =
+            htmlSemDadosRelatorioEstoque("Nenhuma receita no período selecionado.");
+        return;
+    }
+    const canvas =
+        criarCanvasGraficoRelatorioEstoque(financeiroGraficoPagamentoEl);
+    graficoFinanceiroPagamento = new Chart(canvas, {
+        type: "doughnut",
+        data: {
+            labels: chaves.map(function (c) {
+                return obterCondicaoPagamentoOS(c);
+            }),
+            datasets: [
+                {
+                    data: chaves.map(function (c) {
+                        return porPagamento[c];
+                    }),
+                    backgroundColor: chaves.map(function (_, i) {
+                        return PALETA_GRAFICO_FINANCEIRO[i % PALETA_GRAFICO_FINANCEIRO.length];
+                    }),
+                    borderWidth: 0
+                }
+            ]
+        },
+        options: {
+            ...opcoesGraficoFinanceiro(),
+            cutout: "68%",
+            plugins: {
+                legend: {
+                    position: "bottom",
+                    labels: {
+                        color: COR_TEXTO_GRAFICO_FINANCEIRO,
+                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE,
+                        padding: 18
+                    }
+                },
+                tooltip: tooltipGraficoFinanceiro("Valor")
+            }
+        }
+    });
+}
+
+// LIMPAR FILTROS
+
+function limparFiltrosRelatorioFinanceiro() {
+
+    [
+        financeiroDataInicio,
+        financeiroDataFim,
+        financeiroTipo,
+        financeiroStatus,
+        financeiroPagamento
+    ].forEach(function (campo) {
+        if (campo) {
+            campo.value = "";
+        }
+    });
+
+}
+
+// GERAR RELATÓRIO
+
+async function gerarRelatorioDeFinanceiro() {
+    const filtros = {
+        dataInicio: financeiroDataInicio?.value || "",
+        dataFim: financeiroDataFim?.value || "",
+        tipo: financeiroTipo?.value || "",
+        status: financeiroStatus?.value || "",
+        pagamento: financeiroPagamento?.value || ""
+    };
+    if (filtros.dataInicio && filtros.dataFim &&
+        filtros.dataInicio > filtros.dataFim) {
+        notificar(
+            "A data inicial não pode ser maior que a data final.",
+            "aviso"
+        );
+        return;
+    }
+    if (gerarRelatorioFinanceiro) {
+        gerarRelatorioFinanceiro.disabled = true;
+        gerarRelatorioFinanceiro.textContent = "CARREGANDO...";
+    }
+    try {
+        const buscarReceitas = filtros.tipo !== "despesa";
+        const buscarDespesas = filtros.tipo !== "receita";
+
+        // Só as entradas interessam para despesa (consumo não é gasto novo)
+        const parametros = new URLSearchParams({ tipo: "entrada" });
+
+        if (filtros.dataInicio) {
+            parametros.append("dataInicio", filtros.dataInicio);
+        }
+
+        if (filtros.dataFim) {
+            parametros.append("dataFim", filtros.dataFim);
+        }
+
+        const [respostaOS, respostaEstoque] = await Promise.all([
+            buscarReceitas
+                ? fetch(`${API_URL}/OrdensServico`)
+                : null,
+            buscarDespesas
+                ? fetch(`${API_URL}/relatorios/estoque?${parametros.toString()}`)
+                : null
+        ]);
+
+        if (respostaOS && !respostaOS.ok) {
+            throw new Error(`Ordens de serviço: erro HTTP ${respostaOS.status}`);
+        }
+
+        if (respostaEstoque && !respostaEstoque.ok) {
+            throw new Error(`Estoque: erro HTTP ${respostaEstoque.status}`);
+        }
+
+        const ordens = respostaOS ? await respostaOS.json() : [];
+
+        const dadosEstoque = respostaEstoque
+            ? await respostaEstoque.json()
+            : null;
+
+        const lancamentos = filtrarLancamentosFinanceiro(
+            montarReceitasFinanceiro(ordens).concat(
+                montarDespesasFinanceiro(
+                    obterRegistrosRelatorioEstoque(dadosEstoque)
+                )
+            ),
+            filtros
+        );
+
+        console.log("[RELATÓRIO FINANCEIRO] Lançamentos:", lancamentos);
+
+        const resumo = calcularResumoFinanceiro(lancamentos);
+
+        limparGraficosFinanceiro();
+
+        renderizarIndicadoresFinanceiro(resumo);
+        renderizarTabelaFinanceiro(lancamentos);
+        renderizarGraficoResultadoFinanceiro(resumo);
+        renderizarGraficoPagamentoFinanceiro(lancamentos);
+
+    } catch (erro) {
+
+        console.error("[RELATÓRIO FINANCEIRO] Erro:", erro);
+
+        notificar("Não foi possível gerar o relatório financeiro.", "erro");
+
+    } finally {
+
+        if (gerarRelatorioFinanceiro) {
+            gerarRelatorioFinanceiro.disabled = false;
+            gerarRelatorioFinanceiro.textContent = "GERAR RELATÓRIO";
+        }
+
+    }
+
+}
+
+// EVENTOS
+
+if (limparFiltrosFinanceiro) {
+    limparFiltrosFinanceiro.addEventListener(
+        "click",
+        limparFiltrosRelatorioFinanceiro
+    );
+}
+
+if (gerarRelatorioFinanceiro) {
+    gerarRelatorioFinanceiro.addEventListener(
+        "click",
+        gerarRelatorioDeFinanceiro
+    );
+}
