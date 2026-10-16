@@ -401,21 +401,78 @@ const CONDICOES_PAGAMENTO_OS = {
     boleto: "Boleto",
     "30dias": "30 dias",
     parcelado: "Parcelado",
+    "50naentradae50naentrega": "50% na entrada e 50% na entrega",
     outro: "Outro"
 };
+
+// Valores aceitos pelo <select id="condicaoPagamento">
+const CONDICOES_PAGAMENTO_VALIDAS = [
+    "avista", "pix", "cartao", "boleto",
+    "30dias", "parcelado",
+    "50% na entrada e 50% na entrega", "outro"
+];
+
+// Converte qualquer texto vindo do banco em uma das opções do select
+function categorizarCondicaoPagamentoOS(valor) {
+    if (valor === null || valor === undefined || String(valor).trim() === "") {
+        return "";
+    }
+    const k = normalizarChaveOS(valor);
+
+    const exata = CONDICOES_PAGAMENTO_VALIDAS.find(function (v) {
+        return normalizarChaveOS(v) === k;
+    });
+    if (exata) return exata;
+
+    if (k.includes("pix")) return "pix";
+    if (k.includes("cartao")) return "cartao";
+    if (k.includes("boleto")) return "boleto";
+    if (k.includes("vista")) return "avista";
+    if (k.includes("parcela")) return "parcelado";
+    if (k.includes("30dias")) return "30dias";
+    if (/50.*entrada.*50.*entrega/.test(k)) return "50% na entrada e 50% na entrega";
+
+    return "outro";
+}
+
+// Valores aceitos pelo <select id="tipoServico">
+const TIPOS_SERVICO_VALIDOS = [
+    "usinagem", "torneamento", "fresagem", "corte", "solda", "outro"
+];
+
+// Converte textos como "usinagem CNC" ou "soldagem MIG/MAG" em uma das opções
+function categorizarTipoServicoOS(valor) {
+    if (valor === null || valor === undefined || String(valor).trim() === "") {
+        return "";
+    }
+    const k = normalizarChaveOS(valor);
+
+    const exata = TIPOS_SERVICO_VALIDOS.find(function (v) {
+        return normalizarChaveOS(v) === k;
+    });
+    if (exata) return exata;
+
+    if (k.includes("usinag")) return "usinagem";
+    if (k.includes("tornea")) return "torneamento";
+    if (k.includes("fresa")) return "fresagem";
+    if (k.includes("corte")) return "corte";
+    if (k.includes("sold")) return "solda";
+
+    return "outro";
+}
 
 function obterTipoServicoOS(tipo) {
     if (tipo === null || tipo === undefined || tipo === "") {
         return "-";
     }
-    return TIPOS_SERVICO_OS[normalizarChaveOS(tipo)] || formatarTextoLivreOS(tipo);
+    return TIPOS_SERVICO_OS[categorizarTipoServicoOS(tipo)] || "Outro";
 }
 
 function obterCondicaoPagamentoOS(condicao) {
     if (condicao === null || condicao === undefined || condicao === "") {
         return "-";
     }
-    return CONDICOES_PAGAMENTO_OS[normalizarChaveOS(condicao)] || formatarTextoLivreOS(condicao);
+    return CONDICOES_PAGAMENTO_OS[normalizarChaveOS(categorizarCondicaoPagamentoOS(condicao))] || "Outro";
 }
 
 function escaparHtmlOS(valor) {
@@ -941,12 +998,12 @@ function editarOSSelecionada() {
     document.getElementById("dataOS").value = paraInputData(o.dataAbertura);
     document.getElementById("dataEntregaOS").value = paraInputData(o.dataEntrega);
     document.getElementById("descricaoOS").value = o.descricaoServico || "";
-    selecionarOpcaoOS("tipoServico", o.tipoServico);
+    selecionarOpcaoOS("tipoServico", categorizarTipoServicoOS(o.tipoServico));
     document.getElementById("quantidadeOS").value = o.quantidade ?? 1;
     document.getElementById("responsavelOS").value = o.funcionarioId ?? o.funcionario?.id ?? "";
     document.getElementById("valorMaoObra").value = o.valorMaoObra ?? "0.00";
     document.getElementById("descontoOS").value = obterDescontoOS(o).toFixed(2);
-    selecionarOpcaoOS("condicaoPagamento", o.condicaoPagamento);
+    selecionarOpcaoOS("condicaoPagamento", categorizarCondicaoPagamentoOS(o.condicaoPagamento));
     document.getElementById("observacoesOS").value = o.observacoes || "";
 
     if (salvarOS) {
@@ -3534,7 +3591,7 @@ function obterNomeTipoRelatorioServicos(tipo) {
         outro: "Outro"
     };
 
-    return nomes[String(tipo).toLowerCase()] || formatarTextoLivreOS(tipo);
+    return nomes[categorizarTipoServicoOS(tipo)] || "Outro";
 }
 
 
@@ -5161,7 +5218,7 @@ function montarReceitasFinanceiro(ordens) {
             data: data,
             descricao: `${numero} — ${cliente}`,
             tipo: "receita",
-            pagamento: chaveFinanceira(os.condicaoPagamento),
+            pagamento: categorizarCondicaoPagamentoOS(os.condicaoPagamento),
             status: concluida ? "pago" : "pendente",
             valor: Number(calcularTotalOS(os)) || 0
         };
@@ -5224,7 +5281,7 @@ function filtrarLancamentosFinanceiro(lancamentos, filtros) {
         // Despesas de material não têm forma de pagamento,
         // então saem quando esse filtro está ativo
         if (filtros.pagamento &&
-            l.pagamento !== chaveFinanceira(filtros.pagamento)) {
+            normalizarChaveOS(l.pagamento) !== normalizarChaveOS(filtros.pagamento)) {
             return false;
         }
 

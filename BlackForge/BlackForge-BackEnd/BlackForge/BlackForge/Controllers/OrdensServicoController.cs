@@ -68,6 +68,17 @@ namespace BlackForge.Controllers
             if (string.IsNullOrWhiteSpace(ordem.TipoServico))
                 return BadRequest("O tipo de serviço é obrigatório.");
 
+            if (!TiposServicoValidos.Contains(ordem.TipoServico.Trim().ToLowerInvariant()))
+                return BadRequest("Tipo de serviço inválido.");
+
+            if (!string.IsNullOrWhiteSpace(ordem.CondicaoPagamento) &&
+                !CondicoesPagamentoValidas.Contains(ordem.CondicaoPagamento))
+                return BadRequest("Condição de pagamento inválida.");
+
+            if (!string.IsNullOrWhiteSpace(ordem.CondicaoPagamento) &&
+                !CondicoesPagamentoValidas.Contains(ordem.CondicaoPagamento))
+                return BadRequest("Condição de pagamento inválida.");
+
             if (ordem.Quantidade <= 0)
                 return BadRequest(
                     "A quantidade da OS deve ser maior que zero."
@@ -97,7 +108,6 @@ namespace BlackForge.Controllers
             if (erroMaterial != null)
                 return BadRequest(erroMaterial);
 
-            // Só o MaterialId importa; evita o EF tentar inserir um Material.
             ordem.Material = null;
 
             if (ordem.DataAbertura == default)
@@ -174,14 +184,22 @@ namespace BlackForge.Controllers
             if (string.IsNullOrWhiteSpace(ordem.TipoServico))
                 return BadRequest("O tipo de serviço é obrigatório.");
 
+            if (!TiposServicoValidos.Contains(ordem.TipoServico.Trim().ToLowerInvariant()))
+                return BadRequest("Tipo de serviço inválido.");
+
+            if (!string.IsNullOrWhiteSpace(ordem.CondicaoPagamento) &&
+                !CondicoesPagamentoValidas.Contains(ordem.CondicaoPagamento))
+                return BadRequest("Condição de pagamento inválida.");
+
+            if (!string.IsNullOrWhiteSpace(ordem.CondicaoPagamento) &&
+               !CondicoesPagamentoValidas.Contains(ordem.CondicaoPagamento))
+                return BadRequest("Condição de pagamento inválida.");
+
             if (ordem.Quantidade <= 0)
                 return BadRequest(
                     "A quantidade da OS deve ser maior que zero."
                 );
 
-            // O processo de produção copia quantidade, serviço e material
-            // ao iniciar. Alterar esses campos durante a execução deixaria
-            // a OS e o processo com valores diferentes.
             if (ordemExistente.Status == "em_execucao")
             {
                 var tipoAlterado = !string.Equals(
@@ -301,7 +319,6 @@ namespace BlackForge.Controllers
             string? maquinaNome = null;
             int? maquinaIdSelecionada = null;
 
-            // A OS só pode ser concluída automaticamente pelo serviço.
             if (status == "concluida")
             {
                 if (ordem.Status != "concluida")
@@ -339,7 +356,6 @@ namespace BlackForge.Controllers
                     );
                 }
 
-                // Reutiliza o processo existente, evitando duplicação.
                 if (processosAtivos.Count > 0)
                 {
                     var processoExistente = processosAtivos[0];
@@ -358,8 +374,7 @@ namespace BlackForge.Controllers
                         .Select(p => p.MaquinaId);
 
                     var tipoServicoOS = ordem.TipoServico.Trim();
-
-                    // Só seleciona configurações do tipo de serviço correto.
+                 
                     var configuracaoSelecionada =
                         await _context.ConfiguracoesMaquina
                             .Include(c => c.Maquina)
@@ -397,8 +412,6 @@ namespace BlackForge.Controllers
                         );
                     }
 
-                    // O material vem da OS. O material da configuração da
-                    // máquina é apenas um valor padrão opcional.
                     var materialId =
                         ordem.MaterialId ??
                         configuracaoSelecionada.MaterialId;
@@ -424,8 +437,6 @@ namespace BlackForge.Controllers
                             );
                         }
 
-                        // Confere o estoque total antes de iniciar, para a OS
-                        // não ficar "em execução" sem conseguir terminar.
                         var hoje = DateTime.Today;
 
                         var saldo = await _context.Lotes
@@ -558,8 +569,6 @@ namespace BlackForge.Controllers
             return NoContent();
         }
 
-        // ================= AUXILIARES =================
-
         private async Task<string?> ValidarMaterialAsync(int? materialId)
         {
             if (!materialId.HasValue)
@@ -572,5 +581,16 @@ namespace BlackForge.Controllers
                 ? null
                 : "O material informado não existe.";
         }
+
+        private static readonly string[] CondicoesPagamentoValidas =
+        {
+            "avista", "pix", "cartao", "boleto", "30dias", "parcelado",
+            "50% na entrada e 50% na entrega", "outro"
+        };
+
+        private static readonly string[] TiposServicoValidos =
+        {
+           "usinagem", "torneamento", "fresagem", "corte", "solda", "outro"
+        };
     }
 }
