@@ -181,6 +181,413 @@
     ]
   },
   {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesPrecificacaoController",
+    "Method": "GetConfiguracoes",
+    "RelativePath": "api/ConfiguracoesPrecificacao",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.ConfiguracaoPrecificacao, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesPrecificacaoController",
+    "Method": "CriarConfiguracao",
+    "RelativePath": "api/ConfiguracoesPrecificacao",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "configuracao",
+        "Type": "BlackForge.Models.ConfiguracaoPrecificacao",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.ConfiguracaoPrecificacao",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesPrecificacaoController",
+    "Method": "GetConfiguracao",
+    "RelativePath": "api/ConfiguracoesPrecificacao/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.ConfiguracaoPrecificacao",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesPrecificacaoController",
+    "Method": "AtualizarConfiguracao",
+    "RelativePath": "api/ConfiguracoesPrecificacao/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dados",
+        "Type": "BlackForge.Models.ConfiguracaoPrecificacao",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesPrecificacaoController",
+    "Method": "ExcluirConfiguracao",
+    "RelativePath": "api/ConfiguracoesPrecificacao/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesPrecificacaoController",
+    "Method": "AtivarConfiguracao",
+    "RelativePath": "api/ConfiguracoesPrecificacao/{id}/ativar",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.ConfiguracoesPrecificacaoController",
+    "Method": "GetConfiguracaoAtiva",
+    "RelativePath": "api/ConfiguracoesPrecificacao/ativa",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.ConfiguracaoPrecificacao",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosMaquinaController",
+    "Method": "GetCustosMaquina",
+    "RelativePath": "api/CustosMaquina",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.CustoMaquina, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosMaquinaController",
+    "Method": "CriarCustoMaquina",
+    "RelativePath": "api/CustosMaquina",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "custo",
+        "Type": "BlackForge.Models.CustoMaquina",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.CustoMaquina",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosMaquinaController",
+    "Method": "GetCustoMaquina",
+    "RelativePath": "api/CustosMaquina/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.CustoMaquina",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosMaquinaController",
+    "Method": "AtualizarCustoMaquina",
+    "RelativePath": "api/CustosMaquina/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dados",
+        "Type": "BlackForge.Models.CustoMaquina",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosMaquinaController",
+    "Method": "ExcluirCustoMaquina",
+    "RelativePath": "api/CustosMaquina/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosMaquinaController",
+    "Method": "CalcularCustoHora",
+    "RelativePath": "api/CustosMaquina/{id}/calculo",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosMaquinaController",
+    "Method": "GetCustoPorMaquina",
+    "RelativePath": "api/CustosMaquina/maquina/{maquinaId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "maquinaId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.CustoMaquina",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosOperadorController",
+    "Method": "GetTodos",
+    "RelativePath": "api/CustosOperador",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosOperadorController",
+    "Method": "Criar",
+    "RelativePath": "api/CustosOperador",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dados",
+        "Type": "BlackForge.Models.CustoOperador",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosOperadorController",
+    "Method": "GetPorId",
+    "RelativePath": "api/CustosOperador/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosOperadorController",
+    "Method": "Atualizar",
+    "RelativePath": "api/CustosOperador/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dados",
+        "Type": "BlackForge.Models.CustoOperador",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosOperadorController",
+    "Method": "Excluir",
+    "RelativePath": "api/CustosOperador/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosOperadorController",
+    "Method": "AlterarAtivo",
+    "RelativePath": "api/CustosOperador/{id}/ativar",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.CustosOperadorController",
+    "Method": "GetPorFuncionario",
+    "RelativePath": "api/CustosOperador/funcionario/{funcionarioId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "funcionarioId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "BlackForge.Controllers.FuncionariosController",
     "Method": "GetFuncionarios",
     "RelativePath": "api/Funcionarios",
@@ -860,6 +1267,125 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.PrecificacoesController",
+    "Method": "GetTodas",
+    "RelativePath": "api/Precificacoes",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.Precificacao, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.PrecificacoesController",
+    "Method": "GetPorId",
+    "RelativePath": "api/Precificacoes/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.Precificacao",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.PrecificacoesController",
+    "Method": "Aprovar",
+    "RelativePath": "api/Precificacoes/{id}/aprovar",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "BlackForge.Controllers.AprovarPrecoRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.PrecificacoesController",
+    "Method": "Calcular",
+    "RelativePath": "api/Precificacoes/calcular/{ordemServicoId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ordemServicoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "BlackForge.Models.Precificacao",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "BlackForge.Controllers.PrecificacoesController",
+    "Method": "GetPorOrdemServico",
+    "RelativePath": "api/Precificacoes/ordem-servico/{ordemServicoId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "ordemServicoId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.IEnumerable\u00601[[BlackForge.Models.Precificacao, BlackForge, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "BlackForge.Controllers.ProcessosProducaoController",

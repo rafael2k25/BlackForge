@@ -5727,3 +5727,496 @@ if (gerarRelatorioFinanceiro) {
         gerarRelatorioDeFinanceiro
     );
 }
+
+
+// =========================================================
+// PRECIFICAÇÃO
+// =========================================================
+
+let precificacoes = [];
+let precificacaoSelecionada = null;
+
+const STATUS_PRECIFICACAO = {
+    RASCUNHO: { texto: "RASCUNHO", classe: "pendente" },
+    APROVADA: { texto: "APROVADA", classe: "concluida" }
+};
+
+const ROTULOS_ITEM_PRECIFICACAO = {
+    MATERIAL: "MATERIAL",
+    MAQUINA: "MÁQUINA",
+    OPERADOR: "OPERADOR",
+    SETUP: "SETUP",
+    INDIRETO: "INDIRETO"
+};
+
+const ORDEM_ITENS_PRECIFICACAO = ["MATERIAL", "MAQUINA", "OPERADOR", "SETUP", "INDIRETO"];
+
+const modalPrecificacao = document.getElementById("modalPrecificacao");
+const campoPrecoAprovado = document.getElementById("precPrecoAprovado");
+const botaoAprovarPrecificacao = document.getElementById("precAprovar");
+
+// FORMATADORES
+
+function obterStatusPrecificacao(precificacao) {
+    const chave = String(precificacao?.status || "").toUpperCase();
+    return STATUS_PRECIFICACAO[chave] ? chave : "RASCUNHO";
+}
+
+function htmlBadgeStatusPrecificacao(precificacao) {
+    if (!precificacao) {
+        return '<span class="os-status os-status-pendente">SEM PRECIFICAÇÃO</span>';
+    }
+    const chave = obterStatusPrecificacao(precificacao);
+    return `<span class="os-status os-status-${STATUS_PRECIFICACAO[chave].classe}">${STATUS_PRECIFICACAO[chave].texto}</span>`;
+}
+
+function formatarNumeroPrecificacao(valor) {
+    return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 4 }).format(paraNumeroOS(valor));
+}
+
+function formatarPercentualPrecificacao(valor) {
+    return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 3 }).format(paraNumeroOS(valor)) + "%";
+}
+
+function lerPrecoDigitado(valor) {
+    const numero = Number(String(valor ?? "").replace(",", "."));
+    return Number.isFinite(numero) ? Math.round(numero * 100) / 100 : 0;
+}
+
+// Monta a mensagem de erro da API (400/404 trazem { mensagem }, validações trazem { title })
+async function lerMensagemErroPrecificacao(resposta, padrao) {
+    try {
+        const dados = await resposta.json();
+        const linhas = [dados?.mensagem || dados?.title || padrao];
+
+        if (dados?.quantidadeNecessaria !== undefined && dados?.saldoDisponivel !== undefined) {
+            const unidade = dados.unidade ? " " + dados.unidade : "";
+            linhas.push(
+                `Necessário: ${formatarNumeroPrecificacao(dados.quantidadeNecessaria)}${unidade} | ` +
+                `Disponível: ${formatarNumeroPrecificacao(dados.saldoDisponivel)}${unidade}`
+            );
+        }
+
+        if (Array.isArray(dados?.candidatasSemEstoque) && dados.candidatasSemEstoque.length > 0) {
+            const menor = dados.candidatasSemEstoque.reduce(function (a, b) {
+                return paraNumeroOS(a.quantidadeNecessaria) <= paraNumeroOS(b.quantidadeNecessaria) ? a : b;
+            });
+            linhas.push(
+                `${dados.candidatasSemEstoque.length} configuração(ões) sem estoque. ` +
+                `Menor necessidade: ${formatarNumeroPrecificacao(menor.quantidadeNecessaria)} ` +
+                `(disponível: ${formatarNumeroPrecificacao(menor.saldoDisponivel)})`
+            );
+        }
+
+        return linhas.join("\n");
+    } catch (erro) {
+        return padrao;
+    }
+}
+
+// CARREGAMENTO
+
+async function carregarPrecificacoes() {
+    try {
+        await carregarOrdensServico();
+
+        const resposta = await fetch(`${API_URL}/Precificacoes`);
+        if (!resposta.ok) {
+            throw new Error(`Erro HTTP: ${resposta.status}`);
+        }
+
+        precificacoes = await resposta.json();
+        renderizarPrecificacoes();
+    } catch (erro) {
+        console.error("Erro ao carregar precificações:", erro);
+        notificar("Não foi possível carregar as precificações.\n" + erro.message, "erro");
+    }
+}
+
+// Precificação "vigente" da OS: a aprovada, se existir; senão a mais recente
+function obterPrecificacaoDaOS(ordemId) {
+    const lista = precificacoes
+        .filter(function (p) { return p.ordemServicoId === ordemId; })
+        .sort(function (a, b) {
+            return String(b.dataCalculo).localeCompare(String(a.dataCalculo)) || b.id - a.id;
+        });
+
+    return lista.find(function (p) { return obterStatusPrecificacao(p) === "APROVADA"; }) || lista[0] || null;
+}
+
+// LISTAGEM
+
+function renderizarPrecificacoes() {
+    const tabela = document.getElementById("precTabela");
+    if (!tabela) {
+        return;
+    }
+
+    const linhasOS = ordensServico.map(function (ordem) {
+        return { ordem: ordem, precificacao: obterPrecificacaoDaOS(ordem.id) };
+    });
+
+    atualizarIndicadoresPrecificacao(linhasOS);
+
+    const busca = normalizarChaveOS(document.getElementById("precBusca")?.value || "");
+    const filtro = document.getElementById("precFiltroStatus")?.value || "";
+
+    const visiveis = linhasOS.filter(function (linha) {
+        const situacao = linha.precificacao ? obterStatusPrecificacao(linha.precificacao) : "SEM";
+        if (filtro && situacao !== filtro) {
+            return false;
+        }
+        if (busca) {
+            const texto = normalizarChaveOS(`${linha.ordem.numeroOS} ${linha.ordem.cliente}`);
+            return texto.includes(busca);
+        }
+        return true;
+    });
+
+    definirTexto("precRegistros", `${visiveis.length} ${visiveis.length === 1 ? "REGISTRO" : "REGISTROS"}`);
+
+    if (visiveis.length === 0) {
+        tabela.innerHTML = `
+            <tr>
+                <td class="relatorio-tabela-vazia" colspan="8">
+                    <ion-icon name="calculator-outline"></ion-icon>
+                    <span>NENHUMA ORDEM DE SERVIÇO ENCONTRADA</span>
+                    <small>Ajuste os filtros ou cadastre uma OS para poder precificá-la.</small>
+                </td>
+            </tr>`;
+        return;
+    }
+
+    tabela.innerHTML = visiveis.map(function (linha) {
+        const ordem = linha.ordem;
+        const p = linha.precificacao;
+        const aprovada = p && obterStatusPrecificacao(p) === "APROVADA";
+        const vazio = '<span class="prec-valor-vazio">—</span>';
+
+        let acoes = "";
+        if (p) {
+            acoes += `<button type="button" class="btn-prec btn-prec-detalhes" data-prec-acao="detalhes" data-prec-id="${p.id}">DETALHES</button>`;
+        }
+        if (!aprovada) {
+            acoes += `<button type="button" class="btn-prec btn-prec-calcular" data-prec-acao="calcular" data-os-id="${ordem.id}">${p ? "RECALCULAR" : "CALCULAR"}</button>`;
+        }
+
+        return `
+            <tr>
+                <td>
+                    <div class="prec-os-celula">
+                        <strong>${escaparHtmlOS(ordem.numeroOS)}</strong>
+                        <small>${escaparHtmlOS(ordem.cliente)}</small>
+                    </div>
+                </td>
+                <td>${escaparHtmlOS(obterTipoServicoOS(ordem.tipoServico))}</td>
+                <td>${escaparHtmlOS(ordem.quantidade ?? "-")}</td>
+                <td>${p ? formatarMoedaOS(p.custoTotalEstimado) : vazio}</td>
+                <td>${p ? formatarMoedaOS(p.precoSugerido) : vazio}</td>
+                <td>${aprovada ? `<strong class="prec-valor-destaque">${formatarMoedaOS(p.precoAprovado)}</strong>` : vazio}</td>
+                <td>${htmlBadgeStatusPrecificacao(p)}</td>
+                <td><div class="prec-acoes">${acoes}</div></td>
+            </tr>`;
+    }).join("");
+}
+
+function atualizarIndicadoresPrecificacao(linhasOS) {
+    let sem = 0;
+    let rascunhos = 0;
+    let aprovadas = 0;
+    let totalAprovado = 0;
+
+    linhasOS.forEach(function (linha) {
+        if (!linha.precificacao) {
+            sem++;
+        } else if (obterStatusPrecificacao(linha.precificacao) === "APROVADA") {
+            aprovadas++;
+            totalAprovado += paraNumeroOS(linha.precificacao.precoAprovado);
+        } else {
+            rascunhos++;
+        }
+    });
+
+    definirTexto("precIndSemPrecificacao", sem);
+    definirTexto("precIndRascunhos", rascunhos);
+    definirTexto("precIndAprovadas", aprovadas);
+    definirTexto("precIndTotalAprovado", formatarMoedaOS(totalAprovado));
+}
+
+// CÁLCULO
+
+async function calcularPrecificacaoOS(ordemId, botao) {
+    const textoOriginal = botao ? botao.textContent : "";
+
+    if (botao) {
+        botao.disabled = true;
+        botao.textContent = "CALCULANDO...";
+    }
+
+    try {
+        const resposta = await fetch(`${API_URL}/Precificacoes/calcular/${ordemId}`, { method: "POST" });
+
+        if (!resposta.ok) {
+            const mensagem = await lerMensagemErroPrecificacao(resposta, "Não foi possível calcular a precificação.");
+            notificar(mensagem, resposta.status >= 500 ? "erro" : "aviso");
+            return;
+        }
+
+        const nova = await resposta.json();
+        notificar("Precificação calculada com sucesso!", "sucesso");
+
+        await carregarPrecificacoes();
+        abrirDetalhesPrecificacao(precificacoes.find(function (p) { return p.id === nova.id; }) || nova);
+    } catch (erro) {
+        console.error("Erro ao calcular precificação:", erro);
+        notificar("Não foi possível calcular a precificação.\n" + erro.message, "erro");
+    } finally {
+        if (botao && document.body.contains(botao)) {
+            botao.disabled = false;
+            botao.textContent = textoOriginal;
+        }
+    }
+}
+
+// MODAL DE DETALHES
+
+function abrirDetalhesPrecificacao(precificacao) {
+    if (!precificacao) {
+        return;
+    }
+    preencherDetalhesPrecificacao(precificacao);
+    modalPrecificacao.classList.add("active");
+    document.body.style.overflow = "hidden";
+}
+
+function fecharDetalhesPrecificacao() {
+    modalPrecificacao.classList.remove("active");
+    document.body.style.overflow = "";
+    precificacaoSelecionada = null;
+}
+
+function preencherDetalhesPrecificacao(p) {
+    precificacaoSelecionada = p;
+
+    const ordem = ordensServico.find(function (o) { return o.id === p.ordemServicoId; });
+    const aprovada = obterStatusPrecificacao(p) === "APROVADA";
+
+    definirTexto("precOS", ordem?.numeroOS || `OS ${p.ordemServicoId}`);
+    definirTexto("precCliente", ordem?.cliente || "-");
+    definirTexto("precServico", ordem ? obterTipoServicoOS(ordem.tipoServico) : "-");
+    definirTexto("precQuantidade", formatarNumeroPrecificacao(p.quantidadeConsiderada));
+    definirTexto("precDataCalculo", formatarDataOS(p.dataCalculo));
+
+    const badge = document.getElementById("precStatus");
+    const chave = obterStatusPrecificacao(p);
+    badge.textContent = STATUS_PRECIFICACAO[chave].texto;
+    badge.className = `os-status os-status-${STATUS_PRECIFICACAO[chave].classe}`;
+
+    definirTexto("precCustoMaterial", formatarMoedaOS(p.custoMaterialEstimado));
+    definirTexto("precCustoMaquina", formatarMoedaOS(p.custoMaquinaEstimado));
+    definirTexto("precCustoOperador", formatarMoedaOS(p.custoOperadorEstimado));
+    definirTexto("precCustoSetup", formatarMoedaOS(p.custoSetupEstimado));
+    definirTexto("precCustoIndireto", formatarMoedaOS(p.custoIndiretoEstimado));
+    definirTexto("precCustoTotal", formatarMoedaOS(p.custoTotalEstimado));
+
+    definirTexto("precMargem", formatarPercentualPrecificacao(p.margemDesejadaPercentual));
+    definirTexto("precImpostos", formatarPercentualPrecificacao(p.impostosPercentual));
+    definirTexto("precDespesas", formatarPercentualPrecificacao(p.despesasVariaveisPercentual));
+    definirTexto("precIndiretosPercentual", formatarPercentualPrecificacao(p.custosIndiretosPercentual));
+
+    definirTexto("precPrecoSugerido", formatarMoedaOS(p.precoSugerido));
+    definirTexto("precObservacoes", p.observacoes || "Nenhuma observação registrada.");
+
+    const valorCampo = aprovada ? p.precoAprovado : p.precoSugerido;
+    campoPrecoAprovado.value = paraNumeroOS(valorCampo).toFixed(2);
+    campoPrecoAprovado.disabled = aprovada;
+    botaoAprovarPrecificacao.style.display = aprovada ? "none" : "";
+
+    renderizarItensPrecificacao(p.itens);
+    atualizarIndicadorPrecoPrecificacao();
+}
+
+function renderizarItensPrecificacao(itens) {
+    const corpo = document.getElementById("precItensTabela");
+
+    if (!Array.isArray(itens) || itens.length === 0) {
+        corpo.innerHTML = `
+            <tr>
+                <td class="relatorio-tabela-vazia" colspan="5">
+                    <span>SEM ITENS DETALHADOS</span>
+                    <small>Esta precificação não possui itens registrados.</small>
+                </td>
+            </tr>`;
+        return;
+    }
+
+    const ordenados = itens.slice().sort(function (a, b) {
+        const ia = ORDEM_ITENS_PRECIFICACAO.indexOf(String(a.tipoItem).toUpperCase());
+        const ib = ORDEM_ITENS_PRECIFICACAO.indexOf(String(b.tipoItem).toUpperCase());
+        return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib) || a.id - b.id;
+    });
+
+    corpo.innerHTML = ordenados.map(function (item) {
+        const tipo = String(item.tipoItem || "").toUpperCase();
+        const unidade = item.unidade ? " " + item.unidade : "";
+
+        return `
+            <tr>
+                <td>${escaparHtmlOS(ROTULOS_ITEM_PRECIFICACAO[tipo] || tipo)}</td>
+                <td>${escaparHtmlOS(item.descricao)}</td>
+                <td class="prec-num">${formatarNumeroPrecificacao(item.quantidade)}${escaparHtmlOS(unidade)}</td>
+                <td class="prec-num">${formatarMoedaOS(item.custoUnitario)}</td>
+                <td class="prec-num">${formatarMoedaOS(item.custoTotal)}</td>
+            </tr>`;
+    }).join("");
+}
+
+// Compara o preço digitado com o sugerido e com o custo total
+function atualizarIndicadorPrecoPrecificacao() {
+    const indicador = document.getElementById("precDesvio");
+    const p = precificacaoSelecionada;
+
+    if (!indicador || !p) {
+        return;
+    }
+
+    if (obterStatusPrecificacao(p) === "APROVADA") {
+        indicador.textContent = "Preço já aprovado. A OS foi atualizada com este valor.";
+        indicador.dataset.nivel = "ok";
+        return;
+    }
+
+    const valor = lerPrecoDigitado(campoPrecoAprovado.value);
+    const sugerido = paraNumeroOS(p.precoSugerido);
+    const custo = paraNumeroOS(p.custoTotalEstimado);
+
+    if (valor <= 0) {
+        indicador.textContent = "Informe um valor maior que zero.";
+        indicador.dataset.nivel = "alerta";
+        return;
+    }
+
+    if (valor < custo) {
+        indicador.textContent = "Abaixo do custo total estimado: aprovar este valor gera prejuízo.";
+        indicador.dataset.nivel = "alerta";
+        return;
+    }
+
+    const desvio = sugerido > 0 ? ((valor - sugerido) / sugerido) * 100 : 0;
+    const sinal = desvio > 0 ? "+" : "";
+    indicador.textContent = `${sinal}${new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 }).format(desvio)}% em relação ao preço sugerido`;
+    indicador.dataset.nivel = "ok";
+}
+
+// APROVAÇÃO
+
+async function aprovarPrecificacaoSelecionada() {
+    const p = precificacaoSelecionada;
+    if (!p) {
+        return;
+    }
+
+    const valor = lerPrecoDigitado(campoPrecoAprovado.value);
+    if (valor <= 0) {
+        notificar("Informe um preço aprovado maior que zero.", "aviso");
+        campoPrecoAprovado.focus();
+        return;
+    }
+
+    botaoAprovarPrecificacao.disabled = true;
+
+    try {
+        const resposta = await fetch(`${API_URL}/Precificacoes/${p.id}/aprovar`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ precoAprovado: valor })
+        });
+
+        if (!resposta.ok) {
+            const mensagem = await lerMensagemErroPrecificacao(resposta, "Não foi possível aprovar o preço.");
+            notificar(mensagem, resposta.status >= 500 ? "erro" : "aviso");
+            return;
+        }
+
+        notificar("Preço aprovado com sucesso! O valor total da OS foi atualizado.", "sucesso");
+
+        // Recarrega precificações e OS para a tela não ficar com valores antigos
+        await carregarPrecificacoes();
+
+        const atualizada = precificacoes.find(function (x) { return x.id === p.id; });
+        if (atualizada && modalPrecificacao.classList.contains("active")) {
+            preencherDetalhesPrecificacao(atualizada);
+        }
+    } catch (erro) {
+        console.error("Erro ao aprovar precificação:", erro);
+        notificar("Não foi possível aprovar o preço.\n" + erro.message, "erro");
+    } finally {
+        botaoAprovarPrecificacao.disabled = false;
+    }
+}
+
+// EVENTOS
+
+const menuPrecificacao = document.querySelector('.menu-item[data-section="precificacao"]');
+if (menuPrecificacao) {
+    menuPrecificacao.addEventListener("click", carregarPrecificacoes);
+}
+
+const botaoAtualizarPrecificacoes = document.getElementById("atualizarPrecificacoes");
+if (botaoAtualizarPrecificacoes) {
+    botaoAtualizarPrecificacoes.addEventListener("click", carregarPrecificacoes);
+}
+
+const campoBuscaPrecificacao = document.getElementById("precBusca");
+if (campoBuscaPrecificacao) {
+    campoBuscaPrecificacao.addEventListener("input", renderizarPrecificacoes);
+}
+
+const filtroStatusPrecificacao = document.getElementById("precFiltroStatus");
+if (filtroStatusPrecificacao) {
+    filtroStatusPrecificacao.addEventListener("change", renderizarPrecificacoes);
+}
+
+const tabelaPrecificacoes = document.getElementById("precTabela");
+if (tabelaPrecificacoes) {
+    tabelaPrecificacoes.addEventListener("click", function (event) {
+        const botao = event.target.closest("[data-prec-acao]");
+        if (!botao) {
+            return;
+        }
+
+        if (botao.dataset.precAcao === "detalhes") {
+            const p = precificacoes.find(function (x) { return x.id === Number(botao.dataset.precId); });
+            abrirDetalhesPrecificacao(p);
+        } else if (botao.dataset.precAcao === "calcular") {
+            calcularPrecificacaoOS(Number(botao.dataset.osId), botao);
+        }
+    });
+}
+
+if (campoPrecoAprovado) {
+    campoPrecoAprovado.addEventListener("input", atualizarIndicadorPrecoPrecificacao);
+}
+
+if (botaoAprovarPrecificacao) {
+    botaoAprovarPrecificacao.addEventListener("click", aprovarPrecificacaoSelecionada);
+}
+
+const fecharPrecX = document.getElementById("fecharPrecificacao");
+const fecharPrecBotao = document.getElementById("fecharPrecificacaoBotao");
+if (fecharPrecX) fecharPrecX.addEventListener("click", fecharDetalhesPrecificacao);
+if (fecharPrecBotao) fecharPrecBotao.addEventListener("click", fecharDetalhesPrecificacao);
+
+if (modalPrecificacao) {
+    modalPrecificacao.addEventListener("click", function (event) {
+        if (event.target === modalPrecificacao) {
+            fecharDetalhesPrecificacao();
+        }
+    });
+}
+
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && modalPrecificacao && modalPrecificacao.classList.contains("active")) {
+        fecharDetalhesPrecificacao();
+    }
+});

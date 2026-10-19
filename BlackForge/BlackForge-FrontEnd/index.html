@@ -61,6 +61,10 @@
                             <ion-icon name="arrow-forward-sharp"></ion-icon>
                             <span>Máquinas e Equipamentos</span>
                         </button>
+                        <button class="menu-item submenu-item" data-section="precificacao" data-title="Precificação">
+                            <ion-icon name="arrow-forward-sharp"></ion-icon>
+                            <span>Precificação</span>
+                        </button>
                     </div>
                 </div>
 
@@ -313,6 +317,127 @@
         </section>
 
         <!-- ======================== FIM CATEGORIA ORDENS DE SERVIÇO ======================== -->
+
+        <!-- ======================== INÍCIO CATEGORIA PRECIFICAÇÃO ======================== -->
+
+        <section id="precificacao" class="page-section">
+            <div class="section-header">
+                <div>
+                    <span class="section-label">SERVIÇOS</span>
+                    <h1>Precificação</h1>
+                    <p>Calcule o custo estimado de cada OS, confira o preço sugerido e aprove o valor final.</p>
+                </div>
+                <div class="relatorio-header-actions">
+                    <button type="button" class="secondary-button" id="atualizarPrecificacoes">
+                        ATUALIZAR
+                    </button>
+                </div>
+            </div>
+
+            <!-- INDICADORES -->
+
+            <div class="relatorio-indicadores">
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="calculator-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>SEM PRECIFICAÇÃO</span>
+                        <strong id="precIndSemPrecificacao">0</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="create-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>RASCUNHOS</span>
+                        <strong id="precIndRascunhos">0</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="checkmark-done-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>APROVADAS</span>
+                        <strong id="precIndAprovadas">0</strong>
+                    </div>
+                </div>
+                <div class="relatorio-indicador">
+                    <div class="relatorio-indicador-icon">
+                        <ion-icon name="wallet-outline"></ion-icon>
+                    </div>
+                    <div>
+                        <span>TOTAL APROVADO</span>
+                        <strong id="precIndTotalAprovado">R$ 0,00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTROS -->
+
+            <div class="relatorio-filtros">
+                <div class="relatorio-filtros-header">
+                    <h2>FILTROS</h2>
+                    <ion-icon name="funnel-outline"></ion-icon>
+                </div>
+                <div class="relatorio-filtros-grid">
+                    <div>
+                        <label class="relatorio-filtros-label" for="precBusca">BUSCAR</label>
+                        <input type="text" id="precBusca" placeholder="Número da OS ou cliente">
+                    </div>
+                    <div>
+                        <label class="relatorio-filtros-label" for="precFiltroStatus">SITUAÇÃO</label>
+                        <select id="precFiltroStatus">
+                            <option value="">Todas</option>
+                            <option value="SEM">Sem precificação</option>
+                            <option value="RASCUNHO">Rascunho</option>
+                            <option value="APROVADA">Aprovada</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELA -->
+
+            <div class="relatorio-card relatorio-tabela-card">
+                <div class="relatorio-card-header">
+                    <div>
+                        <span class="relatorio-card-label">ORDENS DE SERVIÇO</span>
+                        <h3>PRECIFICAÇÃO POR OS</h3>
+                    </div>
+                    <span class="relatorio-registros" id="precRegistros">0 REGISTROS</span>
+                </div>
+                <div class="relatorio-tabela-container">
+                    <table class="relatorio-tabela">
+                        <thead>
+                            <tr>
+                                <th>OS</th>
+                                <th>SERVIÇO</th>
+                                <th>QTD.</th>
+                                <th>CUSTO ESTIMADO</th>
+                                <th>PREÇO SUGERIDO</th>
+                                <th>PREÇO APROVADO</th>
+                                <th>SITUAÇÃO</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="precTabela">
+                            <tr>
+                                <td class="relatorio-tabela-vazia" colspan="8">
+                                    <ion-icon name="calculator-outline"></ion-icon>
+                                    <span>NENHUMA ORDEM DE SERVIÇO ENCONTRADA</span>
+                                    <small>Cadastre uma OS para poder precificá-la.</small>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================== FIM CATEGORIA PRECIFICAÇÃO ======================== -->
 
         <!-- ======================== INÍCIO CATEGORIA MATERIAIS ======================== -->
 
@@ -2427,6 +2552,153 @@
     </div>
 
     <!-- ======================== FIM MODAL DE CONFIRMAÇÃO DE EXCLUSÃO ======================== -->
+
+    <!-- ======================== MODAL PRECIFICAÇÃO ======================== -->
+
+    <div class="modal-overlay" id="modalPrecificacao">
+        <div class="modal-material ordem-detalhes-modal">
+
+            <div class="modal-material-header">
+                <div>
+                    <span class="section-label">PRECIFICAÇÃO</span>
+                    <div class="os-detalhes-titulo">
+                        <h2 id="precOS">OS-0000</h2>
+                        <span id="precStatus" class="os-status os-status-pendente">RASCUNHO</span>
+                    </div>
+                    <span id="precCliente">Cliente</span>
+                </div>
+                <button class="modal-close" id="fecharPrecificacao" type="button" aria-label="Fechar">
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+            </div>
+
+            <div class="modal-material-content">
+
+                <div class="material-section">
+                    <div class="material-section-title">CÁLCULO</div>
+                    <div class="ordem-detalhes-grid">
+                        <div class="ordem-info">
+                            <span>SERVIÇO</span>
+                            <strong id="precServico">-</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>QUANTIDADE</span>
+                            <strong id="precQuantidade">-</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>DATA DO CÁLCULO</span>
+                            <strong id="precDataCalculo">-</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="material-section">
+                    <div class="material-section-title">CUSTOS ESTIMADOS</div>
+                    <div class="ordem-detalhes-grid">
+                        <div class="ordem-info">
+                            <span>MATERIAL</span>
+                            <strong id="precCustoMaterial">R$ 0,00</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>MÁQUINA</span>
+                            <strong id="precCustoMaquina">R$ 0,00</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>OPERADOR</span>
+                            <strong id="precCustoOperador">R$ 0,00</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>PREPARAÇÃO (SETUP)</span>
+                            <strong id="precCustoSetup">R$ 0,00</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>CUSTOS INDIRETOS</span>
+                            <strong id="precCustoIndireto">R$ 0,00</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>CUSTO TOTAL</span>
+                            <strong id="precCustoTotal" class="prec-valor-destaque">R$ 0,00</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="material-section">
+                    <div class="material-section-title">PERCENTUAIS APLICADOS</div>
+                    <div class="ordem-detalhes-grid">
+                        <div class="ordem-info">
+                            <span>MARGEM DESEJADA</span>
+                            <strong id="precMargem">-</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>IMPOSTOS</span>
+                            <strong id="precImpostos">-</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>DESPESAS VARIÁVEIS</span>
+                            <strong id="precDespesas">-</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>CUSTOS INDIRETOS</span>
+                            <strong id="precIndiretosPercentual">-</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="material-section">
+                    <div class="material-section-title">PREÇO</div>
+                    <div class="prec-preco-bloco">
+                        <div class="ordem-info">
+                            <span>PREÇO SUGERIDO</span>
+                            <strong id="precPrecoSugerido" class="prec-valor-destaque">R$ 0,00</strong>
+                        </div>
+                        <div class="prec-campo">
+                            <label for="precPrecoAprovado" class="prec-label">PREÇO APROVADO (R$)</label>
+                            <input type="number" id="precPrecoAprovado" class="prec-input" min="0" step="0.01"
+                                placeholder="0,00">
+                            <small id="precDesvio" class="prec-desvio"></small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="material-section">
+                    <div class="material-section-title">ITENS DO CÁLCULO</div>
+                    <div class="relatorio-tabela-container">
+                        <table class="relatorio-tabela">
+                            <thead>
+                                <tr>
+                                    <th>TIPO</th>
+                                    <th>DESCRIÇÃO</th>
+                                    <th>QUANTIDADE</th>
+                                    <th>CUSTO UNIT.</th>
+                                    <th>TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody id="precItensTabela"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="material-section">
+                    <div class="material-section-title">OBSERVAÇÕES</div>
+                    <div class="ordem-detalhes-texto">
+                        <p id="precObservacoes">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer ordem-detalhes-footer">
+                <div class="ordem-detalhes-acoes">
+                    <button type="button" id="precAprovar" class="btn-status-os btn-status-os-baixa">
+                        <ion-icon name="checkmark-done-outline"></ion-icon>
+                        APROVAR PREÇO
+                    </button>
+                </div>
+                <button type="button" id="fecharPrecificacaoBotao" class="btn-secondary">
+                    FECHAR
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

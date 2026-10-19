@@ -25,6 +25,12 @@ namespace BlackForge.Data
         public DbSet<Tema> Temas { get; set; }
         public DbSet<ConfiguracaoSistema> ConfiguracaoSistema { get; set; }
         public DbSet<ConfiguracaoMaquina> ConfiguracoesMaquina { get; set; }
+        public DbSet<CustoMaquina> CustosMaquina { get; set; } = null!;
+        public DbSet<CustoOperador> CustosOperador { get; set; } = null!;
+        public DbSet<ConfiguracaoPrecificacao> ConfiguracoesPrecificacao { get; set; } = null!;
+        public DbSet<Precificacao> Precificacoes { get; set; } = null!;
+        public DbSet<ItemPrecificacao> ItensPrecificacao { get; set; } = null!;
+        public DbSet<ApuracaoCustoOS> ApuracoesCustoOS { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -529,6 +535,232 @@ namespace BlackForge.Data
                 .WithMany()
                 .HasForeignKey(c => c.TemaId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+
+            // =========================================================
+            // CUSTOS DAS MAQUINAS
+            // =========================================================
+
+            modelBuilder.Entity<CustoMaquina>(entity =>
+            {
+                entity.ToTable("CustosMaquina");
+                entity.HasKey(c => c.Id);
+                entity.Property(c => c.ValorAquisicao).HasPrecision(18, 2);
+                entity.Property(c => c.ValorResidual).HasPrecision(18, 2);
+                entity.Property(c => c.VidaUtilHoras).HasPrecision(18, 2);
+                entity.Property(c => c.ConsumoEnergiaKW).HasPrecision(18, 4);
+                entity.Property(c => c.CustoKWh).HasPrecision(18, 4);
+                entity.Property(c => c.CustoManutencaoHora).HasPrecision(18, 4);
+                entity.Property(c => c.OutrosCustosHora).HasPrecision(18, 4);
+                entity.Property(c => c.CustoHoraManual).HasPrecision(18, 4);
+                entity.Property(c => c.MetodoCalculo)
+                    .HasMaxLength(20)
+                    .HasDefaultValue("DETALHADO")
+                    .IsRequired();
+                entity.Property(c => c.DataAtualizacao)
+                    .HasDefaultValueSql("SYSDATETIME()");
+                entity.Property(c => c.Observacoes).HasMaxLength(500);
+                entity.HasIndex(c => c.MaquinaId).IsUnique();
+                entity.HasOne(c => c.Maquina)
+                    .WithMany()
+                    .HasForeignKey(c => c.MaquinaId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // =========================================================
+            // CUSTOS DOS OPERADORES
+            // =========================================================
+
+            modelBuilder.Entity<CustoOperador>(entity =>
+            {
+                entity.ToTable("CustosOperador");
+                entity.HasKey(c => c.Id);
+
+                entity.Property(c => c.CustoMensalTotal).HasPrecision(18, 2);
+                entity.Property(c => c.HorasProdutivasMes).HasPrecision(18, 2);
+
+                entity.Property(c => c.CustoHora)
+                    .HasPrecision(18, 4)
+                    .HasComputedColumnSql(
+                        "CONVERT(decimal(18,4), CustoMensalTotal / NULLIF(HorasProdutivasMes, 0))",
+                        stored: true);
+
+                entity.Property(c => c.Cargo).HasMaxLength(100);
+                entity.Property(c => c.Observacoes).HasMaxLength(500);
+
+                entity.Property(c => c.DataAtualizacao)
+                    .HasDefaultValueSql("SYSDATETIME()");
+
+                entity.HasIndex(c => c.FuncionarioId)
+                    .IsUnique()
+                    .HasFilter("[FuncionarioId] IS NOT NULL");
+
+                entity.HasIndex(c => c.Cargo)
+                    .IsUnique()
+                    .HasFilter("[FuncionarioId] IS NULL");
+
+                entity.HasOne(c => c.Funcionario)
+                    .WithMany()
+                    .HasForeignKey(c => c.FuncionarioId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // =========================================================
+            // CONFIGURACOES DE PRECIFICACAO
+            // =========================================================
+
+            modelBuilder.Entity<ConfiguracaoPrecificacao>(entity =>
+            {
+                entity.ToTable("ConfiguracoesPrecificacao");
+                entity.HasKey(c => c.Id);
+
+                entity.Property(c => c.MargemDesejadaPercentual).HasPrecision(7, 3);
+                entity.Property(c => c.ImpostosPercentual).HasPrecision(7, 3);
+                entity.Property(c => c.DespesasVariaveisPercentual).HasPrecision(7, 3);
+                entity.Property(c => c.CustosIndiretosPercentual).HasPrecision(7, 3);
+
+                entity.Property(c => c.SetupPadraoMinutos).HasPrecision(18, 2);
+                entity.Property(c => c.CustoHoraOperadorPadrao).HasPrecision(18, 4);
+
+                entity.Property(c => c.DataVigencia)
+                    .HasDefaultValueSql("SYSDATETIME()");
+
+                entity.Property(c => c.Observacoes).HasMaxLength(500);
+
+                entity.HasIndex(c => c.Ativa)
+                    .IsUnique()
+                    .HasFilter("[Ativa] = 1");
+            });
+
+            // =========================================================
+            // PRECIFICACOES
+            // =========================================================
+
+            modelBuilder.Entity<Precificacao>(entity =>
+            {
+                entity.ToTable("Precificacoes");
+                entity.HasKey(p => p.Id);
+
+                entity.Property(p => p.DataCalculo)
+                    .HasDefaultValueSql("SYSDATETIME()");
+
+                entity.Property(p => p.CustoMaterialEstimado).HasPrecision(18, 2);
+                entity.Property(p => p.CustoMaquinaEstimado).HasPrecision(18, 2);
+                entity.Property(p => p.CustoOperadorEstimado).HasPrecision(18, 2);
+                entity.Property(p => p.CustoSetupEstimado).HasPrecision(18, 2);
+                entity.Property(p => p.CustoIndiretoEstimado).HasPrecision(18, 2);
+                entity.Property(p => p.CustoTotalEstimado).HasPrecision(18, 2);
+
+                entity.Property(p => p.MargemDesejadaPercentual).HasPrecision(7, 3);
+                entity.Property(p => p.ImpostosPercentual).HasPrecision(7, 3);
+                entity.Property(p => p.DespesasVariaveisPercentual).HasPrecision(7, 3);
+                entity.Property(p => p.CustosIndiretosPercentual).HasPrecision(7, 3);
+
+                entity.Property(p => p.PrecoSugerido).HasPrecision(18, 2);
+                entity.Property(p => p.PrecoAprovado).HasPrecision(18, 2);
+
+                entity.Property(p => p.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValue("RASCUNHO")
+                    .IsRequired();
+
+                entity.Property(p => p.Observacoes).HasMaxLength(1000);
+
+                entity.HasIndex(p => new { p.OrdemServicoId, p.DataCalculo });
+
+                entity.HasOne(p => p.OrdemServico)
+                    .WithMany()
+                    .HasForeignKey(p => p.OrdemServicoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(p => p.ConfiguracaoPrecificacao)
+                    .WithMany(c => c.Precificacoes)
+                    .HasForeignKey(p => p.ConfiguracaoPrecificacaoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // ITENS DA PRECIFICACAO
+
+            modelBuilder.Entity<ItemPrecificacao>(entity =>
+            {
+                entity.ToTable("ItensPrecificacao");
+                entity.HasKey(i => i.Id);
+                entity.Property(i => i.TipoItem)
+                    .HasMaxLength(20)
+                    .IsRequired();
+                entity.Property(i => i.Descricao)
+                    .HasMaxLength(250)
+                    .IsRequired();
+                entity.Property(i => i.CodigoMaterialSnapshot).HasMaxLength(50);
+                entity.Property(i => i.NomeMaterialSnapshot).HasMaxLength(150);
+                entity.Property(i => i.CodigoLoteSnapshot).HasMaxLength(100);
+                entity.Property(i => i.Unidade).HasMaxLength(20);
+                entity.Property(i => i.Quantidade).HasPrecision(18, 4);
+                entity.Property(i => i.CustoUnitario).HasPrecision(18, 4);
+                entity.Property(i => i.CustoTotal).HasPrecision(18, 2);
+                entity.HasIndex(i => i.PrecificacaoId);
+                entity.HasOne(i => i.Precificacao)
+                    .WithMany(p => p.Itens)
+                    .HasForeignKey(i => i.PrecificacaoId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(i => i.Material)
+                    .WithMany()
+                    .HasForeignKey(i => i.MaterialId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(i => i.Lote)
+                    .WithMany()
+                    .HasForeignKey(i => i.LoteId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // APURACAO DOS CUSTOS REAIS DA OS
+
+            modelBuilder.Entity<ApuracaoCustoOS>(entity =>
+            {
+                entity.ToTable("ApuracoesCustoOS");
+                entity.HasKey(a => a.Id);
+
+                entity.Property(a => a.DataApuracao)
+                    .HasDefaultValueSql("SYSDATETIME()");
+
+                entity.Property(a => a.CustoMaterialReal).HasPrecision(18, 2);
+                entity.Property(a => a.CustoMaquinaReal).HasPrecision(18, 2);
+                entity.Property(a => a.CustoOperadorReal).HasPrecision(18, 2);
+                entity.Property(a => a.CustoSetupReal).HasPrecision(18, 2);
+                entity.Property(a => a.CustoIndiretoReal).HasPrecision(18, 2);
+                entity.Property(a => a.CustoTotalReal).HasPrecision(18, 2);
+                entity.Property(a => a.ReceitaReal).HasPrecision(18, 2);
+
+                entity.Property(a => a.ResultadoReal)
+                    .HasPrecision(18, 2)
+                    .HasComputedColumnSql(
+                        "CONVERT(decimal(18,2), ReceitaReal - CustoTotalReal)",
+                        stored: true);
+
+                entity.Property(a => a.MargemRealPercentual)
+                    .HasPrecision(9, 3)
+                    .HasComputedColumnSql(
+                        "CONVERT(decimal(9,3), CASE WHEN ReceitaReal > 0 THEN ((ReceitaReal - CustoTotalReal) * 100.0) / ReceitaReal ELSE NULL END)",
+                        stored: true);
+
+                entity.Property(a => a.Status)
+                    .HasMaxLength(20)
+                    .HasDefaultValue("RASCUNHO")
+                    .IsRequired();
+
+                entity.Property(a => a.Observacoes).HasMaxLength(1000);
+
+                entity.HasIndex(a => new { a.OrdemServicoId, a.Versao })
+                    .IsUnique();
+
+                entity.HasOne(a => a.OrdemServico)
+                    .WithMany()
+                    .HasForeignKey(a => a.OrdemServicoId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
         }
     }
 }

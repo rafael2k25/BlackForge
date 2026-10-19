@@ -68,16 +68,24 @@ namespace BlackForge.Controllers
             if (string.IsNullOrWhiteSpace(ordem.TipoServico))
                 return BadRequest("O tipo de serviço é obrigatório.");
 
-            if (!TiposServicoValidos.Contains(ordem.TipoServico.Trim().ToLowerInvariant()))
+            var tipoNormalizado = NormalizarTipoServico(ordem.TipoServico);
+
+            if (string.IsNullOrEmpty(tipoNormalizado) ||
+                !TiposServicoValidos.Contains(tipoNormalizado))
+            {
                 return BadRequest("Tipo de serviço inválido.");
+            }
+
+            ordem.TipoServico = tipoNormalizado;
 
             if (!string.IsNullOrWhiteSpace(ordem.CondicaoPagamento) &&
-                !CondicoesPagamentoValidas.Contains(ordem.CondicaoPagamento))
+                !CondicoesPagamentoValidas.Contains(
+                    ordem.CondicaoPagamento.Trim(),
+                    StringComparer.OrdinalIgnoreCase))
+            {
                 return BadRequest("Condição de pagamento inválida.");
+            }
 
-            if (!string.IsNullOrWhiteSpace(ordem.CondicaoPagamento) &&
-                !CondicoesPagamentoValidas.Contains(ordem.CondicaoPagamento))
-                return BadRequest("Condição de pagamento inválida.");
 
             if (ordem.Quantidade <= 0)
                 return BadRequest(
@@ -184,16 +192,23 @@ namespace BlackForge.Controllers
             if (string.IsNullOrWhiteSpace(ordem.TipoServico))
                 return BadRequest("O tipo de serviço é obrigatório.");
 
-            if (!TiposServicoValidos.Contains(ordem.TipoServico.Trim().ToLowerInvariant()))
+            var tipoNormalizado = NormalizarTipoServico(ordem.TipoServico);
+
+            if (string.IsNullOrEmpty(tipoNormalizado) ||
+                !TiposServicoValidos.Contains(tipoNormalizado))
+            {
                 return BadRequest("Tipo de serviço inválido.");
+            }
+
+            ordem.TipoServico = tipoNormalizado;
 
             if (!string.IsNullOrWhiteSpace(ordem.CondicaoPagamento) &&
-                !CondicoesPagamentoValidas.Contains(ordem.CondicaoPagamento))
+                !CondicoesPagamentoValidas.Contains(
+                    ordem.CondicaoPagamento.Trim(),
+                    StringComparer.OrdinalIgnoreCase))
+            {
                 return BadRequest("Condição de pagamento inválida.");
-
-            if (!string.IsNullOrWhiteSpace(ordem.CondicaoPagamento) &&
-               !CondicoesPagamentoValidas.Contains(ordem.CondicaoPagamento))
-                return BadRequest("Condição de pagamento inválida.");
+            }
 
             if (ordem.Quantidade <= 0)
                 return BadRequest(
@@ -202,10 +217,10 @@ namespace BlackForge.Controllers
 
             if (ordemExistente.Status == "em_execucao")
             {
-                var tipoAlterado = !string.Equals(
-                    ordem.TipoServico.Trim(),
-                    ordemExistente.TipoServico?.Trim(),
-                    StringComparison.OrdinalIgnoreCase);
+                var tipoExistenteNormalizado =
+                    NormalizarTipoServico(ordemExistente.TipoServico);
+
+                var tipoAlterado = tipoNormalizado != tipoExistenteNormalizado;
 
                 if (ordem.Quantidade != ordemExistente.Quantidade ||
                     tipoAlterado ||
@@ -373,26 +388,32 @@ namespace BlackForge.Controllers
                         .Where(p => p.Status == "EM_EXECUCAO")
                         .Select(p => p.MaquinaId);
 
-                    var tipoServicoOS = ordem.TipoServico.Trim();
-                 
-                    var configuracaoSelecionada =
-                        await _context.ConfiguracoesMaquina
-                            .Include(c => c.Maquina)
-                            .Where(c =>
-                                c.Ativa &&
-                                c.Maquina != null &&
-                                !maquinasOcupadas.Contains(c.MaquinaId) &&
-                                c.TipoServico.Trim().ToLower() ==
-                                    tipoServicoOS.ToLower())
-                            .OrderBy(c => c.Id)
-                            .FirstOrDefaultAsync();
+
+                    var tipoServicoOS = NormalizarTipoServico(ordem.TipoServico);
+
+                    if (string.IsNullOrEmpty(tipoServicoOS))
+                    {
+                        return BadRequest("O tipo de serviço da OS é inválido.");
+                    }
+
+                    var configuracoesAtivas = await _context.ConfiguracoesMaquina
+                        .Include(c => c.Maquina)
+                        .Where(c =>
+                            c.Ativa &&
+                            c.Maquina != null &&
+                            !maquinasOcupadas.Contains(c.MaquinaId))
+                        .OrderBy(c => c.Id)
+                        .ToListAsync();
+
+                    var configuracaoSelecionada = configuracoesAtivas
+                        .FirstOrDefault(c =>
+                            NormalizarTipoServico(c.TipoServico) == tipoServicoOS);
 
                     if (configuracaoSelecionada == null)
                     {
                         return Conflict(
                             "Não existe máquina livre com configuração ativa " +
-                            "compatível com o serviço '" + tipoServicoOS + "'."
-                        );
+                            $"compatível com o serviço '{tipoServicoOS}'.");
                     }
 
                     if (configuracaoSelecionada.ProducaoPorMinuto <= 0)
@@ -412,15 +433,52 @@ namespace BlackForge.Controllers
                         );
                     }
 
-                    var materialId =
-                        ordem.MaterialId ??
-                        configuracaoSelecionada.MaterialId;
+                    int? materialId = ordem.MaterialId
+     ?? configuracaoSelecionada.MaterialId;
 
-                    if (consumoPorUnidade > 0 && !materialId.HasValue)
+                    // Se a produção consome material, ele é obrigatório.
+                    if (consumoPorUnidade > 0 && materialId == null)
                     {
                         return Conflict(
-                            "Selecione o material da OS antes de iniciar a produção."
+                            "Não é possível iniciar a produção: defina o material na OS " +
+                            "ou na configuração da máquina."
                         );
+                    }
+
+                    // Se foi informado um material, ele precisa existir.
+                    if (materialId.HasValue)
+                    {
+                        var material = await _context.Materiais
+                            .AsNoTracking()
+                            .FirstOrDefaultAsync(m => m.Id == materialId.Value);
+
+                        if (material == null)
+                        {
+                            return Conflict("O material selecionado não foi encontrado.");
+                        }
+
+                        if (consumoPorUnidade > 0)
+                        {
+                            var hoje = DateTime.Today;
+
+                            var saldo = await _context.Lotes
+                                .Where(l =>
+                                    l.MaterialId == materialId.Value &&
+                                    l.Quantidade > 0 &&
+                                    (l.DataValidade == null || l.DataValidade >= hoje))
+                                .SumAsync(l => (decimal?)l.Quantidade) ?? 0m;
+
+                            var necessario = ordem.Quantidade * consumoPorUnidade;
+
+                            if (saldo < necessario)
+                            {
+                                return Conflict(
+                                    $"Estoque insuficiente de '{material.Nome}'. " +
+                                    $"Necessário: {necessario:0.####} {material.Unidade}; " +
+                                    $"disponível: {saldo:0.####} {material.Unidade}."
+                                );
+                            }
+                        }
                     }
 
                     if (materialId.HasValue)
@@ -588,9 +646,42 @@ namespace BlackForge.Controllers
             "50% na entrada e 50% na entrega", "outro"
         };
 
+
         private static readonly string[] TiposServicoValidos =
         {
-           "usinagem", "torneamento", "fresagem", "corte", "solda", "outro"
-        };
+    "usinagem",
+    "torneamento",
+    "fresagem",
+    "corte",
+    "solda",
+    "acabamento",
+    "conformacao",
+    "furacao",
+    "retifica",
+    "outro"
+};
+
+
+
+
+        private static string NormalizarTipoServico(string? tipo)
+        {
+            var valor = tipo?.Trim().ToLowerInvariant() ?? "";
+
+            return valor switch
+            {
+                "usinagem" => "usinagem",
+                "torneamento" or "torneamento cnc" => "torneamento",
+                "fresagem" or "fresagem cnc" => "fresagem",
+                "corte" or "corte cnc" => "corte",
+                "solda" or "soldagem" or "solda cnc" => "solda",
+                "acabamento" => "acabamento",
+                "conformacao" or "conformação" => "conformacao",
+                "furacao" or "furação" => "furacao",
+                "retifica" or "retífica" => "retifica",
+                "outro" => "outro",
+                _ => ""
+            };
+        }
     }
 }
