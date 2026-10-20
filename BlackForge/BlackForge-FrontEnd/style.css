@@ -42,6 +42,7 @@
     --os-pendente: #9da3ab;
     --os-em-execucao: var(--yellow);
     --os-concluida: var(--success);
+    
 
     /* -=-=-=- TEXTO -=-=-=- */
 
@@ -386,6 +387,8 @@ CATEGORIAS DO MENU
 
 
 }
+
+.btn-status-os-concluida { --cor-botao: var(--os-concluida); }
 
 /* ========== LADO ESQUERDO DA CATEGORIA ========== */
 

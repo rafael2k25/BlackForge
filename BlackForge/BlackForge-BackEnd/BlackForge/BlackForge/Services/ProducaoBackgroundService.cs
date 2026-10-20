@@ -12,6 +12,9 @@ namespace BlackForge.Services
         private static readonly TimeSpan Intervalo =
             TimeSpan.FromSeconds(5);
 
+        // Simulação: após 120s de produção efetiva acumulada, a OS é concluída.
+        private const decimal LimiteTempoProducaoSegundos = 120m;
+
         public ProducaoBackgroundService(
             IServiceScopeFactory scopeFactory,
             ILogger<ProducaoBackgroundService> logger)
@@ -28,7 +31,18 @@ namespace BlackForge.Services
 
             // Ao iniciar a API, reinicia a referência temporal dos processos
             // ativos. O tempo em que a API esteve desligada não é contado.
-            await InicializarRelogiosAsync(stoppingToken);
+            // Protegido por try/catch: uma falha aqui não pode derrubar o host.
+            try
+            {
+                await InicializarRelogiosAsync(stoppingToken);
+            }
+            catch (Exception ex)
+                when (ex is not OperationCanceledException)
+            {
+                _logger.LogError(
+                    ex,
+                    "Falha ao inicializar os relógios de produção.");
+            }
 
             using var timer = new PeriodicTimer(Intervalo);
 
@@ -144,29 +158,37 @@ namespace BlackForge.Services
             if (processo == null)
                 return;
 
+            var agora = DateTime.Now;
+
+            // Parâmetros inválidos: pausa o processo para liberar a máquina
+            // em vez de deixá-lo preso em EM_EXECUCAO e logando a cada ciclo.
             if (processo.QuantidadePlanejada <= 0 ||
                 processo.ProducaoPorMinuto <= 0 ||
                 processo.ConsumoPorUnidade < 0)
             {
-                _logger.LogWarning(
-                    "Processo {Id} possui parâmetros inválidos.",
-                    processo.Id);
+                await PausarProcessoAsync(
+                    context,
+                    transacao,
+                    processo,
+                    agora,
+                    "possui parâmetros inválidos",
+                    cancellationToken);
                 return;
             }
 
             if (processo.ConsumoPorUnidade > 0 &&
                 !processo.MaterialId.HasValue)
             {
-                _logger.LogWarning(
-                    "Processo {Id} não possui material configurado.",
-                    processo.Id);
+                await PausarProcessoAsync(
+                    context,
+                    transacao,
+                    processo,
+                    agora,
+                    "não possui material configurado",
+                    cancellationToken);
                 return;
             }
 
-            var agora = DateTime.Now;
-
-            // Se ainda não existe referência temporal, inicializa sem
-            // contabilizar um intervalo desconhecido.
             if (!processo.UltimaAtualizacaoProducao.HasValue)
             {
                 processo.UltimaAtualizacaoProducao = agora;
@@ -184,12 +206,19 @@ namespace BlackForge.Services
             // alterado ou de uma interrupção inesperada do serviço.
             segundosDecorridos = Math.Min(segundosDecorridos, 30m);
 
-            var tempoAcumulado =
-                processo.TempoProducaoSegundos + segundosDecorridos;
+            var tempoAcumulado = Math.Min(
+                processo.TempoProducaoSegundos + segundosDecorridos,
+                LimiteTempoProducaoSegundos);
 
-            var quantidadeCalculada = (int)Math.Floor(
-                tempoAcumulado / 60m *
-                processo.ProducaoPorMinuto);
+            var limiteAtingido =
+                tempoAcumulado >= LimiteTempoProducaoSegundos;
+
+            // Ao atingir 120s de produção efetiva, entrega a quantidade planejada.
+            var quantidadeCalculada = limiteAtingido
+                ? processo.QuantidadePlanejada
+                : (int)Math.Floor(
+                    tempoAcumulado / 60m *
+                    processo.ProducaoPorMinuto);
 
             var quantidadeDesejada = Math.Min(
                 processo.QuantidadePlanejada,
@@ -236,7 +265,8 @@ namespace BlackForge.Services
                 if (estoqueDisponivel < consumoAdicional)
                 {
                     // Atualiza apenas a referência temporal. O intervalo
-                    // sem estoque não entra no tempo produtivo acumulado.
+                    // sem estoque não entra no tempo produtivo acumulado,
+                    // e a OS não é concluída sem registrar o consumo.
                     processo.UltimaAtualizacaoProducao = agora;
 
                     await context.SaveChangesAsync(cancellationToken);
@@ -319,6 +349,7 @@ namespace BlackForge.Services
 
                 if (restante > 0)
                 {
+                    // Sem commit: a transação é descartada e nada é alterado.
                     _logger.LogWarning(
                         "Consumo incompleto no processo {Id}.",
                         processo.Id);
@@ -350,10 +381,40 @@ namespace BlackForge.Services
 
                 processo.OrdemServico.Status = "concluida";
                 processo.OrdemServico.DataConclusao = agora;
+
+                _logger.LogInformation(
+                    "Processo {Id} concluído após {Tempo}s de produção. " +
+                    "OS {OsId} concluída. Máquina {MaquinaId} liberada.",
+                    processo.Id,
+                    tempoAcumulado,
+                    processo.OrdemServicoId,
+                    processo.MaquinaId);
             }
 
             await context.SaveChangesAsync(cancellationToken);
             await transacao.CommitAsync(cancellationToken);
+        }
+
+        private async Task PausarProcessoAsync(
+            BlackForgeDbContext context,
+            Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transacao,
+            ProcessoProducao processo,
+            DateTime agora,
+            string motivo,
+            CancellationToken cancellationToken)
+        {
+            processo.Status = "PAUSADO";
+            processo.DataFim = agora;
+            processo.UltimaAtualizacaoProducao = agora;
+
+            await context.SaveChangesAsync(cancellationToken);
+            await transacao.CommitAsync(cancellationToken);
+
+            _logger.LogError(
+                "Processo {Id} {Motivo}. Pausado e máquina {MaquinaId} liberada.",
+                processo.Id,
+                motivo,
+                processo.MaquinaId);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using BlackForge.Data;
 using BlackForge.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -86,7 +87,6 @@ namespace BlackForge.Controllers
                 return BadRequest("Condição de pagamento inválida.");
             }
 
-
             if (ordem.Quantidade <= 0)
                 return BadRequest(
                     "A quantidade da OS deve ser maior que zero."
@@ -116,7 +116,10 @@ namespace BlackForge.Controllers
             if (erroMaterial != null)
                 return BadRequest(erroMaterial);
 
+            // Evita que o EF tente inserir entidades relacionadas aninhadas
+            // enviadas pelo front.
             ordem.Material = null;
+            ordem.Funcionario = null;
 
             if (ordem.DataAbertura == default)
                 ordem.DataAbertura = DateTime.Now;
@@ -275,6 +278,13 @@ namespace BlackForge.Controllers
                     "O desconto não pode ser negativo."
                 );
 
+            // O ValorTotal pode ter sido definido pela aprovação da
+            // precificação. Só é recalculado se algum componente mudou.
+            var valoresAlterados =
+                ordemExistente.ValorMateriais != ordem.ValorMateriais ||
+                ordemExistente.ValorMaoObra != ordem.ValorMaoObra ||
+                ordemExistente.Desconto != ordem.Desconto;
+
             ordemExistente.NumeroOS = ordem.NumeroOS;
             ordemExistente.Cliente = ordem.Cliente;
             ordemExistente.Contato = ordem.Contato;
@@ -292,13 +302,16 @@ namespace BlackForge.Controllers
             ordemExistente.CondicaoPagamento = ordem.CondicaoPagamento;
             ordemExistente.Observacoes = ordem.Observacoes;
 
-            ordemExistente.ValorTotal =
-                ordemExistente.ValorMateriais +
-                ordemExistente.ValorMaoObra -
-                ordemExistente.Desconto;
+            if (valoresAlterados)
+            {
+                ordemExistente.ValorTotal =
+                    ordemExistente.ValorMateriais +
+                    ordemExistente.ValorMaoObra -
+                    ordemExistente.Desconto;
 
-            if (ordemExistente.ValorTotal < 0)
-                ordemExistente.ValorTotal = 0;
+                if (ordemExistente.ValorTotal < 0)
+                    ordemExistente.ValorTotal = 0;
+            }
 
             await _context.SaveChangesAsync();
 
@@ -325,11 +338,26 @@ namespace BlackForge.Controllers
             if (ordem == null)
                 return NotFound("Ordem de serviço não encontrada.");
 
-            var processosAtivos = await _context.ProcessosProducao
+            if (ordem.Status == "concluida" && status != "concluida")
+            {
+                return Conflict(
+                    "Uma OS concluída não pode voltar para outro status."
+                );
+            }
+
+            var processosAbertos = await _context.ProcessosProducao
                 .Where(p =>
                     p.OrdemServicoId == id &&
-                    p.Status == "EM_EXECUCAO")
+                    (p.Status == "EM_EXECUCAO" || p.Status == "PAUSADO"))
                 .ToListAsync();
+
+            var processoAtivo = processosAbertos
+                .FirstOrDefault(p => p.Status == "EM_EXECUCAO");
+
+            var processoPausado = processosAbertos
+                .Where(p => p.Status == "PAUSADO")
+                .OrderByDescending(p => p.Id)
+                .FirstOrDefault();
 
             string? maquinaNome = null;
             int? maquinaIdSelecionada = null;
@@ -340,8 +368,7 @@ namespace BlackForge.Controllers
                 {
                     return Conflict(
                         "A OS não pode ser concluída manualmente. " +
-                        "A produção automática deve finalizar o processo."
-                    );
+                        "A produção automática deve finalizar o processo.");
                 }
 
                 return Ok(new
@@ -358,43 +385,123 @@ namespace BlackForge.Controllers
             if (status == "em_execucao")
             {
                 if (ordem.Status == "concluida")
-                {
-                    return Conflict(
-                        "Uma OS concluída não pode voltar para execução."
-                    );
-                }
+                    return Conflict("Uma OS concluída não pode voltar para execução.");
 
                 if (ordem.Quantidade <= 0)
+                    return BadRequest("A quantidade da OS deve ser maior que zero.");
+
+                if (processoAtivo != null)
                 {
-                    return BadRequest(
-                        "A quantidade da OS deve ser maior que zero."
-                    );
+                    // Já está em produção: não cria nada novo.
+                    maquinaIdSelecionada = processoAtivo.MaquinaId;
+                    maquinaNome = await ObterNomeMaquinaAsync(processoAtivo.MaquinaId);
                 }
 
-                if (processosAtivos.Count > 0)
+                else if (processoPausado != null)
                 {
-                    var processoExistente = processosAtivos[0];
+                    // 1. Validar os parâmetros do processo pausado.
+                    if (processoPausado.QuantidadePlanejada <= 0 ||
+                        processoPausado.ProducaoPorMinuto <= 0 ||
+                        processoPausado.ConsumoPorUnidade < 0 ||
+                        processoPausado.QuantidadeProduzida < 0 ||
+                        processoPausado.QuantidadeProduzida >
+                            processoPausado.QuantidadePlanejada ||
+                        processoPausado.TempoProducaoSegundos < 0 ||
+                        processoPausado.QuantidadeConsumidaRegistrada < 0)
+                    {
+                        return Conflict(
+                            "O processo pausado possui parâmetros inválidos. " +
+                            "Corrija os dados antes de retomar a produção.");
+                    }
 
-                    maquinaIdSelecionada = processoExistente.MaquinaId;
+                    // 2. Verificar se a máquina ainda existe.
+                    var maquina = await _context.Maquinas
+                        .FirstOrDefaultAsync(
+                            m => m.Id == processoPausado.MaquinaId);
 
-                    maquinaNome = await _context.Maquinas
-                        .Where(m => m.Id == processoExistente.MaquinaId)
-                        .Select(m => m.Nome)
-                        .FirstOrDefaultAsync();
+                    if (maquina == null)
+                    {
+                        return Conflict(
+                            "A máquina do processo pausado não foi encontrada.");
+                    }
+
+                    // 3. Verificar se outra produção está usando a máquina.
+                    var maquinaOcupada = await _context.ProcessosProducao
+                        .AnyAsync(p =>
+                            p.Status == "EM_EXECUCAO" &&
+                            p.MaquinaId == processoPausado.MaquinaId);
+
+                    if (maquinaOcupada)
+                    {
+                        return Conflict(
+                            "A máquina do processo pausado está ocupada por outra OS.");
+                    }
+
+                    // 4. Verificar a compatibilidade com o tipo de serviço da OS.
+                    var tipoServicoOS =
+                        NormalizarTipoServico(ordem.TipoServico);
+
+                    var configuracoesAtivas = await _context.ConfiguracoesMaquina
+                        .Where(c =>
+                            c.MaquinaId == processoPausado.MaquinaId &&
+                            c.Ativa)
+                        .ToListAsync();
+
+                    var configuracaoCompativel = configuracoesAtivas
+                        .FirstOrDefault(c =>
+                            NormalizarTipoServico(c.TipoServico) == tipoServicoOS);
+
+                    if (configuracaoCompativel == null)
+                    {
+                        return Conflict(
+                            "A máquina não possui configuração ativa compatível " +
+                            "com o tipo de serviço desta OS.");
+                    }
+
+                    // 5. Verificar se os parâmetros da configuração continuam válidos.
+                    if (configuracaoCompativel.ProducaoPorMinuto <= 0 ||
+                        configuracaoCompativel.ConsumoPorUnidade < 0)
+                    {
+                        return Conflict(
+                            "A configuração da máquina possui parâmetros inválidos.");
+                    }
+
+                    // 6. Validar o material utilizado pelo processo.
+                    if (processoPausado.ConsumoPorUnidade > 0)
+                    {
+                        if (!processoPausado.MaterialId.HasValue)
+                        {
+                            return Conflict(
+                                "O processo não possui material configurado.");
+                        }
+
+                        var materialExiste = await _context.Materiais
+                            .AnyAsync(m =>
+                                m.Id == processoPausado.MaterialId.Value);
+
+                        if (!materialExiste)
+                        {
+                            return Conflict(
+                                "O material do processo pausado não existe mais.");
+                        }
+                    }                
+                    processoPausado.Status = "EM_EXECUCAO";
+                    processoPausado.DataFim = null;
+                    processoPausado.UltimaAtualizacaoProducao = DateTime.Now;
+                    maquinaIdSelecionada = maquina.Id;
+                    maquinaNome = maquina.Nome;
                 }
+
                 else
                 {
                     var maquinasOcupadas = _context.ProcessosProducao
                         .Where(p => p.Status == "EM_EXECUCAO")
                         .Select(p => p.MaquinaId);
 
-
                     var tipoServicoOS = NormalizarTipoServico(ordem.TipoServico);
 
                     if (string.IsNullOrEmpty(tipoServicoOS))
-                    {
                         return BadRequest("O tipo de serviço da OS é inválido.");
-                    }
 
                     var configuracoesAtivas = await _context.ConfiguracoesMaquina
                         .Include(c => c.Maquina)
@@ -417,104 +524,20 @@ namespace BlackForge.Controllers
                     }
 
                     if (configuracaoSelecionada.ProducaoPorMinuto <= 0)
-                    {
-                        return Conflict(
-                            "Configure uma produção por minuto maior que zero."
-                        );
-                    }
+                        return Conflict("Configure uma produção por minuto maior que zero.");
 
-                    var consumoPorUnidade =
-                        configuracaoSelecionada.ConsumoPorUnidade;
+                    var consumoPorUnidade = configuracaoSelecionada.ConsumoPorUnidade;
 
                     if (consumoPorUnidade < 0)
-                    {
-                        return Conflict(
-                            "O consumo por unidade não pode ser negativo."
-                        );
-                    }
+                        return Conflict("O consumo por unidade não pode ser negativo.");
 
-                    int? materialId = ordem.MaterialId
-     ?? configuracaoSelecionada.MaterialId;
+                    int? materialId = ordem.MaterialId ?? configuracaoSelecionada.MaterialId;
 
-                    // Se a produção consome material, ele é obrigatório.
                     if (consumoPorUnidade > 0 && materialId == null)
                     {
                         return Conflict(
                             "Não é possível iniciar a produção: defina o material na OS " +
-                            "ou na configuração da máquina."
-                        );
-                    }
-
-                    // Se foi informado um material, ele precisa existir.
-                    if (materialId.HasValue)
-                    {
-                        var material = await _context.Materiais
-                            .AsNoTracking()
-                            .FirstOrDefaultAsync(m => m.Id == materialId.Value);
-
-                        if (material == null)
-                        {
-                            return Conflict("O material selecionado não foi encontrado.");
-                        }
-
-                        if (consumoPorUnidade > 0)
-                        {
-                            var hoje = DateTime.Today;
-
-                            var saldo = await _context.Lotes
-                                .Where(l =>
-                                    l.MaterialId == materialId.Value &&
-                                    l.Quantidade > 0 &&
-                                    (l.DataValidade == null || l.DataValidade >= hoje))
-                                .SumAsync(l => (decimal?)l.Quantidade) ?? 0m;
-
-                            var necessario = ordem.Quantidade * consumoPorUnidade;
-
-                            if (saldo < necessario)
-                            {
-                                return Conflict(
-                                    $"Estoque insuficiente de '{material.Nome}'. " +
-                                    $"Necessário: {necessario:0.####} {material.Unidade}; " +
-                                    $"disponível: {saldo:0.####} {material.Unidade}."
-                                );
-                            }
-                        }
-                    }
-
-                    if (materialId.HasValue)
-                    {
-                        var material = await _context.Materiais
-                            .AsNoTracking()
-                            .FirstOrDefaultAsync(m =>
-                                m.Id == materialId.Value);
-
-                        if (material == null)
-                        {
-                            return Conflict(
-                                "O material da OS não foi encontrado."
-                            );
-                        }
-
-                        var hoje = DateTime.Today;
-
-                        var saldo = await _context.Lotes
-                            .Where(l =>
-                                l.MaterialId == materialId.Value &&
-                                l.Quantidade > 0 &&
-                                (l.DataValidade == null ||
-                                 l.DataValidade >= hoje))
-                            .SumAsync(l => (decimal?)l.Quantidade) ?? 0m;
-
-                        var necessario = ordem.Quantidade * consumoPorUnidade;
-
-                        if (saldo < necessario)
-                        {
-                            return Conflict(
-                                $"Estoque insuficiente de '{material.Nome}'. " +
-                                $"Necessário: {necessario:0.####} {material.Unidade}; " +
-                                $"disponível: {saldo:0.####} {material.Unidade}."
-                            );
-                        }
+                            "ou na configuração da máquina.");
                     }
 
                     var maquina = configuracaoSelecionada.Maquina;
@@ -522,53 +545,64 @@ namespace BlackForge.Controllers
                     maquinaIdSelecionada = maquina.Id;
                     maquinaNome = maquina.Nome;
 
-                    var processo = new ProcessoProducao
+                    var agora = DateTime.Now;
+
+                    _context.ProcessosProducao.Add(new ProcessoProducao
                     {
                         OrdemServicoId = ordem.Id,
                         MaquinaId = maquina.Id,
                         MaterialId = materialId,
 
-                        DataInicio = DateTime.Now,
+                        DataInicio = agora,
+                        UltimaAtualizacaoProducao = agora,
+
                         QuantidadePlanejada = ordem.Quantidade,
                         QuantidadeProduzida = 0,
 
-                        ProducaoPorMinuto =
-                            configuracaoSelecionada.ProducaoPorMinuto,
-
+                        ProducaoPorMinuto = configuracaoSelecionada.ProducaoPorMinuto,
                         ConsumoPorUnidade = consumoPorUnidade,
 
                         MaterialConsumido = 0,
                         QuantidadeConsumidaRegistrada = 0,
                         Status = "EM_EXECUCAO"
-                    };
-
-                    _context.ProcessosProducao.Add(processo);
+                    });
                 }
             }
             else if (status == "pendente")
             {
-                // Cancela processos ativos, preservando o histórico.
-                foreach (var processo in processosAtivos)
+                // Cancela processos ativos E pausados, preservando o histórico.
+                foreach (var processo in processosAbertos)
                 {
                     processo.DataFim = DateTime.Now;
                     processo.Status = "CANCELADO";
 
                     maquinaIdSelecionada = processo.MaquinaId;
-
-                    if (string.IsNullOrEmpty(maquinaNome))
-                    {
-                        maquinaNome = await _context.Maquinas
-                            .Where(m => m.Id == processo.MaquinaId)
-                            .Select(m => m.Nome)
-                            .FirstOrDefaultAsync();
-                    }
+                    maquinaNome ??= await ObterNomeMaquinaAsync(processo.MaquinaId);
                 }
             }
 
             ordem.Status = status;
             ordem.DataConclusao = null;
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                if (ex.GetBaseException() is SqlException sqlEx &&
+                    (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+                {
+                    return Conflict(
+                        "A operação não pôde ser concluída porque a OS ou a máquina " +
+                        "já possui um processo ativo. Atualize os dados e tente novamente."
+                    );
+                }
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    "Ocorreu um erro ao salvar a alteração do status da OS."
+                );
+            }
 
             return Ok(new
             {
@@ -580,6 +614,12 @@ namespace BlackForge.Controllers
                 MaquinaNome = maquinaNome
             });
         }
+
+        private Task<string?> ObterNomeMaquinaAsync(int maquinaId) =>
+            _context.Maquinas
+                .Where(m => m.Id == maquinaId)
+                .Select(m => (string?)m.Nome)
+                .FirstOrDefaultAsync();
 
         // DELETE: api/ordensservico/1
         [HttpDelete("{id}")]
@@ -622,7 +662,18 @@ namespace BlackForge.Controllers
 
             _context.OrdensServico.Remove(ordem);
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                // Registros ligados à OS (ex.: precificações) impedem a exclusão.
+                return Conflict(
+                    "Esta OS possui registros vinculados (como precificações) " +
+                    "e não pode ser excluída."
+                );
+            }
 
             return NoContent();
         }
@@ -646,23 +697,19 @@ namespace BlackForge.Controllers
             "50% na entrada e 50% na entrega", "outro"
         };
 
-
         private static readonly string[] TiposServicoValidos =
         {
-    "usinagem",
-    "torneamento",
-    "fresagem",
-    "corte",
-    "solda",
-    "acabamento",
-    "conformacao",
-    "furacao",
-    "retifica",
-    "outro"
-};
-
-
-
+            "usinagem",
+            "torneamento",
+            "fresagem",
+            "corte",
+            "solda",
+            "acabamento",
+            "conformacao",
+            "furacao",
+            "retifica",
+            "outro"
+        };
 
         private static string NormalizarTipoServico(string? tipo)
         {

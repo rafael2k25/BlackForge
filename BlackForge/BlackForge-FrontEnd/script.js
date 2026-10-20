@@ -10,9 +10,9 @@ const API_URL = "https://localhost:7089/api";
 
 const TOAST_TIPOS = {
     sucesso: { icone: "checkmark-circle-outline", titulo: "SUCESSO", duracao: 4000 },
-    erro:    { icone: "alert-circle-outline",     titulo: "ERRO",    duracao: 7000 },
-    aviso:   { icone: "warning-outline",          titulo: "ATENÇÃO", duracao: 5000 },
-    info:    { icone: "information-circle-outline", titulo: "INFO",  duracao: 4000 }
+    erro: { icone: "alert-circle-outline", titulo: "ERRO", duracao: 7000 },
+    aviso: { icone: "warning-outline", titulo: "ATENÇÃO", duracao: 5000 },
+    info: { icone: "information-circle-outline", titulo: "INFO", duracao: 4000 }
 };
 
 function detectarTipoToast(mensagem) {
@@ -279,21 +279,21 @@ let ordemSelecionadaOS = null;
 let modoEdicaoOS = false;
 
 const STATUS_OS = {
-    pendente:    { texto: "PENDENTE",    classe: "pendente" },
+    pendente: { texto: "PENDENTE", classe: "pendente" },
     em_execucao: { texto: "EM EXECUÇÃO", classe: "em-execucao" },
-    concluida:   { texto: "CONCLUÍDA",   classe: "concluida" }
+    concluida: { texto: "CONCLUÍDA", classe: "concluida" }
 };
 
 const ACOES_STATUS_OS = {
-    pendente:    { proximo: "em_execucao", rotulo: "INICIAR OS", icone: "play-outline",            classe: "iniciar" },
-    em_execucao: { proximo: "concluida",   rotulo: "DAR BAIXA",  icone: "checkmark-done-outline", classe: "baixa" },
-    concluida:   { proximo: "em_execucao", rotulo: "REABRIR",    icone: "refresh-outline",        classe: "reabrir" }
+    pendente: { proximo: "em_execucao", rotulo: "INICIAR OS", icone: "play-outline", classe: "iniciar" },
+    em_execucao: { proximo: "concluida", rotulo: "DAR BAIXA", icone: "checkmark-done-outline", classe: "baixa" },
+    concluida: { proximo: null, rotulo: "OS CONCLUÍDA", icone: "lock-closed-outline", classe: "concluida" }
 };
 
 const MENSAGENS_STATUS_OS = {
-    pendente:    "OS voltou para pendente.",
+    pendente: "OS voltou para pendente.",
     em_execucao: "OS em execução.",
-    concluida:   "Baixa realizada com sucesso! OS concluída."
+    concluida: "Baixa realizada com sucesso! OS concluída."
 };
 
 function obterStatusOS(ordem) {
@@ -762,7 +762,7 @@ function preencherDetalhesOS(ordem) {
     definirTexto(ids.dataAbertura, formatarDataOS(ordem.dataAbertura));
     definirTexto(ids.dataEntrega, formatarDataOS(ordem.dataEntrega));
     definirTexto(ids.tipoServico, obterTipoServicoOS(ordem.tipoServico));
-    definirTexto(ids.quantidade,ordem.quantidade ?? "-");
+    definirTexto(ids.quantidade, ordem.quantidade ?? "-");
     definirTexto(ids.responsavel, ordem.funcionario?.nome || "Não definido");
     definirTexto(ids.descricao, ordem.descricaoServico || "-");
     definirTexto(ids.valorMaoObra, formatarMoedaOS(ordem.valorMaoObra));
@@ -776,7 +776,6 @@ function preencherDetalhesOS(ordem) {
 
 function atualizarStatusModalOS(ordem) {
     const chave = obterStatusOS(ordem);
-
     const badge = document.getElementById("detalhesOSStatus");
     if (badge) {
         badge.className = `os-status os-status-${STATUS_OS[chave].classe}`;
@@ -785,15 +784,29 @@ function atualizarStatusModalOS(ordem) {
                 ? ` · ${formatarDataOS(ordem.dataConclusao)}`
                 : "");
     }
-
     const botao = document.getElementById("statusOS");
     if (botao) {
         const acao = ACOES_STATUS_OS[chave];
         botao.className = `btn-status-os btn-status-os-${acao.classe}`;
         botao.innerHTML = `<ion-icon name="${acao.icone}"></ion-icon> ${acao.rotulo}`;
-    }
 
-    // OS concluída fica travada para edição (precisa reabrir antes)
+        const concluida = chave === "concluida";
+        botao.disabled = concluida;
+        botao.title = concluida
+            ? "Esta OS já foi concluída e não pode ser reaberta."
+            : "";
+    }
+    const aviso = document.getElementById("detalhesOSBloqueio");
+    if (aviso) {
+        const concluida = chave === "concluida";
+        if (concluida) {
+            aviso.textContent = "Esta OS já foi concluída e não pode ser reaberta.";
+            aviso.hidden = false;
+        } else {
+            aviso.textContent = "";
+            aviso.hidden = true;
+        }
+    }
     if (editarOS) {
         editarOS.disabled = chave === "concluida";
     }
@@ -1051,9 +1064,11 @@ async function avancarStatusOS() {
     if (!ordemSelecionadaOS) {
         return;
     }
-
     const acao = ACOES_STATUS_OS[obterStatusOS(ordemSelecionadaOS)];
-
+    if (!acao || !acao.proximo) {
+        notificar("Esta OS não possui uma transição de status disponível.", "info");
+        return;
+    }
     if (acao.proximo === "concluida") {
         const confirmar = confirm(
             `Dar baixa na OS "${ordemSelecionadaOS.numeroOS}"?\n\nEla será marcada como concluída.`
@@ -1062,10 +1077,8 @@ async function avancarStatusOS() {
             return;
         }
     }
-
     const botao = document.getElementById("statusOS");
     if (botao) botao.disabled = true;
-
     try {
         const resposta = await fetch(
             `${API_URL}/OrdensServico/${ordemSelecionadaOS.id}/status`,
@@ -1076,18 +1089,61 @@ async function avancarStatusOS() {
             }
         );
         if (!resposta.ok) {
-            const mensagem = await resposta.text();
-            throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
+            const texto = await resposta.text();
+            let mensagem = `Erro HTTP: ${resposta.status}`;
+            if (texto) {
+                try {
+                    const json = JSON.parse(texto);
+                    mensagem =
+                        json.mensagem ||
+                        json.message ||
+                        json.title ||
+                        (json.errors
+                            ? Object.values(json.errors).flat().join("\n")
+                            : texto);
+                } catch (_) {
+                    mensagem = texto;
+                }
+            }
+            const erro = new Error(mensagem);
+            erro.status = resposta.status;
+            if (resposta.status === 409) {
+                await carregarOrdensServico();
+                try {
+                    const respostaOS = await fetch(
+                        `${API_URL}/OrdensServico/${ordemSelecionadaOS.id}`
+                    );
+                    if (respostaOS.ok) {
+                        const ordemAtualizada = await respostaOS.json();
+                        if (ordemAtualizada && ordemAtualizada.id !== undefined) {
+                            ordemSelecionadaOS = ordemAtualizada;
+                            const naLista = ordensServico.find(
+                                o => o.id === ordemAtualizada.id
+                            );
+                            if (naLista) {
+                                Object.assign(naLista, ordemAtualizada);
+                            }
+                            const modalAberto =
+                                modalDetalhesOS &&
+                                modalDetalhesOS.classList.contains("active");
+                            if (modalAberto) {
+                                preencherDetalhesOS(ordemAtualizada);
+                            }
+                        }
+                    }
+                } catch (erroSync) {
+                    console.error("Erro ao sincronizar OS após 409:", erroSync);
+                }
+            }
+            throw erro;
         }
         const resultado = await resposta.json();
-
         [ordemSelecionadaOS, ordensServico.find(o => o.id === ordemSelecionadaOS.id)]
             .filter(Boolean)
             .forEach(function (o) {
                 o.status = resultado.status;
                 o.dataConclusao = resultado.dataConclusao;
             });
-
         atualizarStatusModalOS(ordemSelecionadaOS);
         renderizarOrdensServico();
         notificar(MENSAGENS_STATUS_OS[resultado.status], "sucesso");
@@ -1095,7 +1151,11 @@ async function avancarStatusOS() {
         console.error("Erro ao alterar status da OS:", erro);
         notificar(`Não foi possível alterar o status da OS.\n\n${erro.message}`);
     } finally {
-        if (botao) botao.disabled = false;
+        if (!ordemSelecionadaOS) return;
+        if (botao) {
+            const statusAtual = obterStatusOS(ordemSelecionadaOS);
+            botao.disabled = statusAtual === "concluida";
+        }
     }
 }
 
@@ -1896,7 +1956,7 @@ async function abrirDetalhesMaquina(id) {
                 produzida,
                 planejada
             );
-        }    
+        }
         document
             .getElementById("modalDetalhesMaquina")
             .classList.add("active");
@@ -3761,8 +3821,8 @@ function renderizarTabelaRelatorioServicos(registros) {
 
             <td>
                 ${escaparHtmlOS(
-                    obterNomeTipoRelatorioServicos(registro.tipoServico)
-                )}
+            obterNomeTipoRelatorioServicos(registro.tipoServico)
+        )}
             </td>
 
             <td>
@@ -5437,10 +5497,10 @@ const PALETA_GRAFICO_FINANCEIRO = [
     "#ff7043",
     "#26a69a"
 ];
- 
+
 const COR_TEXTO_GRAFICO_FINANCEIRO = "#9aa4aa";
 const COR_GRADE_GRAFICO_FINANCEIRO = "rgba(154, 164, 170, 0.12)";
- 
+
 function opcoesGraficoFinanceiro() {
     return {
         responsive: true,
@@ -5478,7 +5538,7 @@ function renderizarGraficoResultadoFinanceiro(resumo) {
     }
     const canvas =
         criarCanvasGraficoRelatorioEstoque(financeiroGraficoResultadoEl);
-    graficoFinanceiroResultado = new Chart(canvas, { 
+    graficoFinanceiroResultado = new Chart(canvas, {
         type: "bar",
         data: {
             labels: ["Receitas", "A receber", "Despesas"],

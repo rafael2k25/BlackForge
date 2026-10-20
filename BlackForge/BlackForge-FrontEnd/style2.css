@@ -3374,3 +3374,271 @@
 .prec-desvio[data-nivel="ok"] {
     color: var(--success);
 }
+
+.os-bloqueio-aviso {
+    flex: 1 1 100%;
+    order: 99;
+    margin: 4px 0 0;
+    padding: 8px 12px;
+    border-left: 3px solid var(--os-concluida);
+    background: color-mix(in srgb, var(--os-concluida) 8%, transparent);
+    color: var(--os-concluida);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+}
+
+.os-bloqueio-aviso[hidden] {
+    display: none;
+}
+
+.btn-status-os-concluida { --cor-botao: var(--os-concluida); }
+
+/* =========================================================
+   ORDENS — HEADER COM TOGGLE DE PRECIFICAÇÃO
+   ========================================================= */
+
+   .ordens-header {
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.ordens-header-info {
+    min-width: 0;
+}
+
+.ordens-header-acoes {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+/* Botão "PRECIFICAÇÃO ▼" */
+.ordens-prec-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.ordens-prec-toggle ion-icon {
+    font-size: 16px;
+}
+
+.ordens-prec-toggle-seta {
+    transition: transform 0.25s ease;
+    margin-left: 2px;
+}
+
+.ordens-prec-toggle[aria-expanded="true"] .ordens-prec-toggle-seta {
+    transform: rotate(180deg);
+}
+
+.ordens-prec-toggle[aria-expanded="true"] {
+    border-color: var(--border-yellow);
+    color: var(--yellow-bright);
+    background: color-mix(in srgb, var(--yellow) 8%, var(--bg-tertiary));
+}
+
+/* Painel colapsável */
+.ordens-painel-prec {
+    margin-bottom: 16px;
+    animation: ordensPainelIn 0.25s ease;
+}
+
+.ordens-painel-prec[hidden] {
+    display: none;
+}
+
+@keyframes ordensPainelIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.ordens-resumo {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+}
+
+.ordens-resumo-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 20px;
+    background: var(--panel);
+    position: relative;
+    overflow: hidden;
+}
+
+.ordens-resumo-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: var(--yellow-dark);
+}
+
+.ordens-resumo-label {
+    color: var(--text-secondary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.2px;
+}
+
+.ordens-resumo-item strong {
+    color: var(--yellow-bright);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.ordens-resumo-item:last-child strong {
+    color: var(--yellow);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px;
+}
+
+/* Toolbar de filtros da lista de OS */
+.ordens-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    background: var(--panel-dark);
+}
+
+.ordens-search {
+    position: relative;
+    flex: 1;
+    max-width: 520px;
+}
+
+.ordens-search ion-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-primary);
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.ordens-search input {
+    width: 100%;
+    height: 42px;
+    padding: 0 14px 0 42px;
+    background: #232428;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    outline: none;
+}
+
+.ordens-search input:focus {
+    border-color: var(--yellow-dark);
+    box-shadow: 0 0 0 2px rgba(240, 200, 8, 0.06);
+}
+
+.ordens-filter {
+    width: 220px;
+}
+
+.ordens-filter select {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    background: #232428;
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+}
+
+.ordens-filter select:focus {
+    border-color: var(--yellow-dark);
+}
+
+/* Responsivo */
+@media (max-width: 1100px) {
+    .ordens-resumo {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .ordens-header-acoes {
+        width: 100%;
+    }
+    .ordens-header-acoes .primary-button {
+        margin-left: auto;
+    }
+    .ordens-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .ordens-search {
+        max-width: none;
+    }
+    .ordens-filter {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .ordens-resumo {
+        grid-template-columns: 1fr;
+    }
+    .ordens-header-acoes {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .ordens-header-acoes button {
+        width: 100%;
+    }
+}
+
+/* BOTÃO "PRECIFICAR OS" + BADGE "AGUARDANDO APROVAÇÃO" */
+
+.btn-status-os-precificar {
+    --cor-botao: var(--warning);
+}
+
+.btn-status-os-precificar:hover {
+    color: var(--bg-primary);
+}
+
+.os-status-aguardando-aprovacao {
+    --cor-status: var(--warning);
+}
+
+.os-row-aguardando .os-icon {
+    color: var(--warning);
+}
+
+.os-row-aguardando .os-numero,
+.os-row-aguardando .os-cliente {
+    opacity: 0.85;
+}
+
+.os-status-rascunho {
+    --cor-status: var(--warning);
+}
