@@ -170,31 +170,60 @@ namespace BlackForge.Controllers
             return NoContent();
         }
 
+
         // DELETE: api/lotes/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> ExcluirLote(int id)
         {
-            var lote = await _context.Lotes.FirstOrDefaultAsync(l => l.Id == id);
+            await using var transaction =
+                await _context.Database.BeginTransactionAsync();
 
-            if (lote == null)
-                return NotFound();
+            try
+            {
+                var lote = await _context.Lotes
+                    .FirstOrDefaultAsync(l => l.Id == id);
 
-            var movimentacoes = await _context.Movimentacoes
-                .Where(m => m.LoteId == id)
-                .ToListAsync();
+                if (lote == null)
+                    return NotFound("Lote não encontrado.");
 
-            // Só dá para excluir lote que nunca teve saída: senão o histórico ficaria incoerente
-            if (movimentacoes.Any(m => m.Tipo != TipoEntrada))
+                if (lote.Quantidade != 0)
+                {
+                    return Conflict(
+                        $"Não é possível excluir o lote '{lote.Codigo}' " +
+                        $"porque ainda possui saldo de {lote.Quantidade}.");
+                }
+
+                var movimentacoes = await _context.Movimentacoes
+                    .Where(m => m.LoteId == id)
+                    .ToListAsync();
+
+                foreach (var movimentacao in movimentacoes)
+                {
+                    movimentacao.LoteId = null;
+                }
+
+                _context.Lotes.Remove(lote);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return NoContent();
+            }
+            catch (DbUpdateException)
+            {
+                await transaction.RollbackAsync();
+
                 return Conflict(
-                    "Não é possível excluir: o lote já possui saídas ou ajustes registrados.");
-
-            _context.Movimentacoes.RemoveRange(movimentacoes);
-            _context.Lotes.Remove(lote);
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+                    "Não foi possível excluir o lote. " +
+                    "Verifique se existem outros registros vinculados a ele.");
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
+
 
         // ================= AUXILIARES =================
 

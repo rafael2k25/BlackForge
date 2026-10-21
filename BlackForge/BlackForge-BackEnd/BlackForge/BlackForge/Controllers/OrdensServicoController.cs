@@ -116,36 +116,16 @@ namespace BlackForge.Controllers
             if (erroMaterial != null)
                 return BadRequest(erroMaterial);
 
-            // Evita que o EF tente inserir entidades relacionadas aninhadas
-            // enviadas pelo front.
             ordem.Material = null;
             ordem.Funcionario = null;
 
             if (ordem.DataAbertura == default)
                 ordem.DataAbertura = DateTime.Now;
 
-            if (ordem.ValorMateriais < 0)
-                return BadRequest(
-                    "O valor dos materiais não pode ser negativo."
-                );
-
-            if (ordem.ValorMaoObra < 0)
-                return BadRequest(
-                    "O valor da mão de obra não pode ser negativo."
-                );
-
-            if (ordem.Desconto < 0)
-                return BadRequest(
-                    "O desconto não pode ser negativo."
-                );
-
-            ordem.ValorTotal =
-                ordem.ValorMateriais +
-                ordem.ValorMaoObra -
-                ordem.Desconto;
-
-            if (ordem.ValorTotal < 0)
-                ordem.ValorTotal = 0;
+            ordem.ValorMateriais = 0;
+            ordem.ValorMaoObra = 0;
+            ordem.Desconto = 0;
+            ordem.ValorTotal = 0;
 
             ordem.Status = "pendente";
             ordem.DataConclusao = null;
@@ -262,29 +242,6 @@ namespace BlackForge.Controllers
 
             if (erroMaterial != null)
                 return BadRequest(erroMaterial);
-
-            if (ordem.ValorMateriais < 0)
-                return BadRequest(
-                    "O valor dos materiais não pode ser negativo."
-                );
-
-            if (ordem.ValorMaoObra < 0)
-                return BadRequest(
-                    "O valor da mão de obra não pode ser negativo."
-                );
-
-            if (ordem.Desconto < 0)
-                return BadRequest(
-                    "O desconto não pode ser negativo."
-                );
-
-            // O ValorTotal pode ter sido definido pela aprovação da
-            // precificação. Só é recalculado se algum componente mudou.
-            var valoresAlterados =
-                ordemExistente.ValorMateriais != ordem.ValorMateriais ||
-                ordemExistente.ValorMaoObra != ordem.ValorMaoObra ||
-                ordemExistente.Desconto != ordem.Desconto;
-
             ordemExistente.NumeroOS = ordem.NumeroOS;
             ordemExistente.Cliente = ordem.Cliente;
             ordemExistente.Contato = ordem.Contato;
@@ -296,22 +253,8 @@ namespace BlackForge.Controllers
             ordemExistente.MaterialId = ordem.MaterialId;
             ordemExistente.DataEntrega = ordem.DataEntrega;
             ordemExistente.FuncionarioId = ordem.FuncionarioId;
-            ordemExistente.ValorMateriais = ordem.ValorMateriais;
-            ordemExistente.ValorMaoObra = ordem.ValorMaoObra;
-            ordemExistente.Desconto = ordem.Desconto;
             ordemExistente.CondicaoPagamento = ordem.CondicaoPagamento;
             ordemExistente.Observacoes = ordem.Observacoes;
-
-            if (valoresAlterados)
-            {
-                ordemExistente.ValorTotal =
-                    ordemExistente.ValorMateriais +
-                    ordemExistente.ValorMaoObra -
-                    ordemExistente.Desconto;
-
-                if (ordemExistente.ValorTotal < 0)
-                    ordemExistente.ValorTotal = 0;
-            }
 
             await _context.SaveChangesAsync();
 
@@ -392,14 +335,12 @@ namespace BlackForge.Controllers
 
                 if (processoAtivo != null)
                 {
-                    // Já está em produção: não cria nada novo.
                     maquinaIdSelecionada = processoAtivo.MaquinaId;
                     maquinaNome = await ObterNomeMaquinaAsync(processoAtivo.MaquinaId);
                 }
 
                 else if (processoPausado != null)
                 {
-                    // 1. Validar os parâmetros do processo pausado.
                     if (processoPausado.QuantidadePlanejada <= 0 ||
                         processoPausado.ProducaoPorMinuto <= 0 ||
                         processoPausado.ConsumoPorUnidade < 0 ||
@@ -414,7 +355,6 @@ namespace BlackForge.Controllers
                             "Corrija os dados antes de retomar a produção.");
                     }
 
-                    // 2. Verificar se a máquina ainda existe.
                     var maquina = await _context.Maquinas
                         .FirstOrDefaultAsync(
                             m => m.Id == processoPausado.MaquinaId);
@@ -425,7 +365,6 @@ namespace BlackForge.Controllers
                             "A máquina do processo pausado não foi encontrada.");
                     }
 
-                    // 3. Verificar se outra produção está usando a máquina.
                     var maquinaOcupada = await _context.ProcessosProducao
                         .AnyAsync(p =>
                             p.Status == "EM_EXECUCAO" &&
@@ -437,7 +376,6 @@ namespace BlackForge.Controllers
                             "A máquina do processo pausado está ocupada por outra OS.");
                     }
 
-                    // 4. Verificar a compatibilidade com o tipo de serviço da OS.
                     var tipoServicoOS =
                         NormalizarTipoServico(ordem.TipoServico);
 
@@ -458,7 +396,6 @@ namespace BlackForge.Controllers
                             "com o tipo de serviço desta OS.");
                     }
 
-                    // 5. Verificar se os parâmetros da configuração continuam válidos.
                     if (configuracaoCompativel.ProducaoPorMinuto <= 0 ||
                         configuracaoCompativel.ConsumoPorUnidade < 0)
                     {
@@ -466,7 +403,6 @@ namespace BlackForge.Controllers
                             "A configuração da máquina possui parâmetros inválidos.");
                     }
 
-                    // 6. Validar o material utilizado pelo processo.
                     if (processoPausado.ConsumoPorUnidade > 0)
                     {
                         if (!processoPausado.MaterialId.HasValue)
@@ -484,7 +420,7 @@ namespace BlackForge.Controllers
                             return Conflict(
                                 "O material do processo pausado não existe mais.");
                         }
-                    }                
+                    }
                     processoPausado.Status = "EM_EXECUCAO";
                     processoPausado.DataFim = null;
                     processoPausado.UltimaAtualizacaoProducao = DateTime.Now;
@@ -570,7 +506,6 @@ namespace BlackForge.Controllers
             }
             else if (status == "pendente")
             {
-                // Cancela processos ativos E pausados, preservando o histórico.
                 foreach (var processo in processosAbertos)
                 {
                     processo.DataFim = DateTime.Now;
@@ -642,8 +577,6 @@ namespace BlackForge.Controllers
 
             var processosIds = processos.Select(p => p.Id).ToList();
 
-            // Movimentações de estoque ligadas aos processos fazem parte
-            // do histórico e não podem ficar sem o processo de origem.
             if (processosIds.Count > 0)
             {
                 var consumiuEstoque = await _context.Movimentacoes

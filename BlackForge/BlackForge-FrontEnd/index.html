@@ -271,7 +271,7 @@
             <div class="ordens-painel-prec" id="painelPrecificacao" hidden>
                 <div class="ordens-resumo">
                     <div class="ordens-resumo-item">
-                        <span class="ordens-resumo-label">SEM PRECIFICAÇÃO</span>
+                        <span class="ordens-resumo-label">SEM ORÇAMENTO</span>
                         <strong id="ordensResumoSemPrecificacao">0</strong>
                     </div>
                     <div class="ordens-resumo-item">
@@ -279,7 +279,7 @@
                         <strong id="ordensResumoRascunhos">0</strong>
                     </div>
                     <div class="ordens-resumo-item">
-                        <span class="ordens-resumo-label">APROVADAS</span>
+                        <span class="ordens-resumo-label">APROVADOS</span>
                         <strong id="ordensResumoAprovadas">0</strong>
                     </div>
                     <div class="ordens-resumo-item">
@@ -848,20 +848,6 @@
                             <option value="pendente">Pendente</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="relatorio-filtros-label">PAGAMENTO</label>
-                        <select id="financeiroPagamento">
-                            <option value="">Todos</option>
-                            <option value="avista">À vista</option>
-                            <option value="pix">PIX</option>
-                            <option value="cartao">Cartão</option>
-                            <option value="boleto">Boleto</option>
-                            <option value="30dias">30 dias</option>
-                            <option value="parcelado">Parcelado</option>
-                            <option value="50% na entrada e 50% na entrega">50% na entrada e 50% na entrega</option>
-                            <option value="outro">Outro</option>
-                        </select>
-                    </div>
                 </div>
             </div>
 
@@ -958,14 +944,13 @@
                                 <th>DATA</th>
                                 <th>DESCRIÇÃO</th>
                                 <th>TIPO</th>
-                                <th>PAGAMENTO</th>
                                 <th>STATUS</th>
                                 <th>VALOR</th>
                             </tr>
                         </thead>
                         <tbody id="relatorio-financeiroTabela">
                             <tr>
-                                <td class="relatorio-tabela-vazia" colspan="6">
+                                <td class="relatorio-tabela-vazia" colspan="5">
                                     <ion-icon name="document-text-outline"></ion-icon>
                                     <span>NENHUM REGISTRO ENCONTRADO</span>
                                     <small>Defina os filtros e clique em GERAR RELATÓRIO.</small>
@@ -1072,45 +1057,13 @@
                     </div>
                 </div>
 
-                <!-- FINANCEIRO -->
-
+                <!-- PRECIFICAÇÃO POSTERIOR AO CADASTRO -->
                 <div class="material-section">
-                    <div class="material-section-title">VALORES DA ORDEM</div>
-                    <div class="material-form-grid">
-                        <div class="material-form-group">
-                            <label for="valorMateriais">MATERIAIS</label>
-                            <input type="number" id="valorMateriais" value="0.00" min="0" step="0.01">
-                        </div>
-                        <div class="material-form-group">
-                            <label for="valorMaoObra">MÃO DE OBRA</label>
-                            <input type="number" id="valorMaoObra" value="0.00" min="0" step="0.01">
-                        </div>
-                        <div class="material-form-group">
-                            <label for="descontoOS">DESCONTO</label>
-                            <input type="number" id="descontoOS" value="0.00" min="0" step="0.01">
-                        </div>
-                        <div class="material-form-group">
-                            <label for="condicaoPagamento">CONDIÇÃO DE PAGAMENTO</label>
-                            <select id="condicaoPagamento">
-                                <option value="">Selecionar...</option>
-                                <option value="avista">À vista</option>
-                                <option value="pix">PIX</option>
-                                <option value="cartao">Cartão</option>
-                                <option value="boleto">Boleto</option>
-                                <option value="30dias">30 dias</option>
-                                <option value="parcelado">Parcelado</option>
-                                <option value="50% na entrada e 50% na entrega">50% na entrada e 50% na entrega</option>
-                                <option value="outro">Outro</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="os-total-box">
-                        <div>
-                            <span>VALOR TOTAL DA ORDEM</span>
-                            <small>Materiais + mão de obra - desconto</small>
-                        </div>
-                        <strong id="valorTotalOS">R$ 0,00</strong>
-                    </div>
+                    <div class="material-section-title">ORÇAMENTO</div>
+                    <p class="os-precificacao-aviso">
+                        Os custos e o preço da ordem serão definidos após o cadastro,
+                        no módulo de Orçamento.
+                    </p>
                 </div>
 
                 <!-- OBSERVAÇÕES -->
@@ -1204,61 +1157,60 @@
                 <!-- SERVIÇO -->
 
                 <div class="material-section">
-                    <div class="material-section-title">
-                        SERVIÇO
-                    </div>
+                    <div class="material-section-title">SERVIÇO</div>
+                
                     <div class="ordem-detalhes-grid">
                         <div class="ordem-info">
                             <span>TIPO DE SERVIÇO</span>
                             <strong id="detalhesOSTipoServico">-</strong>
                         </div>
+                
                         <div class="ordem-info">
                             <span>QUANTIDADE</span>
                             <strong id="detalhesOSQuantidade">-</strong>
                         </div>
-                    </div>
-                    <div class="ordem-detalhes-texto">
-                        <span>DESCRIÇÃO</span>
-                        <p id="detalhesOSDescricao">-</p>
-                    </div>
-                </div>
-
-                <!-- FINANCEIRO -->
-
-                <div class="material-section">
-                    <div class="material-section-title">
-                        FINANCEIRO
-                    </div>
-                    <div class="ordem-detalhes-grid">
+                
                         <div class="ordem-info">
-                            <span>MATERIAIS</span>
-                            <strong id="detalhesOSMateriais">R$ 0,00</strong>
-                        </div>
-                        <div class="ordem-info">
-                            <span>MÃO DE OBRA</span>
-                            <strong id="detalhesOSMaoObra">R$ 0,00</strong>
-                        </div>
-                        <div class="ordem-info">
-                            <span>DESCONTO</span>
-                            <strong id="detalhesOSDesconto">R$ 0,00</strong>
-                        </div>
-                        <div class="ordem-info">
-                            <span>VALOR TOTAL</span>
-                            <strong id="detalhesOSTotal">R$ 0,00</strong>
+                            <span>DESCRIÇÃO</span>
+                            <strong id="detalhesOSDescricao">-</strong>
                         </div>
                     </div>
                 </div>
 
-                <!-- PAGAMENTO -->
-
+                <!-- FINANCEIRO / PRECIFICAÇÃO -->
                 <div class="material-section">
-                    <div class="material-section-title">
-                        PAGAMENTO
-                    </div>
+                    <div class="material-section-title">FINANCEIRO</div>
+                    <p class="os-precificacao-aviso">
+                        Os valores abaixo vêm do Orçamento aprovado. Antes da aprovação, o sistema não exibe custos como se fossem valores finais.
+                    </p>
                     <div class="ordem-detalhes-grid">
                         <div class="ordem-info">
-                            <span>CONDIÇÃO DE PAGAMENTO</span>
-                            <strong id="detalhesOSPagamento">-</strong>
+                            <span>CUSTO DE MATERIAIS</span>
+                            <strong id="detalhesOSCustoMaterial">Aguardando aprovação</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>CUSTO DE MÁQUINA</span>
+                            <strong id="detalhesOSCustoMaquina">Aguardando aprovação</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>CUSTO DE OPERADOR</span>
+                            <strong id="detalhesOSCustoOperador">Aguardando aprovação</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>CUSTO DE SETUP</span>
+                            <strong id="detalhesOSCustoSetup">Aguardando aprovação</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>CUSTOS INDIRETOS</span>
+                            <strong id="detalhesOSCustoIndireto">Aguardando aprovação</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>CUSTO TOTAL ESTIMADO</span>
+                            <strong id="detalhesOSCustoTotal">Aguardando aprovação</strong>
+                        </div>
+                        <div class="ordem-info">
+                            <span>PREÇO APROVADO</span>
+                            <strong id="detalhesOSPrecoAprovado">Ainda não definido</strong>
                         </div>
                     </div>
                 </div>
@@ -1310,7 +1262,7 @@
             <div class="modal-header">
                 <div>
                     <span class="section-label">CADASTRO</span>
-                    <h2>Nova Máquina</h2>
+                    <h2 id="tituloModalMaquina">Nova Máquina</h2>
                     <p>Cadastre um novo equipamento industrial no sistema.</p>
                 </div>
                 <button class="modal-close" id="fecharModalMaquina" type="button">
@@ -1421,6 +1373,28 @@
             <div class="modal-material-content">
 
                 <div class="material-section">
+                    <div class="material-section-title">IDENTIFICAÇÃO DO EQUIPAMENTO</div>
+                    <div class="maquina-detalhes-grid">
+                        <div class="maquina-detalhes-info">
+                            <span>TIPO</span>
+                            <strong id="detalhesMaquinaTipo">-</strong>
+                        </div>
+                        <div class="maquina-detalhes-info">
+                            <span>NÚMERO DE SÉRIE</span>
+                            <strong id="detalhesMaquinaSerie">-</strong>
+                        </div>
+                        <div class="maquina-detalhes-info">
+                            <span>DATA DE AQUISIÇÃO</span>
+                            <strong id="detalhesMaquinaDataAquisicao">-</strong>
+                        </div>
+                        <div class="maquina-detalhes-info maquina-detalhes-observacoes">
+                            <span>OBSERVAÇÕES</span>
+                            <strong id="detalhesMaquinaObservacoes">-</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="material-section">
                     <div class="material-section-title">STATUS</div>
                     <div class="maquina-detalhes-status">
                         <div class="maquina-detalhes-status-label">
@@ -1481,9 +1455,20 @@
             </div>
 
             <div class="modal-footer maquina-detalhes-footer">
-                <button type="button" id="fecharDetalhesMaquinaBotao" class="btn-secondary">
-                    FECHAR
-                </button>
+                <p id="detalhesMaquinaBloqueio" class="maquina-bloqueio-aviso" hidden>
+                    Esta máquina não pode ser excluída enquanto houver um processo de produção ativo.
+                </p>
+                <div class="maquina-detalhes-acoes">
+                    <button type="button" id="editarMaquinaDetalhes" class="btn-editar-maquina">
+                        <ion-icon name="create-outline"></ion-icon> EDITAR
+                    </button>
+                    <button type="button" id="excluirMaquinaDetalhes" class="btn-excluir-maquina">
+                        <ion-icon name="trash-outline"></ion-icon> EXCLUIR
+                    </button>
+                    <button type="button" id="fecharDetalhesMaquinaBotao" class="btn-secondary">
+                        FECHAR
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -1883,7 +1868,7 @@
 
             <div class="modal-material-header">
                 <div>
-                    <span class="section-label">PRECIFICAÇÃO</span>
+                    <span class="section-label">ORÇAMENTO</span>
                     <div class="os-detalhes-titulo">
                         <h2 id="precOS">OS-0000</h2>
                         <span id="precStatus" class="os-status os-status-pendente">RASCUNHO</span>

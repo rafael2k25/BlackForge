@@ -3642,3 +3642,125 @@
 .os-status-rascunho {
     --cor-status: var(--warning);
 }
+
+/* =========================================================
+   AJUSTES FINAIS BLACKFORGE: LISTA OS, MODAIS E MÁQUINAS
+   ========================================================= */
+
+/* A linha da OS possui seis elementos: identificação, serviço, responsável, orçamento, valor e ação. */
+.os-row {
+    grid-template-columns: minmax(220px, 1.65fr) minmax(110px, .8fr) minmax(125px, .9fr) minmax(115px, .75fr) minmax(120px, .8fr) 115px;
+    gap: 16px;
+    padding: 16px 20px;
+}
+.os-identificacao, .os-info, .os-coluna { min-width: 0; }
+.os-titulo-linha { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; min-width: 0; }
+.os-titulo-linha .os-status { max-width: 100%; white-space: normal; line-height: 1.25; }
+.os-coluna strong { min-width: 0; }
+.os-prec-coluna .os-status { display: inline-flex; max-width: 100%; white-space: normal; line-height: 1.25; }
+.os-valor-coluna strong { overflow-wrap: anywhere; }
+
+/* Não deslocar o rodapé inteiro: isso cortava os botões dentro do modal. */
+.ordem-detalhes-modal {
+    width: min(900px, calc(100vw - 32px));
+    max-height: min(92vh, 1000px);
+}
+.ordem-detalhes-modal .modal-material-content { min-height: 0; }
+.ordem-detalhes-footer,
+.maquina-detalhes-footer {
+    position: relative;
+    transform: none !important;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    background: #1b1e21;
+}
+.ordem-detalhes-acoes,
+.maquina-detalhes-acoes {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-width: 0;
+}
+.ordem-detalhes-footer .btn-status-os,
+.ordem-detalhes-footer .btn-editar-os,
+.ordem-detalhes-footer .btn-remover-os,
+.ordem-detalhes-footer .btn-secondary,
+.maquina-detalhes-footer .btn-secondary,
+.maquina-detalhes-footer .btn-editar-maquina,
+.maquina-detalhes-footer .btn-excluir-maquina {
+    flex: 0 0 auto;
+    min-height: 40px;
+    white-space: nowrap;
+}
+.ordem-detalhes-footer #detalhesOSBloqueio { flex: 1 1 100%; margin: 0; }
+
+/* A lista de máquinas usa os nomes de classes definidos pelo CSS principal. */
+.maquina-row {
+    grid-template-columns: minmax(220px, 1.5fr) minmax(120px, .7fr) minmax(150px, .9fr) 115px;
+    gap: 18px;
+}
+.maquina-identificacao { min-width: 0; }
+.maquina-info { min-width: 0; }
+.maquina-nome { display: block; min-width: 0; }
+.maquina-descricao { display: block; }
+.maquina-detalhes-modal { width: min(820px, calc(100vw - 32px)); max-height: min(92vh, 900px); }
+.maquina-detalhes-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.maquina-detalhes-info { min-width: 0; }
+.maquina-detalhes-info strong { overflow-wrap: anywhere; }
+.maquina-detalhes-observacoes { grid-column: 1 / -1; }
+.maquina-detalhes-acoes { margin-left: auto; }
+.btn-editar-maquina, .btn-excluir-maquina {
+    height: 40px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 5px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease, border-color .2s ease, opacity .2s ease;
+}
+.btn-editar-maquina { border: 1px solid var(--yellow); background: rgba(240,200,8,.08); color: var(--yellow); }
+.btn-editar-maquina:hover { background: var(--yellow); color: var(--bg-primary); }
+.btn-excluir-maquina { border: 1px solid var(--danger); background: rgba(237,66,69,.08); color: var(--danger); }
+.btn-excluir-maquina:hover:not(:disabled) { background: var(--danger); color: var(--text-primary); }
+.btn-excluir-maquina:disabled { opacity: .4; cursor: not-allowed; }
+.maquina-bloqueio-aviso { flex: 1 1 100%; margin: 0; color: var(--warning); font-family: 'Share Tech Mono', monospace; font-size: 11px; line-height: 1.5; }
+.maquina-bloqueio-aviso[hidden] { display: none !important; }
+
+@media (max-width: 1150px) {
+    .os-row { grid-template-columns: minmax(200px, 1.5fr) minmax(110px, .8fr) minmax(110px, .8fr) 115px; gap: 14px; }
+    .os-coluna.os-responsavel, .os-coluna.os-prec-coluna { display: none; }
+    .maquina-row { grid-template-columns: minmax(200px, 1.4fr) minmax(110px, .7fr) minmax(140px, .8fr) 105px; gap: 14px; }
+}
+@media (max-width: 850px) {
+    .ordem-detalhes-footer, .maquina-detalhes-footer { align-items: stretch; flex-direction: column; padding: 14px 18px; }
+    .ordem-detalhes-acoes, .maquina-detalhes-acoes { width: 100%; justify-content: stretch; }
+    .ordem-detalhes-acoes > button, .maquina-detalhes-acoes > button { flex: 1 1 auto; }
+    .os-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .os-coluna { display: none; }
+    .os-coluna.os-valor-coluna { display: flex; grid-column: 1; grid-row: 2; padding-left: 0; border-left: 0; }
+    .btn-detalhes-os { grid-column: 2; grid-row: 1 / span 2; }
+    .maquina-row { grid-template-columns: minmax(0, 1fr) auto; }
+    .maquina-processo { display: none; }
+    .maquina-status { grid-column: 1; grid-row: 2; }
+    .maquina-detalhes-button { grid-column: 2; grid-row: 1 / span 2; }
+}
+@media (max-width: 560px) {
+    .ordem-detalhes-acoes, .maquina-detalhes-acoes { flex-direction: column; }
+    .ordem-detalhes-acoes > button, .maquina-detalhes-acoes > button, .ordem-detalhes-footer .btn-secondary { width: 100%; }
+    .ordem-detalhes-footer .btn-status-os, .ordem-detalhes-footer .btn-editar-os, .ordem-detalhes-footer .btn-remover-os { width: 100%; }
+    .os-row, .maquina-row { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+    .os-identificacao, .os-coluna.os-valor-coluna, .maquina-identificacao, .maquina-status { grid-column: 1; grid-row: auto; }
+    .btn-detalhes-os, .maquina-detalhes-button { grid-column: 1; grid-row: auto; width: 100%; }
+    .maquina-detalhes-grid { grid-template-columns: 1fr; }
+    .maquina-detalhes-observacoes { grid-column: auto; }
+}

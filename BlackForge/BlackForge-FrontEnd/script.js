@@ -5,6 +5,24 @@
 const API_URL = "https://localhost:7089/api";
 
 // =========================================================
+// BUSCA (compartilhada: OS, materiais e lotes)
+// Ignora maiúsculas/minúsculas e acentos ("aco" encontra "Aço")
+// =========================================================
+
+function normalizarBusca(texto) {
+    return String(texto ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+}
+
+function correspondeBusca(termo, ...campos) {
+    if (!termo) return true;
+    return campos.some(campo => normalizarBusca(campo).includes(termo));
+}
+
+// =========================================================
 // NOTIFICAÇÕES (substitui alert())
 // =========================================================
 
@@ -17,7 +35,6 @@ const TOAST_TIPOS = {
 
 function detectarTipoToast(mensagem) {
     const texto = mensagem.toLowerCase();
-
     if (texto.includes("não foi possível") || texto.includes("erro")) return "erro";
     if (texto.includes("sucesso")) return "sucesso";
     if (
@@ -25,7 +42,6 @@ function detectarTipoToast(mensagem) {
         texto.includes("preencha") || texto.includes("não pode") ||
         texto.includes("bloqueou")
     ) return "aviso";
-
     return "info";
 }
 
@@ -42,7 +58,6 @@ function notificar(mensagem, tipo) {
         document.body.appendChild(container);
     }
 
-    // Primeira linha vira o texto principal; o resto (ex.: erro.message) vira detalhe
     const [principal, ...resto] = String(mensagem).split("\n");
     const detalhe = resto.join("\n").trim();
 
@@ -98,7 +113,6 @@ function notificar(mensagem, tipo) {
     fechar.addEventListener("click", remover);
     barra.addEventListener("animationend", remover);
 
-    // Máximo de 5 notificações na tela
     while (container.children.length > 5) {
         container.firstElementChild.remove();
     }
@@ -113,130 +127,69 @@ const categoryButtons = document.querySelectorAll(".menu-category-button");
 const sections = document.querySelectorAll(".page-section");
 const pageTitle = document.getElementById("page-title");
 
-// =========================================================
-// NAVEGAÇÃO ENTRE SEÇÕES
-// =========================================================
-
 menuItems.forEach(menuItem => {
     menuItem.addEventListener("click", () => {
         const sectionId = menuItem.dataset.section;
-        // Pega o título através do data-title
         const title = menuItem.dataset.title;
-        // Remove a seção ativa de todas as sections
-        sections.forEach(section => {
-            section.classList.remove("active-section");
-        });
-        // Procura a section correspondente
+        sections.forEach(section => section.classList.remove("active-section"));
         const targetSection = document.getElementById(sectionId);
-        // Mostra a section encontrada
-        if (targetSection) {
-            targetSection.classList.add("active-section");
-        }
-        // Atualiza o título da Topbar
-        if (pageTitle && title) {
-            pageTitle.textContent = title;
-        }
-        // Remove o active de todos os itens do menu
-        menuItems.forEach(item => {
-            item.classList.remove("active");
-        });
-        // Ativa o item clicado
+        if (targetSection) targetSection.classList.add("active-section");
+        if (pageTitle && title) pageTitle.textContent = title;
+        menuItems.forEach(item => item.classList.remove("active"));
         menuItem.classList.add("active");
-        if (sectionId === "maquinas") {
-            carregarMaquinas();
-        }
+        if (sectionId === "maquinas") carregarMaquinas();
+        if (sectionId === "ordens") atualizarResumoPrecificacoes();
     });
 });
+
 function fecharDetalhesMaquina() {
     pararSimulacaoProgresso();
-    const modal =
-        document.getElementById(
-            "modalDetalhesMaquina"
-        );
-    if (!modal) {
-        return;
-    }
-    modal.classList.remove("active");
+    const modal = document.getElementById("modalDetalhesMaquina");
+    if (modal) modal.classList.remove("active");
 }
-const fecharDetalhesMaquinaX =
-    document.getElementById("fecharDetalhesMaquina");
-const fecharDetalhesMaquinaBotao =
-    document.getElementById("fecharDetalhesMaquinaBotao");
-if (fecharDetalhesMaquinaX) {
-    fecharDetalhesMaquinaX.addEventListener(
-        "click",
-        fecharDetalhesMaquina
-    );
-}
-if (fecharDetalhesMaquinaBotao) {
 
-    fecharDetalhesMaquinaBotao.addEventListener(
-        "click",
-        fecharDetalhesMaquina
-    );
-}
-const modalDetalhesMaquina =
-    document.getElementById("modalDetalhesMaquina");
+const fecharDetalhesMaquinaX = document.getElementById("fecharDetalhesMaquina");
+const fecharDetalhesMaquinaBotao = document.getElementById("fecharDetalhesMaquinaBotao");
+if (fecharDetalhesMaquinaX) fecharDetalhesMaquinaX.addEventListener("click", fecharDetalhesMaquina);
+if (fecharDetalhesMaquinaBotao) fecharDetalhesMaquinaBotao.addEventListener("click", fecharDetalhesMaquina);
+
+const modalDetalhesMaquina = document.getElementById("modalDetalhesMaquina");
 if (modalDetalhesMaquina) {
-    modalDetalhesMaquina.addEventListener(
-        "click",
-        function (event) {
-
-            if (event.target === modalDetalhesMaquina) {
-                fecharDetalhesMaquina();
-            }
-        }
-    );
-}
-document.addEventListener(
-    "keydown",
-    function (event) {
-        if (event.key !== "Escape") {
-            return;
-        }
-        fecharDetalhesMaquina();
-    }
-);
-
-// =========================================================
-// CATEGORIAS
-// =========================================================
-
-categoryButtons.forEach(categoryButton => {
-    categoryButton.addEventListener("click", () => {
-        const category = categoryButton.closest(".menu-category");
-        if (!category) return;
-        // Fecha as outras categorias
-        document.querySelectorAll(".menu-category").forEach(otherCategory => {
-            if (otherCategory !== category) {
-                otherCategory.classList.remove("open");
-            }
-        });
-        // Abre ou fecha a categoria selecionada
-        category.classList.toggle("open");
+    modalDetalhesMaquina.addEventListener("click", function (event) {
+        if (event.target === modalDetalhesMaquina) fecharDetalhesMaquina();
     });
+}
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") fecharDetalhesMaquina();
 });
 
 // =========================================================
 // CATEGORIAS DO MENU
 // =========================================================
 
+categoryButtons.forEach(categoryButton => {
+    categoryButton.addEventListener("click", () => {
+        const category = categoryButton.closest(".menu-category");
+        if (!category) return;
+        document.querySelectorAll(".menu-category").forEach(other => {
+            if (other !== category) other.classList.remove("open");
+        });
+        category.classList.toggle("open");
+    });
+});
+
 const categories = document.querySelectorAll(".menu-category");
 categories.forEach(category => {
     let closeTimer;
     category.addEventListener("mouseenter", () => {
         clearTimeout(closeTimer);
-        categories.forEach(otherCategory => {
-            if (otherCategory !== category) {
-                otherCategory.classList.remove("open");
-            }
+        categories.forEach(other => {
+            if (other !== category) other.classList.remove("open");
         });
         category.classList.add("open");
     });
     category.addEventListener("mouseleave", () => {
-        closeTimer = setTimeout(() => {
-            category.classList.remove("open");
-        }, 1000);
+        closeTimer = setTimeout(() => category.classList.remove("open"), 1000);
     });
 });
 
@@ -244,18 +197,14 @@ categories.forEach(category => {
 function atualizarDataHora() {
     const agora = new Date();
     const data = agora.toLocaleDateString('pt-BR');
-    const hora = agora.toLocaleTimeString('pt-BR', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-    document.getElementById('dataHora').textContent =
-        ` ${data} - ${hora}`;
+    const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById('dataHora').textContent = ` ${data} - ${hora}`;
 }
 atualizarDataHora();
 setInterval(atualizarDataHora, 1000);
 
 // =========================================================
-// ORDEM DE SERVIÇO
+// ORDEM DE SERVIÇO — ELEMENTOS
 // =========================================================
 
 const modalOS = document.getElementById("modalOS");
@@ -266,7 +215,6 @@ const cancelarOS = document.getElementById("cancelarOS");
 const salvarOS = document.getElementById("salvarOS");
 const salvarImprimirOS = document.getElementById("salvarImprimirOS");
 
-// Modal de detalhes
 const modalDetalhesOS = document.getElementById("modalDetalhesOS");
 const btnFecharDetalhesOS = document.getElementById("fecharDetalhesOS");
 const btnFecharDetalhesOSRodape = document.getElementById("fecharDetalhesOSBotao");
@@ -275,6 +223,7 @@ const editarOS = document.getElementById("editarOS");
 const removerOS = document.getElementById("removerOS");
 
 let ordensServico = [];
+let precificacoes = [];
 let ordemSelecionadaOS = null;
 let modoEdicaoOS = false;
 
@@ -284,8 +233,9 @@ const STATUS_OS = {
     concluida: { texto: "CONCLUÍDA", classe: "concluida" }
 };
 
+// NOVO FLUXO: pendente não tem transição direta; abre precificação
 const ACOES_STATUS_OS = {
-    pendente: { proximo: "em_execucao", rotulo: "INICIAR OS", icone: "play-outline", classe: "iniciar" },
+    pendente: { proximo: null, rotulo: "PRECIFICAR OS", icone: "calculator-outline", classe: "precificar" },
     em_execucao: { proximo: "concluida", rotulo: "DAR BAIXA", icone: "checkmark-done-outline", classe: "baixa" },
     concluida: { proximo: null, rotulo: "OS CONCLUÍDA", icone: "lock-closed-outline", classe: "concluida" }
 };
@@ -295,6 +245,9 @@ const MENSAGENS_STATUS_OS = {
     em_execucao: "OS em execução.",
     concluida: "Baixa realizada com sucesso! OS concluída."
 };
+
+const TEXTO_OS_CONCLUIDA = "Esta OS já foi concluída e não pode ser reaberta.";
+const TEXTO_OS_PENDENTE = "Esta OS precisa ser precificada e aprovada antes de entrar em execução.";
 
 function obterStatusOS(ordem) {
     const chave = String(ordem?.status || "").toLowerCase();
@@ -306,7 +259,37 @@ function htmlBadgeStatusOS(ordem) {
     return `<span class="os-status os-status-${STATUS_OS[chave].classe}">${STATUS_OS[chave].texto}</span>`;
 }
 
-// IDs usados no modal de detalhes
+// Status visual considerando a precificação em rascunho
+function obterStatusVisualOS(ordem) {
+    const chave = obterStatusOS(ordem);
+    if (chave !== "pendente") {
+        return { chave, texto: STATUS_OS[chave].texto, classe: STATUS_OS[chave].classe };
+    }
+    const prec = Array.isArray(precificacoes)
+        ? precificacoes.find(p => p.ordemServicoId === ordem.id)
+        : null;
+    if (prec && obterStatusPrecificacao(prec) === "RASCUNHO") {
+        return {
+            chave: "aguardando_aprovacao",
+            texto: "AGUARDANDO APROVAÇÃO",
+            classe: "aguardando-aprovacao"
+        };
+    }
+    return { chave: "pendente", texto: STATUS_OS.pendente.texto, classe: STATUS_OS.pendente.classe };
+}
+
+// Precificação "vigente" da OS: aprovada se existir, senão a mais recente
+function obterPrecificacaoDaOS(ordemId) {
+    const lista = precificacoes
+        .filter(p => p.ordemServicoId === ordemId)
+        .sort((a, b) => {
+            return String(b.dataCalculo).localeCompare(String(a.dataCalculo)) || b.id - a.id;
+        });
+    return lista.find(p => obterStatusPrecificacao(p) === "APROVADA") || lista[0] || null;
+}
+
+// IDs do modal de detalhes
+
 const IDS_DETALHES_OS = {
     numero: "detalhesOSNumero",
     cliente: "detalhesOSCliente",
@@ -319,25 +302,26 @@ const IDS_DETALHES_OS = {
     quantidade: "detalhesOSQuantidade",
     responsavel: "detalhesOSResponsavel",
     descricao: "detalhesOSDescricao",
-    valorMaoObra: "detalhesOSMaoObra",
-    valorMateriais: "detalhesOSMateriais",
-    desconto: "detalhesOSDesconto",
-    valorTotal: "detalhesOSTotal",
-    condicaoPagamento: "detalhesOSPagamento",
+    custoMaterial: "detalhesOSCustoMaterial",
+    custoMaquina: "detalhesOSCustoMaquina",
+    custoOperador: "detalhesOSCustoOperador",
+    custoSetup: "detalhesOSCustoSetup",
+    custoIndireto: "detalhesOSCustoIndireto",
+    custoTotal: "detalhesOSCustoTotal",
+    precoAprovado: "detalhesOSPrecoAprovado",
     observacoes: "detalhesOSObservacoes"
 };
 
+
+// =========================================================
 // FORMATADORES
+// =========================================================
 
 function paraNumeroOS(valor) {
-    if (typeof valor === "number") {
-        return Number.isFinite(valor) ? valor : 0;
-    }
+    if (typeof valor === "number") return Number.isFinite(valor) ? valor : 0;
     if (typeof valor === "string") {
         let texto = valor.replace(/[R$\s]/g, "");
-        if (texto.includes(",")) {
-            texto = texto.replace(/\./g, "").replace(",", ".");
-        }
+        if (texto.includes(",")) texto = texto.replace(/\./g, "").replace(",", ".");
         const numero = Number(texto);
         return Number.isFinite(numero) ? numero : 0;
     }
@@ -345,26 +329,16 @@ function paraNumeroOS(valor) {
 }
 
 function formatarMoedaOS(valor) {
-    return new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-    }).format(paraNumeroOS(valor));
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(paraNumeroOS(valor));
 }
 
 function formatarDataOS(valor) {
-    if (!valor) {
-        return "-";
-    }
+    if (!valor) return "-";
     const texto = String(valor);
-    // yyyy-MM-dd (ou ISO): não passa por new Date() para não voltar um dia por causa do fuso
     const iso = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (iso) {
-        return `${iso[3]}/${iso[2]}/${iso[1]}`;
-    }
+    if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
     const data = new Date(texto);
-    if (Number.isNaN(data.getTime())) {
-        return "-";
-    }
+    if (Number.isNaN(data.getTime())) return "-";
     return data.toLocaleDateString("pt-BR");
 }
 
@@ -376,54 +350,28 @@ function normalizarChaveOS(valor) {
         .replace(/[^a-z0-9]/g, "");
 }
 
-function formatarTextoLivreOS(valor) {
-    const texto = String(valor ?? "").replace(/[_-]+/g, " ").trim();
-    if (!texto) {
-        return "-";
-    }
-    return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
-}
-
-// Ajuste as chaves conforme os "value" das opções do seu <select>
 const TIPOS_SERVICO_OS = {
-    usinagem: "Usinagem",
-    torneamento: "Torneamento",
-    fresagem: "Fresagem",
-    corte: "Corte",
-    solda: "Solda",
-    outro: "Outro"
+    usinagem: "Usinagem", torneamento: "Torneamento", fresagem: "Fresagem",
+    corte: "Corte", solda: "Solda", outro: "Outro"
 };
 
 const CONDICOES_PAGAMENTO_OS = {
-    avista: "À vista",
-    pix: "PIX",
-    cartao: "Cartão",
-    boleto: "Boleto",
-    "30dias": "30 dias",
-    parcelado: "Parcelado",
+    avista: "À vista", pix: "PIX", cartao: "Cartão", boleto: "Boleto",
+    "30dias": "30 dias", parcelado: "Parcelado",
     "50naentradae50naentrega": "50% na entrada e 50% na entrega",
     outro: "Outro"
 };
 
-// Valores aceitos pelo <select id="condicaoPagamento">
 const CONDICOES_PAGAMENTO_VALIDAS = [
-    "avista", "pix", "cartao", "boleto",
-    "30dias", "parcelado",
+    "avista", "pix", "cartao", "boleto", "30dias", "parcelado",
     "50% na entrada e 50% na entrega", "outro"
 ];
 
-// Converte qualquer texto vindo do banco em uma das opções do select
 function categorizarCondicaoPagamentoOS(valor) {
-    if (valor === null || valor === undefined || String(valor).trim() === "") {
-        return "";
-    }
+    if (valor === null || valor === undefined || String(valor).trim() === "") return "";
     const k = normalizarChaveOS(valor);
-
-    const exata = CONDICOES_PAGAMENTO_VALIDAS.find(function (v) {
-        return normalizarChaveOS(v) === k;
-    });
+    const exata = CONDICOES_PAGAMENTO_VALIDAS.find(v => normalizarChaveOS(v) === k);
     if (exata) return exata;
-
     if (k.includes("pix")) return "pix";
     if (k.includes("cartao")) return "cartao";
     if (k.includes("boleto")) return "boleto";
@@ -431,47 +379,31 @@ function categorizarCondicaoPagamentoOS(valor) {
     if (k.includes("parcela")) return "parcelado";
     if (k.includes("30dias")) return "30dias";
     if (/50.*entrada.*50.*entrega/.test(k)) return "50% na entrada e 50% na entrega";
-
     return "outro";
 }
 
-// Valores aceitos pelo <select id="tipoServico">
-const TIPOS_SERVICO_VALIDOS = [
-    "usinagem", "torneamento", "fresagem", "corte", "solda", "outro"
-];
+const TIPOS_SERVICO_VALIDOS = ["usinagem", "torneamento", "fresagem", "corte", "solda", "outro"];
 
-// Converte textos como "usinagem CNC" ou "soldagem MIG/MAG" em uma das opções
 function categorizarTipoServicoOS(valor) {
-    if (valor === null || valor === undefined || String(valor).trim() === "") {
-        return "";
-    }
+    if (valor === null || valor === undefined || String(valor).trim() === "") return "";
     const k = normalizarChaveOS(valor);
-
-    const exata = TIPOS_SERVICO_VALIDOS.find(function (v) {
-        return normalizarChaveOS(v) === k;
-    });
+    const exata = TIPOS_SERVICO_VALIDOS.find(v => normalizarChaveOS(v) === k);
     if (exata) return exata;
-
     if (k.includes("usinag")) return "usinagem";
     if (k.includes("tornea")) return "torneamento";
     if (k.includes("fresa")) return "fresagem";
     if (k.includes("corte")) return "corte";
     if (k.includes("sold")) return "solda";
-
     return "outro";
 }
 
 function obterTipoServicoOS(tipo) {
-    if (tipo === null || tipo === undefined || tipo === "") {
-        return "-";
-    }
+    if (tipo === null || tipo === undefined || tipo === "") return "-";
     return TIPOS_SERVICO_OS[categorizarTipoServicoOS(tipo)] || "Outro";
 }
 
 function obterCondicaoPagamentoOS(condicao) {
-    if (condicao === null || condicao === undefined || condicao === "") {
-        return "-";
-    }
+    if (condicao === null || condicao === undefined || condicao === "") return "-";
     return CONDICOES_PAGAMENTO_OS[normalizarChaveOS(categorizarCondicaoPagamentoOS(condicao))] || "Outro";
 }
 
@@ -481,36 +413,25 @@ function escaparHtmlOS(valor) {
     });
 }
 
-// Lê um campo do objeto ignorando maiúsculas/minúsculas (valorMateriais, ValorMateriais...)
 function lerCampoOS(obj, nomes) {
-    if (!obj) {
-        return undefined;
-    }
+    if (!obj) return undefined;
     const chaves = Object.keys(obj);
     for (const nome of nomes) {
         const alvo = normalizarChaveOS(nome);
-        const chave = chaves.find(function (k) {
-            return normalizarChaveOS(k) === alvo;
-        });
-        if (chave !== undefined && obj[chave] !== null && obj[chave] !== undefined) {
-            return obj[chave];
-        }
+        const chave = chaves.find(k => normalizarChaveOS(k) === alvo);
+        if (chave !== undefined && obj[chave] !== null && obj[chave] !== undefined) return obj[chave];
     }
     return undefined;
 }
 
 function obterValorMateriaisOS(ordem) {
     const direto = lerCampoOS(ordem, ["valorMateriais", "valorMaterial", "totalMateriais"]);
-    if (direto !== undefined) {
-        return paraNumeroOS(direto);
-    }
+    if (direto !== undefined) return paraNumeroOS(direto);
     const lista = lerCampoOS(ordem, ["materiais"]);
     if (Array.isArray(lista)) {
-        return lista.reduce(function (soma, m) {
+        return lista.reduce((soma, m) => {
             const total = lerCampoOS(m, ["valorTotal", "subtotal", "total"]);
-            if (total !== undefined) {
-                return soma + paraNumeroOS(total);
-            }
+            if (total !== undefined) return soma + paraNumeroOS(total);
             const qtd = lerCampoOS(m, ["quantidade"]);
             const unit = lerCampoOS(m, ["valorUnitario", "precoUnitario", "preco", "valor"]);
             return soma + (qtd === undefined ? 1 : paraNumeroOS(qtd)) * paraNumeroOS(unit);
@@ -523,88 +444,129 @@ function obterDescontoOS(ordem) {
     return paraNumeroOS(lerCampoOS(ordem, ["desconto", "valorDesconto"]));
 }
 
-// Seleciona a <option> comparando sem acento/maiúscula, pelo value ou pelo texto
 function selecionarOpcaoOS(idSelect, valor) {
     const select = document.getElementById(idSelect);
-    if (!select) {
-        return;
-    }
+    if (!select) return;
     select.value = "";
-    if (valor === null || valor === undefined || valor === "") {
-        return;
-    }
+    if (valor === null || valor === undefined || valor === "") return;
     const alvo = normalizarChaveOS(valor);
-    const opcao = Array.from(select.options).find(function (o) {
-        return normalizarChaveOS(o.value) === alvo
-            || normalizarChaveOS(o.textContent) === alvo;
-    });
-    if (opcao) {
-        select.value = opcao.value;
-    } else {
-        console.warn(`[OS] Nenhuma opção de "${idSelect}" corresponde a:`, valor);
-    }
+    const opcao = Array.from(select.options).find(o =>
+        normalizarChaveOS(o.value) === alvo || normalizarChaveOS(o.textContent) === alvo
+    );
+    if (opcao) select.value = opcao.value;
+    else console.warn(`[OS] Nenhuma opção de "${idSelect}" corresponde a:`, valor);
 }
 
 function calcularTotalOS(ordem) {
-    if (ordem.valorTotal !== undefined && ordem.valorTotal !== null) {
-        return paraNumeroOS(ordem.valorTotal);
-    }
-    return paraNumeroOS(ordem.valorMaoObra)
-        + paraNumeroOS(obterValorMateriaisOS(ordem))
-        - paraNumeroOS(obterDescontoOS(ordem));
+    if (ordem.valorTotal !== undefined && ordem.valorTotal !== null) return paraNumeroOS(ordem.valorTotal);
+    return paraNumeroOS(ordem.valorMaoObra) + paraNumeroOS(obterValorMateriaisOS(ordem)) - paraNumeroOS(obterDescontoOS(ordem));
 }
 
 // =========================================================
-// LISTAGEM
+// CARREGAMENTO
 // =========================================================
+
+async function carregarTodasPrecificacoes() {
+    try {
+        const resposta = await fetch(`${API_URL}/Precificacoes`);
+        if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
+        precificacoes = await resposta.json();
+    } catch (erro) {
+        console.warn("[PRECIFICAÇÕES] Não foi possível carregar:", erro);
+        precificacoes = [];
+    }
+}
 
 async function carregarOrdensServico() {
     try {
-        const resposta = await fetch(`${API_URL}/OrdensServico`);
-        if (!resposta.ok) {
-            throw new Error(`Erro HTTP: ${resposta.status}`);
-        }
-        ordensServico = await resposta.json();
-        console.log("Ordens de serviço carregadas:", ordensServico);
+        const respostaOS = await fetch(`${API_URL}/OrdensServico`);
+        if (!respostaOS.ok) throw new Error(`Erro HTTP: ${respostaOS.status}`);
+        ordensServico = await respostaOS.json();
+        await carregarTodasPrecificacoes();
         renderizarOrdensServico();
+        atualizarResumoPrecificacoes();
     } catch (erro) {
         console.error("Erro ao carregar ordens de serviço:", erro);
     }
 }
 
+// =========================================================
+// FILTRO + RENDERIZAÇÃO
+// =========================================================
+
+function obterOrdensFiltradas() {
+    const termo = normalizarBusca(document.getElementById("buscarOS")?.value);
+    const situacao = document.getElementById("filtroSituacaoOS")?.value || "todas";
+
+    return ordensServico.filter(ordem => {
+        const visual = obterStatusVisualOS(ordem);
+
+        if (situacao !== "todas" && visual.chave !== situacao) return false;
+
+        return correspondeBusca(termo, ordem.numeroOS, ordem.cliente);
+    });
+}
+
 function renderizarOrdensServico() {
     const lista = document.getElementById("ordensServicoLista");
     const empty = document.getElementById("ordensServicoEmpty");
-    if (!lista || !empty) {
-        return;
-    }
-    lista.innerHTML = "";
+    if (!lista || !empty) return;
 
-    if (ordensServico.length === 0) {
-        empty.style.display = "flex";
+    lista.innerHTML = "";
+    const filtradas = obterOrdensFiltradas();
+
+    if (filtradas.length === 0) {
+        if (ordensServico.length === 0) {
+            empty.style.display = "flex";
+            empty.querySelector("h3").textContent = "NENHUMA ORDEM DE SERVIÇO CADASTRADA";
+            empty.querySelector("p").textContent = "Cadastre uma nova OS para começar o acompanhamento.";
+        } else {
+            empty.style.display = "flex";
+            empty.querySelector("h3").textContent = "NENHUMA OS CORRESPONDE AOS FILTROS";
+            empty.querySelector("p").textContent = "Ajuste os filtros ou cadastre uma nova OS.";
+        }
         lista.style.display = "none";
         return;
     }
     empty.style.display = "none";
     lista.style.display = "flex";
 
-    ordensServico.forEach(function (ordem) {
+    filtradas.forEach(function (ordem) {
         const linha = document.createElement("div");
-        const statusOS = obterStatusOS(ordem);
-        const icone = statusOS === "concluida" ? "checkmark-done-outline" : "document-text-outline";
-        linha.className = "os-row" + (statusOS === "concluida" ? " os-row-concluida" : "");
+        const visual = obterStatusVisualOS(ordem);
+        const chave = visual.chave;
+
+        let icone = "document-text-outline";
+        if (chave === "concluida") icone = "checkmark-done-outline";
+        else if (chave === "aguardando_aprovacao") icone = "calculator-outline";
+        else if (chave === "em_execucao") icone = "play-outline";
+
+        linha.className = "os-row"
+            + (chave === "concluida" ? " os-row-concluida" : "")
+            + (chave === "aguardando_aprovacao" ? " os-row-aguardando" : "");
+
         const responsavel = ordem.funcionario?.nome || "Não definido";
+        const prec = obterPrecificacaoDaOS(ordem.id);
+        let badgePrec;
+        if (!prec) {
+            badgePrec = `<span class="os-status os-status-pendente">SEM PRECIF.</span>`;
+        } else if (obterStatusPrecificacao(prec) === "APROVADA") {
+            badgePrec = `<span class="os-status os-status-concluida">APROVADA</span>`;
+        } else {
+            badgePrec = `<span class="os-status os-status-rascunho">RASCUNHO</span>`;
+        }
 
         linha.innerHTML = `
             <div class="os-identificacao">
                 <div class="os-icon">
-                <ion-icon name="${icone}"></ion-icon>
+                    <ion-icon name="${icone}"></ion-icon>
                 </div>
                 <div class="os-info">
-                <div class="os-titulo-linha">
-                <div class="os-numero">${escaparHtmlOS(ordem.numeroOS)}</div>
-                ${htmlBadgeStatusOS(ordem)}</div>
-                <div class="os-cliente">${escaparHtmlOS(ordem.cliente)}</div>
+                    <div class="os-titulo-linha">
+                        <div class="os-numero">${escaparHtmlOS(ordem.numeroOS)}</div>
+                        <span class="os-status os-status-${visual.classe}">${visual.texto}</span>
+                    </div>
+                    <div class="os-cliente">${escaparHtmlOS(ordem.cliente)}</div>
                 </div>
             </div>
             <div class="os-coluna">
@@ -615,20 +577,52 @@ function renderizarOrdensServico() {
                 <span>RESPONSÁVEL</span>
                 <strong>${escaparHtmlOS(responsavel)}</strong>
             </div>
+            <div class="os-coluna os-prec-coluna">
+                <span>ORÇAMENTO</span>
+                <strong>${badgePrec}</strong>
+            </div>
             <div class="os-coluna os-valor-coluna">
                 <span>VALOR TOTAL</span>
                 <strong class="os-valor">${formatarMoedaOS(ordem.valorTotal)}</strong>
             </div>
-            <button
-                type="button"
-                class="btn-detalhes-os"
-                data-os-id="${ordem.id}">
+            <button type="button" class="btn-detalhes-os" data-os-id="${ordem.id}">
                 DETALHES →
             </button>
         `;
         lista.appendChild(linha);
     });
+
     adicionarEventosDetalhesOS();
+}
+
+function atualizarResumoPrecificacoes() {
+    const semEl = document.getElementById("ordensResumoSemPrecificacao");
+    const rascEl = document.getElementById("ordensResumoRascunhos");
+    const aprovEl = document.getElementById("ordensResumoAprovadas");
+    const totalEl = document.getElementById("ordensResumoTotalAprovado");
+    if (!semEl && !rascEl && !aprovEl && !totalEl) return;
+
+    let sem = 0;
+    let rascunhos = 0;
+    let aprovadas = 0;
+    let totalAprovado = 0;
+
+    ordensServico.forEach(function (ordem) {
+        const prec = obterPrecificacaoDaOS(ordem.id);
+        if (!prec) {
+            sem++;
+        } else if (obterStatusPrecificacao(prec) === "APROVADA") {
+            aprovadas++;
+            totalAprovado += paraNumeroOS(prec.precoAprovado);
+        } else {
+            rascunhos++;
+        }
+    });
+
+    if (semEl) semEl.textContent = sem;
+    if (rascEl) rascEl.textContent = rascunhos;
+    if (aprovEl) aprovEl.textContent = aprovadas;
+    if (totalEl) totalEl.textContent = formatarMoedaOS(totalAprovado);
 }
 
 function adicionarEventosDetalhesOS() {
@@ -640,21 +634,54 @@ function adicionarEventosDetalhesOS() {
 }
 
 // =========================================================
-// ABRIR / FECHAR MODAIS
+// PAINEL COLAPSÁVEL DE PRECIFICAÇÃO
+// =========================================================
+
+const STORAGE_KEY_PAINEL_PREC = "blackforge.ordens.painelPrecAberto";
+
+function aplicarEstadoPainelPrecificacao(aberto) {
+    const painel = document.getElementById("painelPrecificacao");
+    const toggle = document.getElementById("togglePainelPrecificacao");
+    if (!painel || !toggle) return;
+
+    painel.hidden = !aberto;
+    toggle.setAttribute("aria-expanded", aberto ? "true" : "false");
+}
+
+function inicializarPainelPrecificacao() {
+    const toggle = document.getElementById("togglePainelPrecificacao");
+    if (!toggle) return;
+
+    let aberto = false;
+    try {
+        aberto = localStorage.getItem(STORAGE_KEY_PAINEL_PREC) === "1";
+    } catch (_) { /* localStorage indisponível */ }
+
+    aplicarEstadoPainelPrecificacao(aberto);
+
+    toggle.addEventListener("click", function () {
+        const painel = document.getElementById("painelPrecificacao");
+        const novoEstado = painel ? painel.hidden : false;
+        aplicarEstadoPainelPrecificacao(novoEstado);
+        try {
+            localStorage.setItem(STORAGE_KEY_PAINEL_PREC, novoEstado ? "1" : "0");
+        } catch (_) { /* ignora */ }
+        if (novoEstado) atualizarResumoPrecificacoes();
+    });
+}
+
+// =========================================================
+// ABRIR / FECHAR MODAIS DE OS
 // =========================================================
 
 function abrirModalOS() {
-    if (!modalOS) {
-        return;
-    }
+    if (!modalOS) return;
     modalOS.classList.add("active");
     document.body.style.overflow = "hidden";
 }
 
 function fecharOS() {
-    if (!modalOS) {
-        return;
-    }
+    if (!modalOS) return;
     modalOS.classList.remove("active");
     document.body.style.overflow = "";
 }
@@ -663,27 +690,19 @@ function abrirNovaOS() {
     modoEdicaoOS = false;
     ordemSelecionadaOS = null;
     limparFormularioOS();
-    if (salvarOS) {
-        salvarOS.textContent = "SALVAR OS";
-    }
-    if (tituloModalOS) {
-        tituloModalOS.textContent = "NOVA ORDEM DE SERVIÇO";
-    }
+    if (salvarOS) salvarOS.textContent = "SALVAR OS";
+    if (tituloModalOS) tituloModalOS.textContent = "NOVA ORDEM DE SERVIÇO";
     abrirModalOS();
 }
 
 function abrirModalDetalhesOS() {
-    if (!modalDetalhesOS) {
-        return;
-    }
+    if (!modalDetalhesOS) return;
     modalDetalhesOS.classList.add("active");
     document.body.style.overflow = "hidden";
 }
 
 function fecharModalDetalhesOS() {
-    if (!modalDetalhesOS) {
-        return;
-    }
+    if (!modalDetalhesOS) return;
     modalDetalhesOS.classList.remove("active");
     document.body.style.overflow = "";
 }
@@ -697,48 +716,34 @@ if (btnFecharDetalhesOSRodape) btnFecharDetalhesOSRodape.addEventListener("click
 
 if (modalOS) {
     modalOS.addEventListener("click", function (event) {
-        if (event.target === modalOS) {
-            fecharOS();
-        }
+        if (event.target === modalOS) fecharOS();
     });
 }
 if (modalDetalhesOS) {
     modalDetalhesOS.addEventListener("click", function (event) {
-        if (event.target === modalDetalhesOS) {
-            fecharModalDetalhesOS();
-        }
+        if (event.target === modalDetalhesOS) fecharModalDetalhesOS();
     });
 }
 document.addEventListener("keydown", function (event) {
-    if (event.key !== "Escape") {
-        return;
-    }
-    if (modalOS && modalOS.classList.contains("active")) {
-        fecharOS();
-    } else if (modalDetalhesOS && modalDetalhesOS.classList.contains("active")) {
-        fecharModalDetalhesOS();
-    }
+    if (event.key !== "Escape") return;
+    if (modalOS && modalOS.classList.contains("active")) fecharOS();
+    else if (modalDetalhesOS && modalDetalhesOS.classList.contains("active")) fecharModalDetalhesOS();
 });
 
 // =========================================================
-// DETALHES
+// DETALHES DA OS
 // =========================================================
 
 async function carregarDetalhesOS(id) {
     let ordem = null;
     try {
         const resposta = await fetch(`${API_URL}/OrdensServico/${id}`);
-        if (!resposta.ok) {
-            throw new Error(`Erro HTTP: ${resposta.status}`);
-        }
+        if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
         ordem = await resposta.json();
     } catch (erro) {
         console.warn("Não foi possível buscar a OS na API, usando a lista local:", erro);
-        ordem = ordensServico.find(function (o) {
-            return o.id === id;
-        }) || null;
+        ordem = ordensServico.find(o => o.id === id) || null;
     }
-
     if (!ordem) {
         notificar("Não foi possível carregar os detalhes da ordem de serviço.");
         return;
@@ -747,13 +752,11 @@ async function carregarDetalhesOS(id) {
     abrirModalDetalhesOS();
 }
 
+
 function preencherDetalhesOS(ordem) {
-    if (!ordem) {
-        return;
-    }
+    if (!ordem) return;
     ordemSelecionadaOS = ordem;
     const ids = IDS_DETALHES_OS;
-
     definirTexto(ids.numero, ordem.numeroOS || "-");
     definirTexto(ids.cliente, ordem.cliente || "-");
     definirTexto(ids.clienteInfo, ordem.cliente || "-");
@@ -765,54 +768,109 @@ function preencherDetalhesOS(ordem) {
     definirTexto(ids.quantidade, ordem.quantidade ?? "-");
     definirTexto(ids.responsavel, ordem.funcionario?.nome || "Não definido");
     definirTexto(ids.descricao, ordem.descricaoServico || "-");
-    definirTexto(ids.valorMaoObra, formatarMoedaOS(ordem.valorMaoObra));
-    definirTexto(ids.valorMateriais, formatarMoedaOS(obterValorMateriaisOS(ordem)));
-    definirTexto(ids.desconto, formatarMoedaOS(obterDescontoOS(ordem)));
-    definirTexto(ids.valorTotal, formatarMoedaOS(calcularTotalOS(ordem)));
-    definirTexto(ids.condicaoPagamento, obterCondicaoPagamentoOS(ordem.condicaoPagamento));
-    definirTexto(ids.observacoes, ordem.observacoes || "Nenhuma observação registrada.");
+
+
+    const precificacao = typeof obterPrecificacaoDaOS === "function"
+        ? obterPrecificacaoDaOS(ordem.id)
+        : null;
+
+    const precificacaoAprovada =
+        precificacao &&
+        typeof obterStatusPrecificacao === "function" &&
+        obterStatusPrecificacao(precificacao) === "APROVADA";
+
+    if (precificacaoAprovada) {
+        definirTexto(ids.custoMaterial,
+            formatarMoedaOS(precificacao.custoMaterialEstimado ?? 0));
+
+        definirTexto(ids.custoMaquina,
+            formatarMoedaOS(precificacao.custoMaquinaEstimado ?? 0));
+
+        definirTexto(ids.custoOperador,
+            formatarMoedaOS(precificacao.custoOperadorEstimado ?? 0));
+
+        definirTexto(ids.custoSetup,
+            formatarMoedaOS(precificacao.custoSetupEstimado ?? 0));
+
+        definirTexto(ids.custoIndireto,
+            formatarMoedaOS(precificacao.custoIndiretoEstimado ?? 0));
+
+        definirTexto(ids.custoTotal,
+            formatarMoedaOS(precificacao.custoTotalEstimado ?? 0));
+
+        definirTexto(ids.precoAprovado,
+            formatarMoedaOS(precificacao.precoAprovado ?? 0));
+    } else {
+        definirTexto(ids.custoMaterial, "Aguardando aprovação");
+        definirTexto(ids.custoMaquina, "Aguardando aprovação");
+        definirTexto(ids.custoOperador, "Aguardando aprovação");
+        definirTexto(ids.custoSetup, "Aguardando aprovação");
+        definirTexto(ids.custoIndireto, "Aguardando aprovação");
+        definirTexto(ids.custoTotal, "Aguardando aprovação");
+        definirTexto(ids.precoAprovado, "Ainda não definido");
+    }
+
+    definirTexto(
+        ids.observacoes,
+        ordem.observacoes || "Nenhuma observação registrada."
+    );
     atualizarStatusModalOS(ordem);
 }
 
 function atualizarStatusModalOS(ordem) {
-    const chave = obterStatusOS(ordem);
+    const visual = obterStatusVisualOS(ordem);
+    const chave = visual.chave;
+
     const badge = document.getElementById("detalhesOSStatus");
     if (badge) {
-        badge.className = `os-status os-status-${STATUS_OS[chave].classe}`;
-        badge.textContent = STATUS_OS[chave].texto +
+        badge.className = `os-status os-status-${visual.classe}`;
+        badge.textContent = visual.texto +
             (chave === "concluida" && ordem.dataConclusao
                 ? ` · ${formatarDataOS(ordem.dataConclusao)}`
                 : "");
     }
+
     const botao = document.getElementById("statusOS");
     if (botao) {
-        const acao = ACOES_STATUS_OS[chave];
-        botao.className = `btn-status-os btn-status-os-${acao.classe}`;
-        botao.innerHTML = `<ion-icon name="${acao.icone}"></ion-icon> ${acao.rotulo}`;
+        const statusReal = obterStatusOS(ordem);
+        const precExistente = obterPrecificacaoDaOS(ordem.id);
+        const emRascunho = precExistente && obterStatusPrecificacao(precExistente) === "RASCUNHO";
 
-        const concluida = chave === "concluida";
+        if (statusReal === "pendente" && emRascunho) {
+            botao.className = "btn-status-os btn-status-os-precificar";
+            botao.innerHTML = `<ion-icon name="eye-outline"></ion-icon> ABRIR PRECIFICAÇÃO`;
+        } else {
+            const acao = ACOES_STATUS_OS[statusReal];
+            botao.className = `btn-status-os btn-status-os-${acao.classe}`;
+            botao.innerHTML = `<ion-icon name="${acao.icone}"></ion-icon> ${acao.rotulo}`;
+        }
+
+        const concluida = statusReal === "concluida";
         botao.disabled = concluida;
-        botao.title = concluida
-            ? "Esta OS já foi concluída e não pode ser reaberta."
-            : "";
+        botao.title = concluida ? TEXTO_OS_CONCLUIDA : "";
     }
+
     const aviso = document.getElementById("detalhesOSBloqueio");
     if (aviso) {
-        const concluida = chave === "concluida";
-        if (concluida) {
-            aviso.textContent = "Esta OS já foi concluída e não pode ser reaberta.";
+        const statusReal = obterStatusOS(ordem);
+        if (statusReal === "concluida") {
+            aviso.textContent = TEXTO_OS_CONCLUIDA;
+            aviso.hidden = false;
+        } else if (statusReal === "pendente") {
+            aviso.textContent = TEXTO_OS_PENDENTE;
             aviso.hidden = false;
         } else {
             aviso.textContent = "";
             aviso.hidden = true;
         }
     }
-    if (editarOS) {
-        editarOS.disabled = chave === "concluida";
-    }
+
+    if (editarOS) editarOS.disabled = obterStatusOS(ordem) === "concluida";
 }
 
+// =========================================================
 // SALVAR (NOVA / EDIÇÃO) E IMPRIMIR
+// =========================================================
 
 function lerFormularioOS() {
     return {
@@ -826,53 +884,29 @@ function lerFormularioOS() {
         quantidade: Number(document.getElementById("quantidadeOS").value) || 0,
         dataEntrega: document.getElementById("dataEntregaOS").value,
         funcionarioId: Number(document.getElementById("responsavelOS").value) || null,
-        valorMaoObra: Number(document.getElementById("valorMaoObra").value) || 0,
-        valorMateriais: Number(document.getElementById("valorMateriais").value) || 0,
-        desconto: Number(document.getElementById("descontoOS").value) || 0,
-        condicaoPagamento: document.getElementById("condicaoPagamento").value,
         observacoes: document.getElementById("observacoesOS").value.trim(),
-        // Na edição, preserva os materiais que já existem na OS
         materiais: modoEdicaoOS && ordemSelecionadaOS?.materiais
-            ? ordemSelecionadaOS.materiais.map(function (m) {
-                return {
-                    materialId: m.materialId,
-                    quantidade: m.quantidade,
-                    valorUnitario: m.valorUnitario
-                };
-            })
+            ? ordemSelecionadaOS.materiais.map(m => ({
+                materialId: m.materialId,
+                quantidade: m.quantidade,
+                valorUnitario: m.valorUnitario
+            }))
             : []
     };
 }
 
 function validarOS(ordem) {
-    if (!ordem.numeroOS) {
-        notificar("Informe o número da OS.");
-        return false;
-    }
-    if (!ordem.cliente) {
-        notificar("Informe o cliente.");
-        return false;
-    }
-    if (!ordem.descricaoServico) {
-        notificar("Informe a descrição do serviço.");
-        return false;
-    }
-    if (!ordem.tipoServico) {
-        notificar("Selecione o tipo de serviço.");
-        return false;
-    }
-    if (ordem.quantidade <= 0) {
-        notificar("Informe uma quantidade maior que zero.");
-        return false;
-    }
+    if (!ordem.numeroOS) { notificar("Informe o número da OS."); return false; }
+    if (!ordem.cliente) { notificar("Informe o cliente."); return false; }
+    if (!ordem.descricaoServico) { notificar("Informe a descrição do serviço."); return false; }
+    if (!ordem.tipoServico) { notificar("Selecione o tipo de serviço."); return false; }
+    if (ordem.quantidade <= 0) { notificar("Informe uma quantidade maior que zero."); return false; }
     return true;
 }
 
 async function salvarOrdemServico(imprimir = false) {
     const ordem = lerFormularioOS();
-    if (!validarOS(ordem)) {
-        return;
-    }
+    if (!validarOS(ordem)) return;
 
     const editando = modoEdicaoOS && ordemSelecionadaOS;
     const url = editando
@@ -881,6 +915,13 @@ async function salvarOrdemServico(imprimir = false) {
 
     if (editando) {
         ordem.id = ordemSelecionadaOS.id;
+        // O formulário não exibe dados financeiros; reenvia os valores já existentes
+        // para que a edição não os zere no backend.
+        ["valorMaoObra", "valorMateriais", "desconto", "condicaoPagamento", "valorTotal"].forEach(campo => {
+            if (ordemSelecionadaOS[campo] !== undefined && ordemSelecionadaOS[campo] !== null) {
+                ordem[campo] = ordemSelecionadaOS[campo];
+            }
+        });
     }
 
     if (salvarOS) salvarOS.disabled = true;
@@ -897,9 +938,15 @@ async function salvarOrdemServico(imprimir = false) {
             throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
         }
 
-        // PUT normalmente devolve 204 (sem corpo)
         const texto = await resposta.text();
-        const ordemSalva = texto ? JSON.parse(texto) : { ...ordem };
+        let ordemSalva = { ...ordem };
+        if (texto && texto.trim()) {
+            try {
+                ordemSalva = JSON.parse(texto);
+            } catch (_) {
+                console.warn("[OS] Resposta não é JSON, usando fallback:", texto);
+            }
+        }
 
         fecharOS();
         modoEdicaoOS = false;
@@ -907,15 +954,10 @@ async function salvarOrdemServico(imprimir = false) {
         limparFormularioOS();
         await carregarOrdensServico();
 
-        if (imprimir) {
-            imprimirOS(ordemSalva);
-        } else {
-            notificar(
-                editando
-                    ? `Ordem de serviço ${ordemSalva.numeroOS || ordem.numeroOS} atualizada com sucesso!`
-                    : `Ordem de serviço ${ordemSalva.numeroOS || ordem.numeroOS} criada com sucesso!`
-            );
-        }
+        if (imprimir) imprimirOS(ordemSalva);
+        else notificar(editando
+            ? `Ordem de serviço ${ordemSalva.numeroOS || ordem.numeroOS} atualizada com sucesso!`
+            : `Ordem de serviço ${ordemSalva.numeroOS || ordem.numeroOS} criada com sucesso!`);
     } catch (erro) {
         console.error("Erro ao salvar ordem de serviço:", erro);
         notificar(`Não foi possível salvar a ordem de serviço.\n\n${erro.message}`);
@@ -934,15 +976,23 @@ function imprimirOS(ordem) {
 
     let responsavel = ordem.funcionario?.nome;
     if (!responsavel && ordem.funcionarioId && Array.isArray(funcionarios)) {
-        responsavel = funcionarios.find(function (f) {
-            return f.id === ordem.funcionarioId;
-        })?.nome;
+        responsavel = funcionarios.find(f => f.id === ordem.funcionarioId)?.nome;
     }
     responsavel = responsavel || "Não definido";
 
-    const linha = function (rotulo, valor) {
-        return `<tr><th>${rotulo}</th><td>${escaparHtmlOS(valor)}</td></tr>`;
-    };
+    const linha = (rotulo, valor) => `<tr><th>${rotulo}</th><td>${escaparHtmlOS(valor)}</td></tr>`;
+
+    // Dados financeiros só aparecem na impressão após a aprovação da precificação
+    const precAprovada = ordem.id ? obterPrecificacaoDaOS(ordem.id) : null;
+    const linhasFinanceiras = precAprovada && obterStatusPrecificacao(precAprovada) === "APROVADA"
+        ? [
+            linha("Mão de obra", formatarMoedaOS(ordem.valorMaoObra)),
+            linha("Materiais", formatarMoedaOS(obterValorMateriaisOS(ordem))),
+            linha("Desconto", formatarMoedaOS(obterDescontoOS(ordem))),
+            linha("Valor total", formatarMoedaOS(precAprovada.precoAprovado)),
+            linha("Condição de pagamento", obterCondicaoPagamentoOS(ordem.condicaoPagamento))
+        ].join("\n    ")
+        : "";
 
     janela.document.write(`<!DOCTYPE html>
 <html lang="pt-BR">
@@ -968,41 +1018,26 @@ function imprimirOS(ordem) {
     ${linha("Tipo de serviço", obterTipoServicoOS(ordem.tipoServico))}
     ${linha("Responsável", responsavel)}
     ${linha("Descrição", ordem.descricaoServico || "-")}
-    ${linha("Mão de obra", formatarMoedaOS(ordem.valorMaoObra))}
-    ${linha("Materiais", formatarMoedaOS(obterValorMateriaisOS(ordem)))}
-    ${linha("Desconto", formatarMoedaOS(obterDescontoOS(ordem)))}
-    ${linha("Valor total", formatarMoedaOS(calcularTotalOS(ordem)))}
-    ${linha("Condição de pagamento", obterCondicaoPagamentoOS(ordem.condicaoPagamento))}
+    ${linhasFinanceiras}
     ${linha("Observações", ordem.observacoes || "-")}
 </table>
 </body>
 </html>`);
     janela.document.close();
     janela.focus();
-    janela.onload = function () {
-        janela.print();
-    };
-    // Caso o onload já tenha disparado
-    setTimeout(function () {
-        janela.print();
-    }, 500);
+    setTimeout(() => janela.print(), 300);
 }
 
 // =========================================================
-// EDITAR / REMOVER
+// EDITAR / REMOVER OS
 // =========================================================
 
 function editarOSSelecionada() {
-    if (!ordemSelecionadaOS) {
-        return;
-    }
+    if (!ordemSelecionadaOS) return;
     const o = ordemSelecionadaOS;
-    console.log("[OS] Editando:", o);
     modoEdicaoOS = true;
 
-    const paraInputData = function (valor) {
-        return valor ? String(valor).split("T")[0] : "";
-    };
+    const paraInputData = valor => valor ? String(valor).split("T")[0] : "";
 
     document.getElementById("numeroOS").value = o.numeroOS || "";
     document.getElementById("clienteOS").value = o.cliente || "";
@@ -1014,38 +1049,22 @@ function editarOSSelecionada() {
     selecionarOpcaoOS("tipoServico", categorizarTipoServicoOS(o.tipoServico));
     document.getElementById("quantidadeOS").value = o.quantidade ?? 1;
     document.getElementById("responsavelOS").value = o.funcionarioId ?? o.funcionario?.id ?? "";
-    document.getElementById("valorMaoObra").value = o.valorMaoObra ?? "0.00";
-    document.getElementById("descontoOS").value = obterDescontoOS(o).toFixed(2);
-    selecionarOpcaoOS("condicaoPagamento", categorizarCondicaoPagamentoOS(o.condicaoPagamento));
     document.getElementById("observacoesOS").value = o.observacoes || "";
 
-    if (salvarOS) {
-        salvarOS.textContent = "SALVAR ALTERAÇÕES";
-    }
-    if (tituloModalOS) {
-        tituloModalOS.textContent = "EDITAR ORDEM DE SERVIÇO";
-    }
-    document.getElementById("valorMateriais").value = obterValorMateriaisOS(o).toFixed(2);
-    atualizarTotalOS();
+    if (salvarOS) salvarOS.textContent = "SALVAR ALTERAÇÕES";
+    if (tituloModalOS) tituloModalOS.textContent = "EDITAR ORDEM DE SERVIÇO";
+
     fecharModalDetalhesOS();
     abrirModalOS();
 }
 
 async function removerOSSelecionada() {
-    if (!ordemSelecionadaOS) {
-        return;
-    }
-    const confirmar = confirm(
-        `Deseja realmente remover a OS "${ordemSelecionadaOS.numeroOS}"?`
-    );
-    if (!confirmar) {
-        return;
-    }
+    if (!ordemSelecionadaOS) return;
+    const confirmar = confirm(`Deseja realmente remover a OS "${ordemSelecionadaOS.numeroOS}"?`);
+    if (!confirmar) return;
+
     try {
-        const resposta = await fetch(
-            `${API_URL}/OrdensServico/${ordemSelecionadaOS.id}`,
-            { method: "DELETE" }
-        );
+        const resposta = await fetch(`${API_URL}/OrdensServico/${ordemSelecionadaOS.id}`, { method: "DELETE" });
         if (!resposta.ok) {
             const mensagem = await resposta.text();
             throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
@@ -1060,25 +1079,83 @@ async function removerOSSelecionada() {
     }
 }
 
+// =========================================================
+// AVANÇAR STATUS (PENDENTE → PRECIFICAÇÃO | EM EXECUÇÃO → CONCLUÍDA)
+// =========================================================
+
+let calculandoPrecificacaoOS = false;
+
 async function avancarStatusOS() {
-    if (!ordemSelecionadaOS) {
+    if (!ordemSelecionadaOS) return;
+
+    const chave = obterStatusOS(ordemSelecionadaOS);
+
+    // -------- NOVO FLUXO: pendente vai para a precificação --------
+    if (chave === "pendente") {
+        // Trava contra cliques repetidos (o modal fecha antes do cálculo,
+        // então o botão deixa de existir; a flag cobre qualquer reentrada)
+        if (calculandoPrecificacaoOS) return;
+        calculandoPrecificacaoOS = true;
+
+        const ordem = ordemSelecionadaOS;
+        const botaoPrec = document.getElementById("statusOS");
+        if (botaoPrec) botaoPrec.disabled = true;
+        fecharModalDetalhesOS();
+
+        try {
+            await carregarTodasPrecificacoes();
+
+            const existente = obterPrecificacaoDaOS(ordem.id);
+            if (existente) {
+                abrirDetalhesPrecificacao(existente);
+                return;
+            }
+
+            notificar("Calculando orçamento da OS...", "info");
+            const resposta = await fetch(`${API_URL}/Precificacoes/calcular/${ordem.id}`, { method: "POST" });
+
+            if (!resposta.ok) {
+                const mensagem = await lerMensagemErroPrecificacao(
+                    resposta,
+                    "Não foi possível calcular o orçamento."
+                );
+                notificar(mensagem, resposta.status >= 500 ? "erro" : "aviso");
+                return;
+            }
+
+            const nova = await resposta.json();
+            await carregarTodasPrecificacoes();
+            const atualizada = precificacoes.find(p => p.id === nova.id) || nova;
+            abrirDetalhesPrecificacao(atualizada);
+        } catch (erro) {
+            console.error("Erro ao calcular orçamento:", erro);
+            notificar("Não foi possível calcular a orçamento.\n" + erro.message, "erro");
+        } finally {
+            calculandoPrecificacaoOS = false;
+            if (botaoPrec && document.body.contains(botaoPrec) && ordemSelecionadaOS) {
+                botaoPrec.disabled = obterStatusOS(ordemSelecionadaOS) === "concluida";
+            }
+        }
         return;
     }
-    const acao = ACOES_STATUS_OS[obterStatusOS(ordemSelecionadaOS)];
+
+    // -------- Fluxo antigo (em_execucao → concluida) --------
+    const acao = ACOES_STATUS_OS[chave];
     if (!acao || !acao.proximo) {
         notificar("Esta OS não possui uma transição de status disponível.", "info");
         return;
     }
+
     if (acao.proximo === "concluida") {
         const confirmar = confirm(
             `Dar baixa na OS "${ordemSelecionadaOS.numeroOS}"?\n\nEla será marcada como concluída.`
         );
-        if (!confirmar) {
-            return;
-        }
+        if (!confirmar) return;
     }
+
     const botao = document.getElementById("statusOS");
     if (botao) botao.disabled = true;
+
     try {
         const resposta = await fetch(
             `${API_URL}/OrdensServico/${ordemSelecionadaOS.id}/status`,
@@ -1088,6 +1165,7 @@ async function avancarStatusOS() {
                 body: JSON.stringify({ status: acao.proximo })
             }
         );
+
         if (!resposta.ok) {
             const texto = await resposta.text();
             let mensagem = `Erro HTTP: ${resposta.status}`;
@@ -1098,37 +1176,26 @@ async function avancarStatusOS() {
                         json.mensagem ||
                         json.message ||
                         json.title ||
-                        (json.errors
-                            ? Object.values(json.errors).flat().join("\n")
-                            : texto);
+                        (json.errors ? Object.values(json.errors).flat().join("\n") : texto);
                 } catch (_) {
                     mensagem = texto;
                 }
             }
             const erro = new Error(mensagem);
             erro.status = resposta.status;
+
             if (resposta.status === 409) {
                 await carregarOrdensServico();
                 try {
-                    const respostaOS = await fetch(
-                        `${API_URL}/OrdensServico/${ordemSelecionadaOS.id}`
-                    );
+                    const respostaOS = await fetch(`${API_URL}/OrdensServico/${ordemSelecionadaOS.id}`);
                     if (respostaOS.ok) {
                         const ordemAtualizada = await respostaOS.json();
                         if (ordemAtualizada && ordemAtualizada.id !== undefined) {
                             ordemSelecionadaOS = ordemAtualizada;
-                            const naLista = ordensServico.find(
-                                o => o.id === ordemAtualizada.id
-                            );
-                            if (naLista) {
-                                Object.assign(naLista, ordemAtualizada);
-                            }
-                            const modalAberto =
-                                modalDetalhesOS &&
-                                modalDetalhesOS.classList.contains("active");
-                            if (modalAberto) {
-                                preencherDetalhesOS(ordemAtualizada);
-                            }
+                            const naLista = ordensServico.find(o => o.id === ordemAtualizada.id);
+                            if (naLista) Object.assign(naLista, ordemAtualizada);
+                            const modalAberto = modalDetalhesOS && modalDetalhesOS.classList.contains("active");
+                            if (modalAberto) preencherDetalhesOS(ordemAtualizada);
                         }
                     }
                 } catch (erroSync) {
@@ -1137,24 +1204,26 @@ async function avancarStatusOS() {
             }
             throw erro;
         }
+
         const resultado = await resposta.json();
+
         [ordemSelecionadaOS, ordensServico.find(o => o.id === ordemSelecionadaOS.id)]
             .filter(Boolean)
-            .forEach(function (o) {
+            .forEach(o => {
                 o.status = resultado.status;
                 o.dataConclusao = resultado.dataConclusao;
             });
+
         atualizarStatusModalOS(ordemSelecionadaOS);
         renderizarOrdensServico();
+        atualizarResumoPrecificacoes();
         notificar(MENSAGENS_STATUS_OS[resultado.status], "sucesso");
     } catch (erro) {
         console.error("Erro ao alterar status da OS:", erro);
         notificar(`Não foi possível alterar o status da OS.\n\n${erro.message}`);
     } finally {
-        if (!ordemSelecionadaOS) return;
-        if (botao) {
-            const statusAtual = obterStatusOS(ordemSelecionadaOS);
-            botao.disabled = statusAtual === "concluida";
+        if (botao && ordemSelecionadaOS) {
+            botao.disabled = obterStatusOS(ordemSelecionadaOS) === "concluida";
         }
     }
 }
@@ -1162,7 +1231,9 @@ async function avancarStatusOS() {
 const btnStatusOS = document.getElementById("statusOS");
 if (btnStatusOS) btnStatusOS.addEventListener("click", avancarStatusOS);
 
+// =========================================================
 // LIMPAR FORMULÁRIO
+// =========================================================
 
 function limparFormularioOS() {
     document.getElementById("clienteOS").value = "";
@@ -1175,213 +1246,72 @@ function limparFormularioOS() {
     document.getElementById("quantidadeOS").value = "";
     document.getElementById("dataEntregaOS").value = "";
     document.getElementById("responsavelOS").value = "";
-    document.getElementById("valorMaoObra").value = "0.00";
-    document.getElementById("descontoOS").value = "0.00";
-    document.getElementById("condicaoPagamento").value = "";
     document.getElementById("observacoesOS").value = "";
-    document.getElementById("valorMateriais").value = "0.00";
-    document.getElementById("valorTotalOS").textContent = "R$ 0,00";
-    const listaMateriais = document.getElementById("listaMateriais");
-    if (listaMateriais) {
-        listaMateriais.innerHTML = `
-            <tr class="os-table-empty">
-                <td colspan="6">
-                    Nenhum material adicionado à ordem.
-                </td>
-            </tr>
-        `;
-    }
 }
-
-// TOTAL EM TEMPO REAL (materiais + mão de obra - desconto)
-
-function atualizarTotalOS() {
-    const total =
-        (Number(document.getElementById("valorMateriais").value) || 0) +
-        (Number(document.getElementById("valorMaoObra").value) || 0) -
-        (Number(document.getElementById("descontoOS").value) || 0);
-    definirTexto("valorTotalOS", formatarMoedaOS(total));
-}
-
-["valorMateriais", "valorMaoObra", "descontoOS"].forEach(function (id) {
-    const campo = document.getElementById(id);
-    if (campo) {
-        campo.addEventListener("input", atualizarTotalOS);
-    }
-});
 
 // =========================================================
-// LIGAÇÃO DOS BOTÕES
+// LIGAÇÃO DOS BOTÕES DO MODAL DE OS
 // =========================================================
 
-if (salvarOS) {
-    salvarOS.addEventListener("click", function () {
-        salvarOrdemServico(false);
-    });
-}
-if (salvarImprimirOS) {
-    salvarImprimirOS.addEventListener("click", function () {
-        salvarOrdemServico(true);
-    });
-}
+if (salvarOS) salvarOS.addEventListener("click", () => salvarOrdemServico(false));
+if (salvarImprimirOS) salvarImprimirOS.addEventListener("click", () => salvarOrdemServico(true));
 if (editarOS) editarOS.addEventListener("click", editarOSSelecionada);
 if (removerOS) removerOS.addEventListener("click", removerOSSelecionada);
 
 // =========================================================
-// CONFERÊNCIA DE IDs DO HTML (aparece no console do navegador)
+// FILTROS DA LISTA DE OS
 // =========================================================
 
-function conferirIdsOS() {
-    const idsFixos = [
-        "modalOS", "novaOS", "criarOS", "fecharModalOS", "cancelarOS",
-        "salvarOS", "salvarImprimirOS",
-        "modalDetalhesOS", "fecharDetalhesOS", "fecharDetalhesOSBotao", "editarOS", "removerOS",
-        "tituloModalOS",
-        "ordensServicoLista", "ordensServicoEmpty",
-        "numeroOS", "clienteOS", "contatoOS", "enderecoOS", "dataOS",
-        "dataEntregaOS", "descricaoOS", "tipoServico", "responsavelOS",
-        "valorMaoObra", "valorMateriais", "descontoOS", "condicaoPagamento",
-        "observacoesOS", "valorTotalOS"
-    ];
-    const todos = idsFixos.concat(Object.values(IDS_DETALHES_OS));
-    const faltando = todos.filter(function (id) {
-        return !document.getElementById(id);
-    });
-    if (faltando.length > 0) {
-        console.warn("[OS] IDs não encontrados no HTML:", faltando);
-    } else {
-        console.log("[OS] Todos os IDs foram encontrados.");
-    }
-}
-conferirIdsOS();
+const campoBuscaOS = document.getElementById("buscarOS");
+if (campoBuscaOS) campoBuscaOS.addEventListener("input", renderizarOrdensServico);
 
-const ctx = document.getElementById("productionChart");
-const productionChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-        labels: [
-            "CNC 01",
-            "CNC 02",
-            "CNC 03"
-        ],
-        datasets: [
-            {
-                label: "Produção",
-                data: [
-                    85,
-                    62,
-                    74
-                ],
-                backgroundColor: "#f5c400",
-                borderWidth: 0,
-                borderRadius: 2,
-                barThickness: 8
-            }
-        ]
-    },
-    options: {
-        indexAxis: "y",
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                display: false
-            }
-        },
-        scales: {
-            x: {
-                beginAtZero: true,
-                max: 100,
-                grid: {
-                    color: "rgba(255, 255, 255, 0.05)"
-                },
-                ticks: {
-                    color: "#9aa4aa",
-                    font: {
-                        family: "'Share Tech Mono', monospace",
-                        size: 13
-                    }
-                }
-            },
-            y: {
-                grid: {
-                    display: false
-                },
-                ticks: {
-                    color: "#9aa4aa",
-                    font: {
-                        family: "'Share Tech Mono', monospace",
-                        size: 13
-                    }
-                }
-            }
-        }
-    }
+const filtroSituacaoOSEl = document.getElementById("filtroSituacaoOS");
+if (filtroSituacaoOSEl) filtroSituacaoOSEl.addEventListener("change", renderizarOrdensServico);
+
+// =========================================================
+// PAINEL DE PRECIFICAÇÃO
+// =========================================================
+
+inicializarPainelPrecificacao();
+
+// =========================================================
+// MÁQUINAS (cadastro + lista + detalhes)
+// =========================================================
+
+const abrirModalMaquina = document.getElementById("abrirModalMaquina");
+const modalMaquina = document.getElementById("modalMaquina");
+const fecharModalMaquina = document.getElementById("fecharModalMaquina");
+const cancelarModalMaquina = document.getElementById("cancelarModalMaquina");
+const cadastrarMaquina = document.getElementById("cadastrarMaquina");
+const tituloModalMaquina = document.getElementById("tituloModalMaquina");
+let maquinaEmEdicaoId = null;
+let maquinaDetalhesAtual = null;
+
+if (abrirModalMaquina) abrirModalMaquina.addEventListener("click", () => {
+    maquinaEmEdicaoId = null;
+    limparFormularioMaquina();
+    if (tituloModalMaquina) tituloModalMaquina.textContent = "Nova Máquina";
+    if (cadastrarMaquina) cadastrarMaquina.textContent = "CADASTRAR MÁQUINA";
+    modalMaquina.classList.add("active");
 });
-
-// NOVA MÁQUINA
-
-const abrirModalMaquina =
-    document.getElementById("abrirModalMaquina");
-const modalMaquina =
-    document.getElementById("modalMaquina");
-const fecharModalMaquina =
-    document.getElementById("fecharModalMaquina");
-const cancelarModalMaquina =
-    document.getElementById("cancelarModalMaquina");
-
-// MODAL NOVA MÁQUINA
-
-if (abrirModalMaquina) {
-    abrirModalMaquina.addEventListener("click", () => {
-        modalMaquina.classList.add("active");
-    });
-}
-if (fecharModalMaquina) {
-    fecharModalMaquina.addEventListener("click", () => {
-        modalMaquina.classList.remove("active");
-    });
-}
-if (cancelarModalMaquina) {
-    cancelarModalMaquina.addEventListener("click", () => {
-        modalMaquina.classList.remove("active");
-    });
-}
+if (fecharModalMaquina) fecharModalMaquina.addEventListener("click", () => modalMaquina.classList.remove("active"));
+if (cancelarModalMaquina) cancelarModalMaquina.addEventListener("click", () => modalMaquina.classList.remove("active"));
 if (modalMaquina) {
     modalMaquina.addEventListener("click", (event) => {
-        if (event.target === modalMaquina) {
-            modalMaquina.classList.remove("active");
-        }
+        if (event.target === modalMaquina) modalMaquina.classList.remove("active");
     });
 }
 
-// CADASTRAR MÁQUINA
-
-const cadastrarMaquina = document.getElementById("cadastrarMaquina");
-
 function limparFormularioMaquina() {
-    [
-        "nomeMaquina",
-        "codigoMaquina",
-        "tipoMaquina",
-        "fabricanteMaquina",
-        "modeloMaquina",
-        "serieMaquina",
-        "dataAquisicaoMaquina",
-        "observacoesMaquina"
-    ].forEach(function (id) {
-        const campo = document.getElementById(id);
-        if (campo) {
-            campo.value = "";
-        }
-    });
+    ["nomeMaquina", "codigoMaquina", "tipoMaquina", "fabricanteMaquina", "modeloMaquina",
+        "serieMaquina", "dataAquisicaoMaquina", "observacoesMaquina"].forEach(function (id) {
+            const campo = document.getElementById(id);
+            if (campo) campo.value = "";
+        });
 }
 
 async function salvarNovaMaquina() {
-    const valor = function (id) {
-        return (document.getElementById(id)?.value || "").trim();
-    };
-
+    const valor = id => (document.getElementById(id)?.value || "").trim();
     const nome = valor("nomeMaquina");
     const codigo = valor("codigoMaquina");
     const fabricante = valor("fabricanteMaquina");
@@ -1395,7 +1325,6 @@ async function salvarNovaMaquina() {
         [modelo, "modeloMaquina", "o modelo"],
         [numeroSerie, "serieMaquina", "o número de série"]
     ];
-
     for (const [conteudo, id, descricao] of obrigatorios) {
         if (!conteudo) {
             notificar(`Informe ${descricao}.`, "aviso");
@@ -1405,85 +1334,71 @@ async function salvarNovaMaquina() {
     }
 
     const maquina = {
-        nome: nome,
-        codigo: codigo,
+        nome, codigo,
         tipo: valor("tipoMaquina"),
-        fabricante: fabricante,
-        modelo: modelo,
-        numeroSerie: numeroSerie,
+        fabricante, modelo,
+        numeroSerie,
         observacoes: valor("observacoesMaquina")
     };
-
     const dataAquisicao = valor("dataAquisicaoMaquina");
+    if (dataAquisicao) maquina.dataAquisicao = dataAquisicao;
+    if (maquinaEmEdicaoId !== null) maquina.id = maquinaEmEdicaoId;
 
-    if (dataAquisicao) {
-        maquina.dataAquisicao = dataAquisicao;
+    const editando = maquinaEmEdicaoId !== null;
+    if (cadastrarMaquina) {
+        cadastrarMaquina.disabled = true;
+        cadastrarMaquina.textContent = editando ? "SALVANDO..." : "CADASTRANDO...";
     }
-
-    cadastrarMaquina.disabled = true;
-    cadastrarMaquina.textContent = "CADASTRANDO...";
 
     try {
-        const resposta = await fetch(`${API_URL}/Maquinas`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(maquina)
-        });
-
+        const resposta = await fetch(
+            editando ? `${API_URL}/Maquinas/${maquinaEmEdicaoId}` : `${API_URL}/Maquinas`,
+            {
+                method: editando ? "PUT" : "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(maquina)
+            }
+        );
         if (!resposta.ok) {
             let mensagem = await resposta.text();
-
-            // Erros de validação do ASP.NET vêm como JSON (ProblemDetails)
             try {
                 const json = JSON.parse(mensagem);
-                if (json.errors) {
-                    mensagem = Object.values(json.errors).flat().join("\n");
-                } else if (json.title) {
-                    mensagem = json.title;
-                }
-            } catch (e) {
-                // resposta em texto simples: usa como veio
-            }
-
+                if (json.errors) mensagem = Object.values(json.errors).flat().join("\n");
+                else if (json.title) mensagem = json.title;
+            } catch (_) { }
             throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
         }
-
         modalMaquina.classList.remove("active");
         limparFormularioMaquina();
-
+        maquinaEmEdicaoId = null;
         await carregarMaquinas();
-
-        notificar("Máquina cadastrada com sucesso!", "sucesso");
-
+        if (maquinaDetalhesAtual && editando) {
+            fecharDetalhesMaquina();
+        }
+        notificar(editando ? "Máquina atualizada com sucesso!" : "Máquina cadastrada com sucesso!", "sucesso");
     } catch (erro) {
-        console.error("Erro ao cadastrar máquina:", erro);
-        notificar(`Não foi possível cadastrar a máquina.\n\n${erro.message}`, "erro");
+        console.error(editando ? "Erro ao atualizar máquina:" : "Erro ao cadastrar máquina:", erro);
+        notificar(`Não foi possível ${editando ? "atualizar" : "cadastrar"} a máquina.\n\n${erro.message}`, "erro");
     } finally {
-        cadastrarMaquina.disabled = false;
-        cadastrarMaquina.textContent = "CADASTRAR MÁQUINA";
+        if (cadastrarMaquina) {
+            cadastrarMaquina.disabled = false;
+            cadastrarMaquina.textContent = maquinaEmEdicaoId !== null ? "SALVAR ALTERAÇÕES" : "CADASTRAR MÁQUINA";
+        }
     }
 }
 
-if (cadastrarMaquina) {
-    cadastrarMaquina.addEventListener("click", salvarNovaMaquina);
-}
-
-// VARIÁVEIS DAS MÁQUINAS
+if (cadastrarMaquina) cadastrarMaquina.addEventListener("click", salvarNovaMaquina);
 
 let maquinas = [];
 let processosAtivos = [];
 let configuracoesMaquina = [];
 let intervaloProgressoLista = null;
 
-// CARREGAR MÁQUINAS
-
 async function carregarMaquinas() {
     const container = document.getElementById("maquinasGrid");
     try {
         const resposta = await fetch(`${API_URL}/Maquinas`);
-        if (!resposta.ok) {
-            throw new Error(`Erro HTTP: ${resposta.status}`);
-        }
+        if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
         maquinas = await resposta.json();
         await carregarProcessosAtivos();
         renderizarMaquinas();
@@ -1491,137 +1406,67 @@ async function carregarMaquinas() {
     } catch (erro) {
         console.error("Erro ao carregar máquinas:", erro);
         if (container) {
-            container.innerHTML = `
-                <div class="maquinas-empty">
-                    <span>ERRO AO CARREGAR EQUIPAMENTOS</span>
-                </div>
-            `;
+            container.innerHTML = `<div class="maquinas-empty"><span>ERRO AO CARREGAR EQUIPAMENTOS</span></div>`;
         }
     }
 }
 
-// CARREGAR PROCESSOS ATIVOS
-
 async function carregarProcessosAtivos() {
     try {
-        const resposta = await fetch(
-            `${API_URL}/ProcessosProducao/ativos`
-        );
-        if (!resposta.ok) {
-            throw new Error(
-                `Erro HTTP: ${resposta.status}`
-            );
-        }
+        const resposta = await fetch(`${API_URL}/ProcessosProducao/ativos`);
+        if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
         processosAtivos = await resposta.json();
-        console.log(
-            "Processos ativos:",
-            processosAtivos
-        );
     } catch (erro) {
-        console.error(
-            "Erro ao carregar processos ativos:",
-            erro
-        );
+        console.error("Erro ao carregar processos ativos:", erro);
         processosAtivos = [];
     }
 }
 
-// ENCONTRAR PROCESSO DA MÁQUINA
-
 function encontrarProcessoDaMaquina(maquinaId) {
-    return processosAtivos.find(
-        processo =>
-            processo.maquinaId === maquinaId
-    );
+    return processosAtivos.find(p => p.maquinaId === maquinaId);
 }
 
-// RENDERIZAR MÁQUINAS
-
 function renderizarMaquinas() {
-    const container =
-        document.getElementById("maquinasGrid");
-    if (!container) {
-        console.warn(
-            "Elemento #maquinasGrid não encontrado."
-        );
-        return;
-    }
+    const container = document.getElementById("maquinasGrid");
+    if (!container) return;
     container.innerHTML = "";
 
     if (maquinas.length === 0) {
-        container.innerHTML = `
-            <div class="maquinas-empty">
-                <span>NENHUMA MÁQUINA CADASTRADA</span>
-            </div>
-        `;
+        container.innerHTML = `<div class="maquinas-empty"><span>NENHUMA MÁQUINA CADASTRADA</span></div>`;
         return;
     }
+
     maquinas.forEach(maquina => {
-        const processo =
-            encontrarProcessoDaMaquina(maquina.id);
-        const produzindo =
-            processo &&
-            processo.status === "EM_EXECUCAO";
-        const statusTexto =
-            produzindo
-                ? "PRODUZINDO"
-                : "OPERACIONAL";
-        const statusClasse =
-            produzindo
-                ? "produzindo"
-                : "operacional";
-        const maquinaElement =
-            document.createElement("div");
-        maquinaElement.className =
-            "maquina-row";
+        const processo = encontrarProcessoDaMaquina(maquina.id);
+        const produzindo = processo && processo.status === "EM_EXECUCAO";
+        const statusTexto = produzindo ? "PRODUZINDO" : "OPERACIONAL";
+        const statusClasse = produzindo ? "produzindo" : "operacional";
+
+        const maquinaElement = document.createElement("div");
+        maquinaElement.className = "maquina-row";
         maquinaElement.innerHTML = `
             <div class="maquina-identificacao">
-                <div class="maquina-icone">
-                    ⚙
-                </div>
-                <div class="maquina-nome">
-                    <strong>
-                        ${maquina.nome}
-                    </strong>
-                    <span>
-                        ${maquina.codigo}
-                    </span>
+                <div class="maquina-icon"><ion-icon name="hardware-chip-outline"></ion-icon></div>
+                <div class="maquina-info">
+                    <strong class="maquina-nome">${escaparHtmlOS(maquina.nome)}</strong>
+                    <span class="maquina-descricao">${escaparHtmlOS(maquina.codigo)}</span>
                 </div>
             </div>
-            <div class="maquina-status ${statusClasse}">         
-                ${statusTexto}
-            </div>
+            <div class="maquina-status ${statusClasse}">${statusTexto}</div>
             <div class="maquina-processo">
-                ${produzindo
-                ? `
-                        <strong>
-                            ${processo.numeroOS}
-                        </strong>
-                        <span
-                        data-producao-maquina="${maquina.id}">
+                ${produzindo ? `
+                    <strong class="maquina-processo-os">${escaparHtmlOS(processo.numeroOS || "OS")}</strong>
+                    <span class="maquina-processo-producao" data-producao-maquina="${maquina.id}">
                         ${Math.round(Number(processo.quantidadeProduzida) || 0)}
-                        /
-                        ${Math.round(Number(processo.quantidadePlanejada) || 0)}
+                        / ${Math.round(Number(processo.quantidadePlanejada) || 0)}
                     </span>
-                    `
-                : `
-                        <span>
-                            NENHUM PROCESSO EM EXECUÇÃO
-                        </span>
-                    `
-            }
+                ` : `<span>NENHUM PROCESSO EM EXECUÇÃO</span>`}
             </div>
-            <button
-                type="button"
-                class="maquina-detalhes-button"
-                data-maquina-id="${maquina.id}"
-            >
+            <button type="button" class="maquina-detalhes-button" data-maquina-id="${maquina.id}">
                 DETALHES →
             </button>
         `;
-        container.appendChild(
-            maquinaElement
-        );
+        container.appendChild(maquinaElement);
     });
     adicionarEventosDetalhesMaquinas();
 }
@@ -1629,76 +1474,40 @@ function renderizarMaquinas() {
 let atualizandoProgressoLista = false;
 
 async function atualizarContadoresListaMaquinas() {
-    if (atualizandoProgressoLista) {
-        return;
-    }
-
+    if (atualizandoProgressoLista) return;
     atualizandoProgressoLista = true;
-
     try {
-        const resposta = await fetch(
-            `${API_URL}/ProcessosProducao/ativos`
-        );
-
-        if (!resposta.ok) {
-            throw new Error(`Erro HTTP: ${resposta.status}`);
-        }
-
+        const resposta = await fetch(`${API_URL}/ProcessosProducao/ativos`);
+        if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
         processosAtivos = await resposta.json();
-
-        // Atualiza os cartões com os valores recebidos da API.
         renderizarMaquinas();
-
     } catch (erro) {
-        console.error(
-            "Erro ao atualizar o progresso das máquinas:",
-            erro
-        );
+        console.error("Erro ao atualizar o progresso das máquinas:", erro);
     } finally {
         atualizandoProgressoLista = false;
     }
 }
 
 function iniciarProgressoListaMaquinas() {
-    if (intervaloProgressoLista) {
-        clearInterval(intervaloProgressoLista);
-    }
-
-    // Primeira consulta e atualizações a cada 5 segundos.
+    if (intervaloProgressoLista) clearInterval(intervaloProgressoLista);
     atualizarContadoresListaMaquinas();
-
-    intervaloProgressoLista = setInterval(() => {
-        atualizarContadoresListaMaquinas();
-    }, 5000);
+    intervaloProgressoLista = setInterval(atualizarContadoresListaMaquinas, 5000);
 }
 
 function adicionarEventosDetalhesMaquinas() {
-    const botoes =
-        document.querySelectorAll(
-            ".maquina-detalhes-button"
-        );
-    botoes.forEach(botao => {
-        botao.addEventListener(
-            "click",
-            () => {
-                const maquinaId =
-                    Number(
-                        botao.dataset.maquinaId
-                    );
-                abrirDetalhesMaquina(
-                    maquinaId
-                );
-            }
-        );
+    document.querySelectorAll(".maquina-detalhes-button").forEach(botao => {
+        botao.addEventListener("click", () => {
+            abrirDetalhesMaquina(Number(botao.dataset.maquinaId));
+        });
     });
 }
+
 function numeroValido(valor) {
-    if (valor === null || valor === undefined || valor === "") {
-        return null;
-    }
+    if (valor === null || valor === undefined || valor === "") return null;
     const numero = Number(valor);
     return Number.isFinite(numero) ? numero : null;
 }
+
 function normalizarTexto(texto) {
     return String(texto ?? "")
         .normalize("NFD")
@@ -1706,108 +1515,59 @@ function normalizarTexto(texto) {
         .trim()
         .toLowerCase();
 }
+
 function encontrarConfiguracaoDoServico(configuracoes, tipoServico) {
-    if (!Array.isArray(configuracoes) || !tipoServico) {
-        return null;
-    }
+    if (!Array.isArray(configuracoes) || !tipoServico) return null;
     const alvo = normalizarTexto(tipoServico);
-    return configuracoes.find(
-        configuracao => normalizarTexto(configuracao.tipoServico) === alvo
-    ) || null;
+    return configuracoes.find(c => normalizarTexto(c.tipoServico) === alvo) || null;
 }
+
 function formatarTempoOperacao(dataInicio) {
-    if (!dataInicio) {
-        return "-";
-    }
+    if (!dataInicio) return "-";
     const inicio = new Date(dataInicio);
-    if (Number.isNaN(inicio.getTime())) {
-        return "-";
-    }
-    const minutosTotais = Math.max(
-        0,
-        Math.floor((new Date() - inicio) / 60000)
-    );
+    if (Number.isNaN(inicio.getTime())) return "-";
+    const minutosTotais = Math.max(0, Math.floor((new Date() - inicio) / 60000));
     const horas = Math.floor(minutosTotais / 60);
     const minutos = minutosTotais % 60;
     return horas > 0 ? `${horas}h ${minutos}min` : `${minutos} min`;
 }
+
 function definirTexto(idElemento, texto) {
     const elemento = document.getElementById(idElemento);
-    if (elemento) {
-        elemento.textContent = texto;
-    }
+    if (elemento) elemento.textContent = texto;
 }
+
 const STATUS_EM_EXECUCAO = "EM_EXECUCAO";
 const QUANTIDADE_BARRAS_PROGRESSO = 32;
+
 function criarBarrasProgressoMaquina() {
-
-    const container =
-        document.getElementById("detalhesMaquinaProgresso");
-
-    if (!container) {
-        return;
-    }
-
+    const container = document.getElementById("detalhesMaquinaProgresso");
+    if (!container) return;
     container.innerHTML = "";
-
-    for (
-        let i = 0;
-        i < QUANTIDADE_BARRAS_PROGRESSO;
-        i++
-    ) {
-
+    for (let i = 0; i < QUANTIDADE_BARRAS_PROGRESSO; i++) {
         const barra = document.createElement("span");
-
         barra.className = "wake-progress-bar";
-
         barra.dataset.active = "false";
         barra.dataset.current = "false";
         barra.dataset.wave = "false";
-
         container.appendChild(barra);
     }
 }
 
-
 function atualizarVisualProgresso(produzida, planejada) {
-
-    const container =
-        document.getElementById("detalhesMaquinaProgresso");
-    if (!container || planejada <= 0) {
-        return;
-    }
-    const percentual =
-        Math.min(
-            (produzida / planejada) * 100,
-            100
-        );
-    const barras =
-        container.querySelectorAll(
-            ".wake-progress-bar"
-        );
-    const posicaoAtual =
-        (percentual / 100) *
-        (barras.length - 1);
+    const container = document.getElementById("detalhesMaquinaProgresso");
+    if (!container || planejada <= 0) return;
+    const percentual = Math.min((produzida / planejada) * 100, 100);
+    const barras = container.querySelectorAll(".wake-progress-bar");
+    const posicaoAtual = (percentual / 100) * (barras.length - 1);
     barras.forEach((barra, index) => {
-        const distancia =
-            Math.abs(index - posicaoAtual);
-        barra.dataset.active =
-            index <= posicaoAtual ? "true" : "false";
+        const distancia = Math.abs(index - posicaoAtual);
+        barra.dataset.active = index <= posicaoAtual ? "true" : "false";
         barra.dataset.current = distancia < 0.5 ? "true" : "false";
-        barra.dataset.wave = distancia > 0.5 && distancia <= 1
-            ? "true"
-            : "false";
+        barra.dataset.wave = distancia > 0.5 && distancia <= 1 ? "true" : "false";
     });
-
-    definirTexto(
-        "detalhesMaquinaProgressoTexto",
-        `${Math.round(produzida)} / ${Math.round(planejada)}`
-    );
-
-    definirTexto(
-        "detalhesMaquinaPercentual",
-        `${percentual.toFixed(0)}%`
-    );
+    definirTexto("detalhesMaquinaProgressoTexto", `${Math.round(produzida)} / ${Math.round(planejada)}`);
+    definirTexto("detalhesMaquinaPercentual", `${percentual.toFixed(0)}%`);
 }
 
 let intervaloAtualizacaoDetalhes = null;
@@ -1818,67 +1578,62 @@ function pararSimulacaoProgresso() {
         clearInterval(intervaloAtualizacaoDetalhes);
         intervaloAtualizacaoDetalhes = null;
     }
-
     maquinaDetalhesAbertaId = null;
 }
 
 function agendarAtualizacaoDetalhesMaquina(maquinaId) {
-    if (intervaloAtualizacaoDetalhes) {
-        clearInterval(intervaloAtualizacaoDetalhes);
-    }
-
+    if (intervaloAtualizacaoDetalhes) clearInterval(intervaloAtualizacaoDetalhes);
     maquinaDetalhesAbertaId = maquinaId;
-
     intervaloAtualizacaoDetalhes = setInterval(() => {
-        const modal = document.getElementById(
-            "modalDetalhesMaquina"
-        );
-
-        if (
-            modal &&
-            modal.classList.contains("active") &&
-            maquinaDetalhesAbertaId === maquinaId
-        ) {
+        const modal = document.getElementById("modalDetalhesMaquina");
+        if (modal && modal.classList.contains("active") && maquinaDetalhesAbertaId === maquinaId) {
             abrirDetalhesMaquina(maquinaId);
         }
     }, 5000);
 }
 
-let intervaloProgressoMaquina = null;
-let progressoSimulado = 0;
 async function abrirDetalhesMaquina(id) {
     try {
         const respostaMaquina = await fetch(`${API_URL}/Maquinas/${id}`);
-        if (!respostaMaquina.ok) {
-            throw new Error(
-                `Erro ao buscar máquina: ${respostaMaquina.status}`
-            );
-        }
+        if (!respostaMaquina.ok) throw new Error(`Erro ao buscar máquina: ${respostaMaquina.status}`);
         const maquina = await respostaMaquina.json();
+
         let processo = null;
-        const respostaProcesso = await fetch(
-            `${API_URL}/ProcessosProducao/maquina/${id}`
-        );
-        if (respostaProcesso.ok) {
-            processo = await respostaProcesso.json();
-        } else if (respostaProcesso.status !== 404) {
-            throw new Error(
-                `Erro ao buscar processo: ${respostaProcesso.status}`
-            );
-        }
+        const respostaProcesso = await fetch(`${API_URL}/ProcessosProducao/maquina/${id}`);
+        if (respostaProcesso.ok) processo = await respostaProcesso.json();
+        else if (respostaProcesso.status !== 404) throw new Error(`Erro ao buscar processo: ${respostaProcesso.status}`);
+
         const configuracoes = await carregarConfiguracoesMaquina(id);
+        maquinaDetalhesAtual = maquina;
+        const tipoMaquinaRotulos = {
+            TORNO_CNC: "Torno CNC", TORNO_CONVENCIONAL: "Torno Convencional",
+            CENTRO_USINAGEM: "Centro de Usinagem", FRESADORA: "Fresadora",
+            RETIFICA: "Retífica", SERRA: "Serra", PRENSA: "Prensa",
+            SOLDAGEM: "Equipamento de Soldagem", OUTRO: "Outro"
+        };
+        definirTexto("detalhesMaquinaTipo", tipoMaquinaRotulos[maquina.tipo] || maquina.tipo || "-");
+        definirTexto("detalhesMaquinaSerie", maquina.numeroSerie || "-");
+        definirTexto("detalhesMaquinaDataAquisicao", maquina.dataAquisicao ? formatarDataOS(maquina.dataAquisicao) : "-");
+        definirTexto("detalhesMaquinaObservacoes", maquina.observacoes || "Nenhuma observação registrada.");
+        const bloqueioExcluir = document.getElementById("detalhesMaquinaBloqueio");
+        const botaoExcluirMaquina = document.getElementById("excluirMaquinaDetalhes");
+        const processoAtivo = !!processo && String(processo.status || "").toUpperCase() === STATUS_EM_EXECUCAO;
+        if (botaoExcluirMaquina) {
+            botaoExcluirMaquina.disabled = processoAtivo;
+            botaoExcluirMaquina.title = processoAtivo ? "Não é possível excluir uma máquina com processo ativo." : "Excluir máquina";
+        }
+        if (bloqueioExcluir) {
+            bloqueioExcluir.hidden = !processoAtivo;
+            bloqueioExcluir.textContent = "Esta máquina não pode ser excluída enquanto houver um processo de produção ativo.";
+        }
         definirTexto("detalhesMaquinaNome", maquina.nome || "Máquina");
         definirTexto(
             "detalhesMaquinaIdentificacao",
-            `${maquina.codigo || "-"} • ` +
-            `${maquina.fabricante || "-"} • ` +
-            `${maquina.modelo || "-"}`
+            `${maquina.codigo || "-"} • ${maquina.fabricante || "-"} • ${maquina.modelo || "-"}`
         );
 
-        const produzindo =
-            !!processo && processo.status === STATUS_EM_EXECUCAO;
+        const produzindo = !!processo && processo.status === STATUS_EM_EXECUCAO;
         if (!produzindo) {
-            // ---------- SEM PROCESSO EM EXECUÇÃO ----------
             definirTexto("detalhesMaquinaStatus", "OPERACIONAL");
             definirTexto("detalhesMaquinaOS", "-");
             definirTexto("detalhesMaquinaCliente", "-");
@@ -1888,78 +1643,33 @@ async function abrirDetalhesMaquina(id) {
             definirTexto("detalhesMaquinaProducaoMinuto", "-");
             definirTexto("detalhesMaquinaTempo", "-");
             definirTexto("detalhesMaquinaMaterial", "-");
-            definirTexto(
-                "detalhesMaquinaObservacoes",
-                maquina.observacoes || "Nenhuma observação registrada."
-            );
             pararSimulacaoProgresso();
             criarBarrasProgressoMaquina();
             atualizarVisualProgresso(0, 1);
         } else {
-            // ---------- PROCESSO EM EXECUÇÃO ----------
-            const configuracao = encontrarConfiguracaoDoServico(
-                configuracoes,
-                processo.tipoServico
-            );
+            const configuracao = encontrarConfiguracaoDoServico(configuracoes, processo.tipoServico);
             const produzida = numeroValido(processo.quantidadeProduzida) ?? 0;
             const planejada = numeroValido(processo.quantidadePlanejada) ?? 0;
-            const percentualProducao = planejada > 0
-                ? Math.min((produzida / planejada) * 100, 100)
-                : 0;
-            const porMinuto =
-                numeroValido(processo.producaoPorMinuto) ??
-                numeroValido(configuracao?.producaoPorMinuto);
-            const consumoPorUnidade =
-                numeroValido(configuracao?.consumoPorUnidade);
-            const materialConsumido =
-                numeroValido(processo.materialConsumido) ??
-                (consumoPorUnidade !== null
-                    ? produzida * consumoPorUnidade
-                    : null);
+            const percentualProducao = planejada > 0 ? Math.min((produzida / planejada) * 100, 100) : 0;
+            const porMinuto = numeroValido(processo.producaoPorMinuto) ?? numeroValido(configuracao?.producaoPorMinuto);
+            const consumoPorUnidade = numeroValido(configuracao?.consumoPorUnidade);
+            const materialConsumido = numeroValido(processo.materialConsumido) ??
+                (consumoPorUnidade !== null ? produzida * consumoPorUnidade : null);
+
             definirTexto("detalhesMaquinaStatus", "PRODUZINDO");
             definirTexto("detalhesMaquinaOS", processo.numeroOS || "-");
             definirTexto("detalhesMaquinaCliente", processo.cliente || "-");
-            definirTexto(
-                "detalhesMaquinaProcesso",
-                processo.tipoServico || "-"
-            );
-            definirTexto(
-                "detalhesMaquinaProgressoTexto",
-                `${produzida} / ${planejada}`
-            );
-            definirTexto(
-                "detalhesMaquinaPercentual",
-                `${percentualProducao.toFixed(0)}%`
-            );
-            definirTexto(
-                "detalhesMaquinaProducaoMinuto",
-                porMinuto !== null ? `${porMinuto.toFixed(2)} un/min` : "-"
-            );
-            definirTexto(
-                "detalhesMaquinaTempo",
-                formatarTempoOperacao(processo.dataInicio)
-            );
-            definirTexto(
-                "detalhesMaquinaMaterial",
-                materialConsumido !== null
-                    ? materialConsumido.toFixed(2)
-                    : "-"
-            );
-            definirTexto(
-                "detalhesMaquinaObservacoes",
-                processo.observacoes ||
-                maquina.observacoes ||
-                "Nenhuma observação registrada."
-            );
+            definirTexto("detalhesMaquinaProcesso", processo.tipoServico || "-");
+            definirTexto("detalhesMaquinaProgressoTexto", `${produzida} / ${planejada}`);
+            definirTexto("detalhesMaquinaPercentual", `${percentualProducao.toFixed(0)}%`);
+            definirTexto("detalhesMaquinaProducaoMinuto", porMinuto !== null ? `${porMinuto.toFixed(2)} un/min` : "-");
+            definirTexto("detalhesMaquinaTempo", formatarTempoOperacao(processo.dataInicio));
+            definirTexto("detalhesMaquinaMaterial", materialConsumido !== null ? materialConsumido.toFixed(2) : "-");
             criarBarrasProgressoMaquina();
-            atualizarVisualProgresso(
-                produzida,
-                planejada
-            );
+            atualizarVisualProgresso(produzida, planejada);
         }
-        document
-            .getElementById("modalDetalhesMaquina")
-            .classList.add("active");
+
+        document.getElementById("modalDetalhesMaquina").classList.add("active");
         agendarAtualizacaoDetalhesMaquina(id);
     } catch (erro) {
         console.error("Erro ao abrir detalhes da máquina:", erro);
@@ -1967,43 +1677,97 @@ async function abrirDetalhesMaquina(id) {
     }
 }
 
-// CONFIGURAÇÕES MÁQUINA
+function editarMaquinaDosDetalhes() {
+    const maquina = maquinaDetalhesAtual;
+    if (!maquina) return;
+    maquinaEmEdicaoId = Number(maquina.id);
+    const definirValor = (id, valor) => {
+        const campo = document.getElementById(id);
+        if (campo) campo.value = valor ?? "";
+    };
+    definirValor("nomeMaquina", maquina.nome);
+    definirValor("codigoMaquina", maquina.codigo);
+    definirValor("tipoMaquina", maquina.tipo);
+    definirValor("fabricanteMaquina", maquina.fabricante);
+    definirValor("modeloMaquina", maquina.modelo);
+    definirValor("serieMaquina", maquina.numeroSerie);
+    definirValor("dataAquisicaoMaquina", maquina.dataAquisicao ? String(maquina.dataAquisicao).split("T")[0] : "");
+    definirValor("observacoesMaquina", maquina.observacoes);
+    if (tituloModalMaquina) tituloModalMaquina.textContent = "Editar Máquina";
+    if (cadastrarMaquina) cadastrarMaquina.textContent = "SALVAR ALTERAÇÕES";
+    fecharDetalhesMaquina();
+    if (modalMaquina) modalMaquina.classList.add("active");
+}
+
+async function excluirMaquinaDosDetalhes() {
+    if (!maquinaDetalhesAtual) return;
+    const maquina = maquinaDetalhesAtual;
+    try {
+        // Consulta novamente antes de excluir, para não depender apenas do estado visual do modal.
+        const respostaProcessos = await fetch(`${API_URL}/ProcessosProducao/ativos`);
+        if (!respostaProcessos.ok) throw new Error(`Não foi possível verificar os processos ativos (HTTP ${respostaProcessos.status}).`);
+        const ativos = await respostaProcessos.json();
+        const possuiProcessoAtivo = Array.isArray(ativos) && ativos.some(p =>
+            Number(p.maquinaId) === Number(maquina.id) &&
+            String(p.status || "").toUpperCase() === STATUS_EM_EXECUCAO
+        );
+        if (possuiProcessoAtivo) {
+            notificar("Não é possível excluir esta máquina porque ela possui um processo de produção ativo.", "aviso");
+            if (document.getElementById("excluirMaquinaDetalhes")) document.getElementById("excluirMaquinaDetalhes").disabled = true;
+            const aviso = document.getElementById("detalhesMaquinaBloqueio");
+            if (aviso) aviso.hidden = false;
+            return;
+        }
+        if (!confirm(`Deseja realmente excluir a máquina "${maquina.nome}" (${maquina.codigo})? Esta ação não poderá ser desfeita.`)) return;
+        const resposta = await fetch(`${API_URL}/Maquinas/${maquina.id}`, { method: "DELETE" });
+        if (!resposta.ok) {
+            const mensagem = await resposta.text();
+            throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
+        }
+        fecharDetalhesMaquina();
+        maquinaDetalhesAtual = null;
+        await carregarMaquinas();
+        notificar("Máquina excluída com sucesso!", "sucesso");
+    } catch (erro) {
+        console.error("Erro ao excluir máquina:", erro);
+        notificar(`Não foi possível excluir a máquina.\n\n${erro.message}`, "erro");
+    }
+}
+
+const editarMaquinaDetalhes = document.getElementById("editarMaquinaDetalhes");
+const excluirMaquinaDetalhes = document.getElementById("excluirMaquinaDetalhes");
+if (editarMaquinaDetalhes) editarMaquinaDetalhes.addEventListener("click", editarMaquinaDosDetalhes);
+if (excluirMaquinaDetalhes) excluirMaquinaDetalhes.addEventListener("click", excluirMaquinaDosDetalhes);
 
 async function carregarConfiguracoesMaquina(maquinaId) {
     try {
-        const resposta = await fetch(
-            `${API_URL}/ConfiguracoesMaquina/maquina/${maquinaId}`
-        );
-        if (!resposta.ok) {
-            throw new Error(`Erro HTTP: ${resposta.status}`);
-        }
+        const resposta = await fetch(`${API_URL}/ConfiguracoesMaquina/maquina/${maquinaId}`);
+        if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
         return await resposta.json();
     } catch (erro) {
-        console.error("Erro ao carregar configurações da máquina:",
-            erro
-        );
+        console.error("Erro ao carregar configurações da máquina:", erro);
         return [];
     }
 }
 
-// NOVO MATERIAL
+// =========================================================
+// MATERIAIS
+// =========================================================
 
 const modalNovoMaterial = document.getElementById("modalNovoMaterial");
 const abrirModalMaterial = document.getElementById("abrirModalMaterial");
-const cadastrarMaterialVazio = document.getElementById("cadastrarMaterialVazio");
 const fecharModalMaterial = document.getElementById("fecharModalMaterial");
 const cancelarMaterial = document.getElementById("cancelarMaterial");
 const cadastrarMaterial = document.getElementById("cadastrarMaterial");
-
-let materialEmEdicaoId = null;
-
 const tituloModalMaterial = document.getElementById("tituloModalMaterial");
 const subtituloModalMaterial = document.getElementById("subtituloModalMaterial");
 
+let materialEmEdicaoId = null;
+let materiais = [];
+const buscarMaterial = document.getElementById("buscarMaterial");
+
 function limparFormularioMaterial() {
-    document
-        .querySelectorAll("#modalNovoMaterial option[data-temporaria]")
-        .forEach(o => o.remove());
+    document.querySelectorAll("#modalNovoMaterial option[data-temporaria]").forEach(o => o.remove());
     document.getElementById("materialCodigo").value = "";
     document.getElementById("materialNome").value = "";
     document.getElementById("materialCategoria").value = "";
@@ -2012,24 +1776,10 @@ function limparFormularioMaterial() {
     document.getElementById("materialDescricao").value = "";
 }
 
-function normalizarTexto(texto) {
-    return (texto ?? "")
-        .toString()
-        .trim()
-        .normalize("NFKD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase();
-}
-
 function selecionarOpcao(select, valor) {
     const alvo = normalizarTexto(valor);
-    const opcao = Array.from(select.options).find(
-        o => o.value && normalizarTexto(o.value) === alvo
-    );
-    if (opcao) {
-        select.value = opcao.value;
-        return;
-    }
+    const opcao = Array.from(select.options).find(o => o.value && normalizarTexto(o.value) === alvo);
+    if (opcao) { select.value = opcao.value; return; }
     if (valor) {
         const extra = new Option(valor, valor);
         extra.dataset.temporaria = "true";
@@ -2065,14 +1815,12 @@ function editarMaterial(id) {
     tituloModalMaterial.textContent = "EDITAR MATERIAL";
     subtituloModalMaterial.textContent = "Atualização de material industrial";
     cadastrarMaterial.textContent = "SALVAR ALTERAÇÕES";
-
     document.getElementById("materialCodigo").value = material.codigo || "";
     document.getElementById("materialNome").value = material.nome || "";
     selecionarOpcao(document.getElementById("materialCategoria"), material.categoria);
     selecionarOpcao(document.getElementById("materialUnidade"), material.unidade);
     document.getElementById("materialEstoqueMinimo").value = material.estoqueMinimo ?? "";
     document.getElementById("materialDescricao").value = material.descricao || "";
-
     modalNovoMaterial.classList.add("active");
 }
 
@@ -2096,38 +1844,25 @@ async function salvarNovoMaterial() {
     }
 
     const editando = materialEmEdicaoId !== null;
-    const materialAtual = editando
-        ? materiais.find(item => item.id === materialEmEdicaoId)
-        : null;
-
-    const mesmoValor = (novo, antigo) =>
-        normalizarTexto(novo) === normalizarTexto(antigo);
+    const materialAtual = editando ? materiais.find(item => item.id === materialEmEdicaoId) : null;
+    const mesmoValor = (novo, antigo) => normalizarTexto(novo) === normalizarTexto(antigo);
 
     const material = {
-        codigo,
-        nome,
-        categoria: materialAtual && mesmoValor(categoria, materialAtual.categoria)
-            ? materialAtual.categoria
-            : categoria,
-        unidade: materialAtual && mesmoValor(unidade, materialAtual.unidade)
-            ? materialAtual.unidade
-            : unidade,
+        codigo, nome,
+        categoria: materialAtual && mesmoValor(categoria, materialAtual.categoria) ? materialAtual.categoria : categoria,
+        unidade: materialAtual && mesmoValor(unidade, materialAtual.unidade) ? materialAtual.unidade : unidade,
         descricao: descricao || null,
-        estoqueMinimo: estoqueMinimo
+        estoqueMinimo
     };
 
-    const url = editando
-        ? `${API_URL}/materiais/${materialEmEdicaoId}`
-        : `${API_URL}/materiais`;
+    const url = editando ? `${API_URL}/materiais/${materialEmEdicaoId}` : `${API_URL}/materiais`;
 
     try {
         cadastrarMaterial.disabled = true;
         cadastrarMaterial.textContent = editando ? "SALVANDO..." : "CADASTRANDO...";
         const resposta = await fetch(url, {
             method: editando ? "PUT" : "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(material)
         });
         if (!resposta.ok) {
@@ -2136,65 +1871,36 @@ async function salvarNovoMaterial() {
         }
         fecharModalNovoMaterial();
         await carregarMateriais();
-        notificar(editando
-            ? "Material atualizado com sucesso!"
-            : "Material cadastrado com sucesso!");
+        notificar(editando ? "Material atualizado com sucesso!" : "Material cadastrado com sucesso!");
     } catch (erro) {
         console.error("Erro ao salvar material:", erro);
         notificar(`Não foi possível salvar o material.\n\n${erro.message}`);
     } finally {
         cadastrarMaterial.disabled = false;
-        cadastrarMaterial.textContent =
-            materialEmEdicaoId !== null ? "SALVAR ALTERAÇÕES" : "CADASTRAR";
+        cadastrarMaterial.textContent = materialEmEdicaoId !== null ? "SALVAR ALTERAÇÕES" : "CADASTRAR";
     }
 }
-if (abrirModalMaterial) {
-    abrirModalMaterial.addEventListener(
-        "click",
-        abrirModalNovoMaterial
-    );
-}
-if (fecharModalMaterial) {
-    fecharModalMaterial.addEventListener(
-        "click",
-        fecharModalNovoMaterial
-    );
-}
-if (cadastrarMaterial) {
-    cadastrarMaterial.addEventListener("click", salvarNovoMaterial);
-}
-if (cancelarMaterial) {
-    cancelarMaterial.addEventListener(
-        "click",
-        fecharModalNovoMaterial
-    );
-}
-modalNovoMaterial.addEventListener("click", (event) => {
-    if (event.target === modalNovoMaterial) {
-        fecharModalNovoMaterial();
-    }
-});
 
-let materiais = [];
+if (abrirModalMaterial) abrirModalMaterial.addEventListener("click", abrirModalNovoMaterial);
+if (fecharModalMaterial) fecharModalMaterial.addEventListener("click", fecharModalNovoMaterial);
+if (cadastrarMaterial) cadastrarMaterial.addEventListener("click", salvarNovoMaterial);
+if (cancelarMaterial) cancelarMaterial.addEventListener("click", fecharModalNovoMaterial);
+if (modalNovoMaterial) {
+    modalNovoMaterial.addEventListener("click", (event) => {
+        if (event.target === modalNovoMaterial) fecharModalNovoMaterial();
+    });
+}
+
+if (buscarMaterial) buscarMaterial.addEventListener("input", renderizarMateriais);
 
 async function carregarMateriais() {
     const lista = document.getElementById("materiaisLista");
-    if (!lista) {
-        console.warn("[MATERIAIS] Elemento #materiaisLista não encontrado.");
-        return;
-    }
+    if (!lista) return;
     try {
-        lista.innerHTML = `
-            <div class="materiais-loading">
-                <span>CARREGANDO MATERIAIS...</span>
-            </div>
-        `;
+        lista.innerHTML = `<div class="materiais-loading"><span>CARREGANDO MATERIAIS...</span></div>`;
         const response = await fetch(`${API_URL}/materiais`);
-        if (!response.ok) {
-            throw new Error(`Erro HTTP: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
         materiais = await response.json();
-        console.log("[MATERIAIS] Dados recebidos:", materiais);
         renderizarMateriais();
         preencherSelectMaterialRelatorioEstoque();
     } catch (error) {
@@ -2208,179 +1914,115 @@ async function carregarMateriais() {
     }
 }
 
-// RENDERIZAR MATERIAIS
-
 function renderizarMateriais() {
     const lista = document.getElementById("materiaisLista");
-    if (!lista) {
-        return;
-    }
+    if (!lista) return;
     if (!materiais || materiais.length === 0) {
         lista.innerHTML = `
             <div class="materiais-empty">
-                <h3>
-                    O estoque ainda não possui materiais registrados.
-                </h3>
-                <p>
-                    Cadastre um material para começar o controle do estoque.
-                </p>
-                <button
-                    type="button"
-                    class="secondary-button"
-                    id="cadastrarMaterialVazio">
+                <h3>O estoque ainda não possui materiais registrados.</h3>
+                <p>Cadastre um material para começar o controle do estoque.</p>
+                <button type="button" class="secondary-button" id="cadastrarMaterialVazio">
                     CADASTRAR MATERIAL
                 </button>
             </div>
         `;
         const botao = document.getElementById("cadastrarMaterialVazio");
-        if (botao) {
-            botao.addEventListener("click", abrirModalNovoMaterial);
-        }
+        if (botao) botao.addEventListener("click", abrirModalNovoMaterial);
         return;
     }
-    lista.innerHTML = materiais.map(function (material) {
-        const estoqueStatus = material.abaixoDoMinimo
-            ? "ABAIXO DO MÍNIMO"
-            : "ESTOQUE NORMAL";
+
+    const termoMaterial = normalizarBusca(buscarMaterial?.value);
+    const materiaisFiltrados = materiais.filter(material =>
+        correspondeBusca(termoMaterial, material.codigo, material.nome)
+    );
+
+    if (materiaisFiltrados.length === 0) {
+        lista.innerHTML = `
+            <div class="materiais-empty">
+                <h3>Nenhum material encontrado.</h3>
+                <p>Nenhum resultado para a busca informada.</p>
+            </div>
+        `;
+        return;
+    }
+
+    lista.innerHTML = materiaisFiltrados.map(function (material) {
+        const estoqueStatus = material.abaixoDoMinimo ? "ABAIXO DO MÍNIMO" : "ESTOQUE NORMAL";
         return `
             <div class="material-card">
                 <div class="material-card-header">
                     <div>
-                        <span class="material-card-codigo">
-                            ${material.codigo}
-                        </span>
-                        <h3>
-                            ${material.nome}
-                        </h3>
+                        <span class="material-card-codigo">${material.codigo}</span>
+                        <h3>${material.nome}</h3>
                     </div>
                     <span class="material-card-status ${material.abaixoDoMinimo ? "status-alerta" : "status-ok"}">
                         ${estoqueStatus}
                     </span>
                 </div>
                 <div class="material-card-info">
-                    <div>
-                        <span>CATEGORIA</span>
-                        <strong>
-                            ${material.categoria || "-"}
-                        </strong>
-                    </div>
-                    <div>
-                        <span>UNIDADE DE MEDIDA</span>
-                        <strong>
-                            ${material.unidade || "-"}
-                        </strong>
-                    </div>
+                    <div><span>CATEGORIA</span><strong>${material.categoria || "-"}</strong></div>
+                    <div><span>UNIDADE DE MEDIDA</span><strong>${material.unidade || "-"}</strong></div>
                     <div>
                         <span>ESTOQUE</span>
-                        <strong>
-                            ${Number(material.quantidadeTotal ?? 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} ${material.unidade || ""}
-                        </strong>
+                        <strong>${Number(material.quantidadeTotal ?? 0).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} ${material.unidade || ""}</strong>
                     </div>
-                    <div>
-                        <span>ESTOQUE MÍNIMO</span>
-                        <strong>
-                            ${material.estoqueMinimo ?? 0} ${material.unidade || ""}
-                        </strong>
-                    </div>
-                    <div>
-                        <span>CUSTO MÉDIO</span>
-                        <strong>
-                            ${formatarMoedaMaterial(material.custoMedio)}
-                        </strong>
-                    </div>
+                    <div><span>ESTOQUE MÍNIMO</span><strong>${material.estoqueMinimo ?? 0} ${material.unidade || ""}</strong></div>
+                    <div><span>CUSTO MÉDIO</span><strong>${formatarMoedaMaterial(material.custoMedio)}</strong></div>
                 </div>
-                ${material.descricao
-                ? `
-                        <div class="material-card-descricao">
-                            ${material.descricao}
-                        </div>
-                    `
-                : ""
-            }
+                ${material.descricao ? `<div class="material-card-descricao">${material.descricao}</div>` : ""}
                 <div class="material-card-acoes">
-                <button
-                type="button"
-                class="btn-editar-material"
-                data-material-id="${material.id}">
-                <ion-icon name="create-outline"></ion-icon>
-                EDITAR
-                </button>
-                    <button
-                        type="button"
-                        class="btn-excluir-material"
-                        data-material-id="${material.id}"
-                        data-material-nome="${material.nome}">
-                        <ion-icon name="trash-outline"></ion-icon>
-                        EXCLUIR
+                    <button type="button" class="btn-editar-material" data-material-id="${material.id}">
+                        <ion-icon name="create-outline"></ion-icon> EDITAR
+                    </button>
+                    <button type="button" class="btn-excluir-material" data-material-id="${material.id}" data-material-nome="${material.nome}">
+                        <ion-icon name="trash-outline"></ion-icon> EXCLUIR
                     </button>
                 </div>
             </div>
         `;
     }).join("");
-    document.querySelectorAll(".btn-excluir-material")
-        .forEach(function (botao) {
-            botao.addEventListener("click", function () {
-                const materialId = Number(botao.dataset.materialId);
-                const materialNome = botao.dataset.materialNome;
-                excluirMaterial(materialId, materialNome, botao);
-            });
+
+    document.querySelectorAll(".btn-excluir-material").forEach(botao => {
+        botao.addEventListener("click", function () {
+            excluirMaterial(Number(botao.dataset.materialId), botao.dataset.materialNome, botao);
         });
-    document.querySelectorAll(".btn-editar-material")
-        .forEach(function (botao) {
-            botao.addEventListener("click", function () {
-                editarMaterial(Number(botao.dataset.materialId));
-            });
+    });
+    document.querySelectorAll(".btn-editar-material").forEach(botao => {
+        botao.addEventListener("click", function () {
+            editarMaterial(Number(botao.dataset.materialId));
         });
+    });
 }
 
 async function excluirMaterial(id, nome, botao) {
     const confirmado = await confirmarExclusaoMaterial(nome);
-    if (!confirmado) {
-        return;
-    }
+    if (!confirmado) return;
     try {
         botao.disabled = true;
         botao.textContent = "EXCLUINDO...";
-        const resposta = await fetch(
-            `${API_URL}/materiais/${id}`,
-            {
-                method: "DELETE"
-            }
-        );
+        const resposta = await fetch(`${API_URL}/materiais/${id}`, { method: "DELETE" });
         if (!resposta.ok) {
             const mensagem = await resposta.text();
-            throw new Error(
-                mensagem || `Erro HTTP: ${resposta.status}`
-            );
+            throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
         }
-        console.log(`[MATERIAIS] Material ${id} excluído.`);
         await carregarMateriais();
         notificar(`Material "${nome}" excluído com sucesso!`);
     } catch (erro) {
         console.error("[MATERIAIS] Erro ao excluir:", erro);
-        notificar(
-            `Não foi possível excluir o material.\n\n${erro.message}`
-        );
+        notificar(`Não foi possível excluir o material.\n\n${erro.message}`);
         botao.disabled = false;
-        botao.innerHTML = `
-            <ion-icon name="trash-outline"></ion-icon>
-            EXCLUIR
-        `;
+        botao.innerHTML = `<ion-icon name="trash-outline"></ion-icon> EXCLUIR`;
     }
 }
 
-// FORMATAR MOEDA
-
 function formatarMoedaMaterial(valor) {
-
-    return Number(valor || 0).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-    });
-
+    return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
-// NOVO LOTE
+// =========================================================
+// LOTES
+// =========================================================
 
 let lotes = [];
 let loteEmEdicaoId = null;
@@ -2388,14 +2030,11 @@ let loteEmEdicaoId = null;
 const tituloModalLote = document.getElementById("tituloModalLote");
 const modalNovoLote = document.getElementById("modalNovoLote");
 const abrirModalLote = document.getElementById("abrirModalLote");
-const cadastrarLoteVazio = document.getElementById("cadastrarLoteVazio");
 const fecharModalLote = document.getElementById("fecharModalLote");
 const cancelarLote = document.getElementById("cancelarLote");
 const cadastrarLote = document.getElementById("cadastrarLote");
-
 const buscarLote = document.getElementById("buscarLote");
 const filtroLote = document.getElementById("filtroLote");
-
 const loteCodigo = document.getElementById("loteCodigo");
 const loteMaterial = document.getElementById("loteMaterial");
 const loteQuantidade = document.getElementById("loteQuantidade");
@@ -2404,7 +2043,11 @@ const loteDataFabricacao = document.getElementById("loteDataFabricacao");
 const loteDataValidade = document.getElementById("loteDataValidade");
 const loteObservacoes = document.getElementById("loteObservacoes");
 
-// ABRIR MODAL
+// Listeners do modal de lote — registrados uma única vez (fora de renderizarLotes)
+if (abrirModalLote) abrirModalLote.addEventListener("click", abrirModalNovoLote);
+if (fecharModalLote) fecharModalLote.addEventListener("click", fecharModalNovoLote);
+if (cancelarLote) cancelarLote.addEventListener("click", fecharModalNovoLote);
+if (cadastrarLote) cadastrarLote.addEventListener("click", salvarNovoLote);
 
 function abrirModalNovoLote() {
     if (!modalNovoLote) return;
@@ -2424,154 +2067,73 @@ function abrirModalNovoLote() {
     loteObservacoes.value = "";
 }
 
-// FECHAR MODAL
-
 function fecharModalNovoLote() {
     if (!modalNovoLote) return;
-
     modalNovoLote.classList.remove("active");
-
     loteEmEdicaoId = null;
-
     loteMaterial.disabled = false;
     loteQuantidade.disabled = false;
-
     cadastrarLote.textContent = "CADASTRAR";
     tituloModalLote.textContent = "NOVO LOTE";
 }
 
-// CARREGAR MATERIAIS NO SELECT
-
 function carregarMateriaisSelectLote() {
     if (!loteMaterial) return;
-
-    loteMaterial.innerHTML = `
-        <option value="">Selecione um material</option>
-    `;
-
+    loteMaterial.innerHTML = `<option value="">Selecione um material</option>`;
     materiais.forEach(material => {
         const option = document.createElement("option");
-
         option.value = material.id;
-        option.textContent =
-            `${material.codigo} - ${material.nome}`;
-
+        option.textContent = `${material.codigo} - ${material.nome}`;
         loteMaterial.appendChild(option);
     });
 }
 
-// CARREGAR LOTES DA API
-
 async function carregarLotes() {
     const lista = document.getElementById("listaLotes");
-
     if (!lista) return;
-
     try {
-        lista.innerHTML = `
-            <tr>
-                <td colspan="5" style="text-align:center;">
-                    CARREGANDO LOTES...
-                </td>
-            </tr>
-        `;
-
+        lista.innerHTML = `<tr><td colspan="5" style="text-align:center;">CARREGANDO LOTES...</td></tr>`;
         const resposta = await fetch(`${API_URL}/lotes`);
-
-        if (!resposta.ok) {
-            throw new Error(`Erro HTTP: ${resposta.status}`);
-        }
-
+        if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
         lotes = await resposta.json();
-
-        console.log("[LOTES] Dados recebidos:", lotes);
-
         renderizarLotes();
-
     } catch (erro) {
         console.error("[LOTES] Erro ao carregar:", erro);
-
-        lista.innerHTML = `
-            <tr>
-                <td colspan="5" style="text-align:center;">
-                    Não foi possível carregar os lotes.
-                </td>
-            </tr>
-        `;
+        lista.innerHTML = `<tr><td colspan="5" style="text-align:center;">Não foi possível carregar os lotes.</td></tr>`;
     }
 }
-
-// FORMATAR DATA
 
 function formatarDataLote(data) {
     if (!data) return "-";
-
     const dataLocal = new Date(data);
-
-    if (Number.isNaN(dataLocal.getTime())) {
-        return "-";
-    }
-
-    return dataLocal.toLocaleDateString("pt-BR", {
-        timeZone: "UTC"
-    });
+    if (Number.isNaN(dataLocal.getTime())) return "-";
+    return dataLocal.toLocaleDateString("pt-BR", { timeZone: "UTC" });
 }
-
-// RENDERIZAR TABELA
 
 function renderizarLotes() {
     const lista = document.getElementById("listaLotes");
     if (!lista) return;
-    const termo = (buscarLote?.value || "")
-        .trim()
-        .toLowerCase();
+    const termo = normalizarBusca(buscarLote?.value);
     const filtro = filtroLote?.value || "todos";
 
-    // INDICADORES GERAIS
-
-    document.getElementById("totalLotes").textContent =
-        lotes.length;
-    document.getElementById("lotesProximos").textContent =
-        lotes.filter(lote => lote.status === "proximo").length;
-    document.getElementById("lotesVencidos").textContent =
-        lotes.filter(lote => lote.status === "vencido").length;
-
-    // PESQUISA E FILTRO
+    const setTexto = (id, valor) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = valor;
+    };
+    setTexto("totalLotes", lotes.length);
+    setTexto("lotesProximos", lotes.filter(l => l.status === "proximo").length);
+    setTexto("lotesVencidos", lotes.filter(l => l.status === "vencido").length);
 
     const lotesFiltrados = lotes.filter(lote => {
-        const correspondeBusca =
-            (lote.codigo || "").toLowerCase().includes(termo) ||
-            (lote.materialNome || "").toLowerCase().includes(termo) ||
-            (lote.materialCodigo || "").toLowerCase().includes(termo);
+        const passouBusca = correspondeBusca(
+            termo, lote.codigo, lote.materialNome, lote.materialCodigo
+        );
         let correspondeFiltro = true;
-        if (filtro === "normal") {
-            correspondeFiltro =
-                lote.status === "ok" ||
-                lote.status === "sem-validade";
-        }
-        if (filtro === "proximo") {
-            correspondeFiltro = lote.status === "proximo";
-        }
-        if (filtro === "vencido") {
-            correspondeFiltro = lote.status === "vencido";
-        }
-        return correspondeBusca && correspondeFiltro;
+        if (filtro === "normal") correspondeFiltro = lote.status === "ok" || lote.status === "sem-validade";
+        if (filtro === "proximo") correspondeFiltro = lote.status === "proximo";
+        if (filtro === "vencido") correspondeFiltro = lote.status === "vencido";
+        return passouBusca && correspondeFiltro;
     });
-
-    // EVENTOS DO MODAL DE LOTE
-
-    if (abrirModalLote) {
-        abrirModalLote.addEventListener("click", abrirModalNovoLote);
-    }
-    if (fecharModalLote) {
-        fecharModalLote.addEventListener("click", fecharModalNovoLote);
-    }
-    if (cancelarLote) {
-        cancelarLote.addEventListener("click", fecharModalNovoLote);
-    }
-    if (cadastrarLote) {
-        cadastrarLote.addEventListener("click", salvarNovoLote);
-    }
 
     if (lotesFiltrados.length === 0) {
         lista.innerHTML = `
@@ -2580,26 +2142,27 @@ function renderizarLotes() {
                     <div class="empty-state">
                         <ion-icon name="cube-outline"></ion-icon>
                         <h3>Nenhum lote encontrado</h3>
+                        <button class="secondary-button" id="cadastrarLoteVazio" type="button">
+                            CADASTRAR LOTE
+                        </button>
                     </div>
                 </td>
             </tr>
         `;
+        const botaoVazio = document.getElementById("cadastrarLoteVazio");
+        if (botaoVazio) botaoVazio.addEventListener("click", abrirModalNovoLote);
         return;
     }
+
     lista.innerHTML = lotesFiltrados.map(lote => {
         let statusTexto = "DENTRO DA VALIDADE";
-        if (lote.status === "proximo") {
-            statusTexto = "PRÓXIMO DO VENCIMENTO";
-        } else if (lote.status === "vencido") {
-            statusTexto = "VENCIDO";
-        } else if (lote.status === "sem-validade") {
-            statusTexto = "SEM VALIDADE";
-        }
+        if (lote.status === "proximo") statusTexto = "PRÓXIMO DO VENCIMENTO";
+        else if (lote.status === "vencido") statusTexto = "VENCIDO";
+        else if (lote.status === "sem-validade") statusTexto = "SEM VALIDADE";
+
         return `
             <tr>
-                <td>
-                    <strong>${lote.codigo}</strong>
-                </td>
+                <td><strong>${lote.codigo}</strong></td>
                 <td>
                     <div>
                         <strong>${lote.materialNome}</strong>
@@ -2612,9 +2175,7 @@ function renderizarLotes() {
             maximumFractionDigits: 2
         })} ${lote.unidade || ""}
                 </td>
-                <td>
-                    ${formatarDataLote(lote.dataFabricacao)}
-                </td>
+                <td>${formatarDataLote(lote.dataFabricacao)}</td>
                 <td>
                     <div>
                         ${formatarDataLote(lote.dataValidade)}
@@ -2622,20 +2183,12 @@ function renderizarLotes() {
                     </div>
                 </td>
                 <td class="lote-acoes">
-                    <button
-                        type="button"
-                        class="btn-editar-lote"
-                        data-lote-id="${lote.id}"
-                        title="Editar lote"
-                        aria-label="Editar lote">
+                    <button type="button" class="btn-editar-lote" data-lote-id="${lote.id}"
+                        title="Editar lote" aria-label="Editar lote">
                         <ion-icon name="create-outline"></ion-icon>
                     </button>
-                    <button
-                        type="button"
-                        class="btn-excluir-lote"
-                        data-lote-id="${lote.id}"
-                        title="Excluir lote"
-                        aria-label="Excluir lote">
+                    <button type="button" class="btn-excluir-lote" data-lote-id="${lote.id}"
+                        title="Excluir lote" aria-label="Excluir lote">
                         <ion-icon name="trash-outline"></ion-icon>
                     </button>
                 </td>
@@ -2644,30 +2197,16 @@ function renderizarLotes() {
     }).join("");
 }
 
-
-// AÇÕES DA TABELA DE LOTES
-
 const listaLotes = document.getElementById("listaLotes");
 if (listaLotes) {
     listaLotes.addEventListener("click", function (event) {
         const botao = event.target.closest("button[data-lote-id]");
         if (!botao) return;
         const loteId = Number(botao.dataset.loteId);
-        if (botao.classList.contains("btn-editar-lote")) {
-            editarLote(loteId);
-            return;
-        }
-        if (botao.classList.contains("btn-excluir-lote")) {
-            excluirLote(loteId, botao);
-        }
-        if (event.target.closest("#cadastrarLoteVazio")) {
-            abrirModalNovoLote();
-            return;
-        }
+        if (botao.classList.contains("btn-editar-lote")) { editarLote(loteId); return; }
+        if (botao.classList.contains("btn-excluir-lote")) { excluirLote(loteId, botao); }
     });
 }
-
-// EDITAR LOTE
 
 function editarLote(id) {
     const lote = lotes.find(item => item.id === id);
@@ -2683,21 +2222,13 @@ function editarLote(id) {
     loteMaterial.value = lote.materialId;
     loteQuantidade.value = lote.quantidade ?? "";
     loteCustoUnitario.value = lote.custoUnitario ?? "";
-    loteDataFabricacao.value =
-        lote.dataFabricacao
-            ? lote.dataFabricacao.slice(0, 10)
-            : "";
-    loteDataValidade.value =
-        lote.dataValidade
-            ? lote.dataValidade.slice(0, 10)
-            : "";
+    loteDataFabricacao.value = lote.dataFabricacao ? lote.dataFabricacao.slice(0, 10) : "";
+    loteDataValidade.value = lote.dataValidade ? lote.dataValidade.slice(0, 10) : "";
     loteObservacoes.value = lote.observacoes || "";
     loteMaterial.disabled = true;
     loteQuantidade.disabled = true;
     modalNovoLote.classList.add("active");
 }
-
-// EXCLUIR LOTE
 
 async function excluirLote(id, botao) {
     const lote = lotes.find(item => item.id === id);
@@ -2706,42 +2237,29 @@ async function excluirLote(id, botao) {
         return;
     }
     const confirmado = await confirmarExclusaoLote(lote);
-    if (!confirmado) {
-        return;
-    }
+    if (!confirmado) return;
     try {
         botao.disabled = true;
-        const resposta = await fetch(
-            `${API_URL}/lotes/${id}`,
-            {
-                method: "DELETE"
-            }
-        );
+        const resposta = await fetch(`${API_URL}/lotes/${id}`, { method: "DELETE" });
         if (!resposta.ok) {
             const mensagem = await resposta.text();
-            throw new Error(
-                mensagem || `Erro HTTP: ${resposta.status}`
-            );
+            throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
         }
-        console.log(`[LOTES] Lote ${id} excluído com sucesso.`);
         await carregarLotes();
         await carregarMateriais();
         notificar(`Lote "${lote.codigo}" excluído com sucesso!`);
     } catch (erro) {
         console.error("[LOTES] Erro ao excluir:", erro);
-        notificar(
-            `Não foi possível excluir o lote.\n\n${erro.message}`
-        );
+        notificar(`Não foi possível excluir o lote.\n\n${erro.message}`);
         botao.disabled = false;
     }
 }
-
-// CADASTRAR LOTE
 
 async function salvarNovoLote() {
     const materialId = Number(loteMaterial.value);
     const quantidade = Number(loteQuantidade.value);
     const custoUnitario = Number(loteCustoUnitario.value);
+
     if (!loteCodigo.value.trim()) {
         notificar("Informe o código do lote.");
         loteCodigo.focus();
@@ -2752,10 +2270,7 @@ async function salvarNovoLote() {
         loteMaterial.focus();
         return;
     }
-    if (
-        !loteEmEdicaoId &&
-        (!Number.isFinite(quantidade) || quantidade <= 0)
-    ) {
+    if (!loteEmEdicaoId && (!Number.isFinite(quantidade) || quantidade <= 0)) {
         notificar("Informe uma quantidade maior que zero.");
         loteQuantidade.focus();
         return;
@@ -2767,89 +2282,57 @@ async function salvarNovoLote() {
     }
     const dataFabricacao = loteDataFabricacao.value || null;
     const dataValidade = loteDataValidade.value || null;
-    if (
-        dataFabricacao &&
-        dataValidade &&
-        dataValidade < dataFabricacao
-    ) {
+    if (dataFabricacao && dataValidade && dataValidade < dataFabricacao) {
         notificar("A validade não pode ser anterior à fabricação.");
         return;
     }
+
     const editando = loteEmEdicaoId !== null;
     const observacoes = loteObservacoes.value.trim();
     const dadosLote = editando
-        ? {
-            codigo: loteCodigo.value.trim(),
-            custoUnitario: custoUnitario,
-            dataFabricacao: dataFabricacao,
-            dataValidade: dataValidade,
-            observacoes: observacoes
-        }
+        ? { codigo: loteCodigo.value.trim(), custoUnitario, dataFabricacao, dataValidade, observacoes }
         : {
-            materialId: materialId,
+            materialId,
             codigo: loteCodigo.value.trim(),
-            quantidade: quantidade,
-            custoUnitario: custoUnitario,
-            dataFabricacao: dataFabricacao,
-            dataValidade: dataValidade,
-            observacoes: observacoes
+            quantidade,
+            custoUnitario,
+            dataFabricacao,
+            dataValidade,
+            observacoes
         };
-    const url = editando
-        ? `${API_URL}/lotes/${loteEmEdicaoId}`
-        : `${API_URL}/lotes`;
+    const url = editando ? `${API_URL}/lotes/${loteEmEdicaoId}` : `${API_URL}/lotes`;
+
     try {
         cadastrarLote.disabled = true;
-        cadastrarLote.textContent = editando
-            ? "SALVANDO..."
-            : "CADASTRANDO...";
+        cadastrarLote.textContent = editando ? "SALVANDO..." : "CADASTRANDO...";
         const resposta = await fetch(url, {
             method: editando ? "PUT" : "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dadosLote)
         });
         if (!resposta.ok) {
             const mensagem = await resposta.text();
-            throw new Error(
-                mensagem || `Erro HTTP: ${resposta.status}`
-            );
+            throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
         }
-        console.log(
-            editando
-                ? "[LOTES] Lote atualizado:"
-                : "[LOTES] Lote cadastrado:",
-            dadosLote
-        );
         fecharModalNovoLote();
         await carregarLotes();
         await carregarMateriais();
-        notificar(
-            editando
-                ? "Lote atualizado com sucesso!"
-                : "Lote cadastrado com sucesso!"
-        );
+        notificar(editando ? "Lote atualizado com sucesso!" : "Lote cadastrado com sucesso!");
     } catch (erro) {
         console.error("[LOTES] Erro ao salvar:", erro);
-        notificar(
-            `Não foi possível salvar o lote.\n\n${erro.message}`
-        );
+        notificar(`Não foi possível salvar o lote.\n\n${erro.message}`);
     } finally {
         cadastrarLote.disabled = false;
         cadastrarLote.textContent = "CADASTRAR";
     }
 }
 
-// PESQUISA E FILTRO
+if (buscarLote) buscarLote.addEventListener("input", renderizarLotes);
+if (filtroLote) filtroLote.addEventListener("change", renderizarLotes);
 
-if (buscarLote) {
-    buscarLote.addEventListener("input", renderizarLotes);
-}
-if (filtroLote) {
-    filtroLote.addEventListener("change", renderizarLotes);
-}
-
+// =========================================================
 // FUNCIONÁRIOS
+// =========================================================
 
 let funcionarios = [];
 let funcionarioSelecionado = null;
@@ -2857,342 +2340,151 @@ let modoEdicaoFuncionario = false;
 
 async function carregarFuncionarios() {
     try {
-        const resposta = await fetch(
-            `${API_URL}/funcionarios`
-        );
-        if (!resposta.ok) {
-            throw new Error(
-                `Erro HTTP: ${resposta.status}`
-            );
-        }
+        const resposta = await fetch(`${API_URL}/funcionarios`);
+        if (!resposta.ok) throw new Error(`Erro HTTP: ${resposta.status}`);
         funcionarios = await resposta.json();
-        console.log(
-            "Funcionários carregados:",
-            funcionarios
-        );
         preencherResponsaveisOS();
-        const funcionariosCount =
-            document.getElementById("funcionariosCount");
-        if (funcionariosCount) {
-            funcionariosCount.textContent =
-                `${funcionarios.length} FUNCIONÁRIOS`;
-        }
+        const funcionariosCount = document.getElementById("funcionariosCount");
+        if (funcionariosCount) funcionariosCount.textContent = `${funcionarios.length} FUNCIONÁRIOS`;
         renderizarFuncionarios();
     } catch (erro) {
-        console.error(
-            "Erro ao carregar funcionários:",
-            erro
-        );
+        console.error("Erro ao carregar funcionários:", erro);
     }
 }
 
-// PREENCHER FUNCIONÁRIO RESPONSÁVEL
-
 function preencherResponsaveisOS() {
-
     const select = document.getElementById("responsavelOS");
-
-    if (!select) {
-        return;
-    }
-
-    select.innerHTML = `
-        <option value="">
-            Selecione o funcionário
-        </option>
-    `;
-
-    funcionarios.forEach(function (funcionario) {
-
+    if (!select) return;
+    select.innerHTML = `<option value="">Selecione o funcionário</option>`;
+    funcionarios.forEach(funcionario => {
         const option = document.createElement("option");
-
         option.value = funcionario.id;
-        option.textContent =
-            `${funcionario.nome} - ${funcionario.cargo}`;
-
+        option.textContent = `${funcionario.nome} - ${funcionario.cargo}`;
         select.appendChild(option);
-
     });
 }
 
-// CADASTRAR FUNCIONÁRIO
-
 async function cadastrarNovoFuncionario() {
     const funcionario = {
-        nome:
-            document.getElementById("funcionarioNome").value.trim(),
-        matricula:
-            document.getElementById("funcionarioMatricula").value.trim(),
-        cpf:
-            document.getElementById("funcionarioCpf").value.trim(),
-        cargo:
-            document.getElementById("funcionarioCargo").value.trim(),
-        idade:
-            Number(document.getElementById("funcionarioIdade").value),
-        telefone:
-            document.getElementById("funcionarioTelefone").value.trim(),
-        setor:
-            document.getElementById("funcionarioSetor").value,
-        admissao:
-            document.getElementById("funcionarioAdmissao").value,
-        email:
-            document.getElementById("funcionarioEmail").value.trim(),
-        observacoes:
-            document.getElementById("funcionarioObservacoes").value.trim()
+        nome: document.getElementById("funcionarioNome").value.trim(),
+        matricula: document.getElementById("funcionarioMatricula").value.trim(),
+        cpf: document.getElementById("funcionarioCpf").value.trim(),
+        cargo: document.getElementById("funcionarioCargo").value.trim(),
+        idade: Number(document.getElementById("funcionarioIdade").value),
+        telefone: document.getElementById("funcionarioTelefone").value.trim(),
+        setor: document.getElementById("funcionarioSetor").value,
+        admissao: document.getElementById("funcionarioAdmissao").value,
+        email: document.getElementById("funcionarioEmail").value.trim(),
+        observacoes: document.getElementById("funcionarioObservacoes").value.trim()
     };
 
-    // VALIDAÇÕES
+    if (!funcionario.nome) { notificar("Informe o nome do funcionário."); return; }
+    if (!funcionario.matricula) { notificar("Informe a matrícula do funcionário."); return; }
+    if (!funcionario.cpf) { notificar("Informe o CPF do funcionário."); return; }
+    if (!funcionario.cargo) { notificar("Informe o cargo do funcionário."); return; }
+    if (!funcionario.idade) { notificar("Informe a idade do funcionário."); return; }
+    if (!funcionario.setor) { notificar("Selecione o setor do funcionário."); return; }
+    if (!funcionario.admissao) { notificar("Informe a data de admissão."); return; }
 
-    if (!funcionario.nome) {
-        notificar("Informe o nome do funcionário.");
-        return;
-    }
-    if (!funcionario.matricula) {
-        notificar("Informe a matrícula do funcionário.");
-        return;
-    }
-    if (!funcionario.cpf) {
-        notificar("Informe o CPF do funcionário.");
-        return;
-    }
-    if (!funcionario.cargo) {
-        notificar("Informe o cargo do funcionário.");
-        return;
-    }
-    if (!funcionario.idade) {
-        notificar("Informe a idade do funcionário.");
-        return;
-    }
-    if (!funcionario.setor) {
-        notificar("Selecione o setor do funcionário.");
-        return;
-    }
-    if (!funcionario.admissao) {
-        notificar("Informe a data de admissão.");
-        return;
-    }
     try {
         let resposta;
         if (modoEdicaoFuncionario) {
-
             funcionario.id = funcionarioSelecionado.id;
-
-            resposta = await fetch(
-                `${API_URL}/funcionarios/${funcionario.id}`,
-                {
-                    method: "PUT",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify(funcionario)
-                }
-            );
-        }
-        else {
-            resposta = await fetch(
-                `${API_URL}/funcionarios`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(funcionario)
-                }
-            );
+            resposta = await fetch(`${API_URL}/funcionarios/${funcionario.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(funcionario)
+            });
+        } else {
+            resposta = await fetch(`${API_URL}/funcionarios`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(funcionario)
+            });
         }
         if (!resposta.ok) {
             const mensagem = await resposta.text();
-            throw new Error(
-                mensagem ||
-                `Erro HTTP: ${resposta.status}`
-            );
+            throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
         }
         await carregarFuncionarios();
         fecharCadastroFuncionario();
         limparFormularioFuncionario();
-        if (modoEdicaoFuncionario) {
-            notificar(
-                "Funcionário atualizado com sucesso!"
-            );
-        } else {
-            notificar(
-                "Funcionário cadastrado com sucesso!"
-            );
-        }
-    }
-    catch (erro) {
-        console.error(
-            "Erro ao salvar funcionário:",
-            erro
-        );
-        notificar(
-            `Não foi possível salvar o funcionário.\n\n${erro.message}`
-        );
+        notificar(modoEdicaoFuncionario ? "Funcionário atualizado com sucesso!" : "Funcionário cadastrado com sucesso!");
+    } catch (erro) {
+        console.error("Erro ao salvar funcionário:", erro);
+        notificar(`Não foi possível salvar o funcionário.\n\n${erro.message}`);
     }
 }
+
 function limparFormularioFuncionario() {
-    document.getElementById("funcionarioNome").value = "";
-    document.getElementById("funcionarioMatricula").value = "";
-    document.getElementById("funcionarioCpf").value = "";
-    document.getElementById("funcionarioCargo").value = "";
-    document.getElementById("funcionarioIdade").value = "";
-    document.getElementById("funcionarioSetor").value = "";
-    document.getElementById("funcionarioAdmissao").value = "";
-    document.getElementById("funcionarioTelefone").value = "";
-    document.getElementById("funcionarioEmail").value = "";
-    document.getElementById("funcionarioObservacoes").value = "";
+    ["funcionarioNome", "funcionarioMatricula", "funcionarioCpf", "funcionarioCargo",
+        "funcionarioIdade", "funcionarioSetor", "funcionarioAdmissao", "funcionarioTelefone",
+        "funcionarioEmail", "funcionarioObservacoes"].forEach(id => {
+            const campo = document.getElementById(id);
+            if (campo) campo.value = "";
+        });
 }
 
-// ELEMENTOS
+const cadastrarFuncionario = document.getElementById("cadastrarFuncionario");
+const modalNovoFuncionario = document.getElementById("modalNovoFuncionario");
+const modalDetalhesFuncionario = document.getElementById("modalDetalhesFuncionario");
+const abrirModalFuncionario = document.getElementById("abrirModalFuncionario");
+const cadastrarPrimeiroFuncionario = document.getElementById("cadastrarPrimeiroFuncionario");
+const fecharModalFuncionario = document.getElementById("fecharModalFuncionario");
+const cancelarFuncionario = document.getElementById("cancelarFuncionario");
+const fecharDetalhesFuncionario = document.getElementById("fecharDetalhesFuncionario");
+const fecharDetalhesFuncionarioBotao = document.getElementById("fecharDetalhesFuncionarioBotao");
+const editarFuncionario = document.getElementById("editarFuncionario");
+const removerFuncionario = document.getElementById("removerFuncionario");
 
-const cadastrarFuncionario =
-    document.getElementById("cadastrarFuncionario");
-const modalNovoFuncionario =
-    document.getElementById("modalNovoFuncionario");
-const modalDetalhesFuncionario =
-    document.getElementById("modalDetalhesFuncionario");
-const abrirModalFuncionario =
-    document.getElementById("abrirModalFuncionario");
-const cadastrarPrimeiroFuncionario =
-    document.getElementById("cadastrarPrimeiroFuncionario");
-const fecharModalFuncionario =
-    document.getElementById("fecharModalFuncionario");
-const cancelarFuncionario =
-    document.getElementById("cancelarFuncionario");
-const fecharDetalhesFuncionario =
-    document.getElementById("fecharDetalhesFuncionario");
-const fecharDetalhesFuncionarioBotao =
-    document.getElementById("fecharDetalhesFuncionarioBotao");
-const editarFuncionario =
-    document.getElementById("editarFuncionario");
-const removerFuncionario =
-    document.getElementById("removerFuncionario");
-if (cadastrarFuncionario) {
-    cadastrarFuncionario.addEventListener(
-        "click",
-        cadastrarNovoFuncionario
-    );
-}
-if (editarFuncionario) {
+if (cadastrarFuncionario) cadastrarFuncionario.addEventListener("click", cadastrarNovoFuncionario);
+if (editarFuncionario) editarFuncionario.addEventListener("click", editarFuncionarioSelecionado);
+if (removerFuncionario) removerFuncionario.addEventListener("click", removerFuncionarioSelecionado);
 
-    editarFuncionario.addEventListener(
-        "click",
-        editarFuncionarioSelecionado
-    );
-}
-if (removerFuncionario) {
-    removerFuncionario.addEventListener(
-        "click",
-        removerFuncionarioSelecionado
-    );
-}
 function abrirCadastroFuncionario() {
-    if (!modalNovoFuncionario) {
-        return;
-    }
+    if (!modalNovoFuncionario) return;
     modoEdicaoFuncionario = false;
     funcionarioSelecionado = null;
     document.getElementById("cadastrarFuncionario").textContent = "CADASTRAR FUNCIONÁRIO";
     modalNovoFuncionario.classList.add("active");
 }
-function fecharCadastroFuncionario() {
 
-    if (!modalNovoFuncionario) {
-        return;
-    }
+function fecharCadastroFuncionario() {
+    if (!modalNovoFuncionario) return;
     modalNovoFuncionario.classList.remove("active");
 }
-if (abrirModalFuncionario) {
-    abrirModalFuncionario.addEventListener(
-        "click",
-        abrirCadastroFuncionario
-    );
-}
-if (cadastrarPrimeiroFuncionario) {
-    cadastrarPrimeiroFuncionario.addEventListener(
-        "click",
-        abrirCadastroFuncionario
-    );
-}
-if (fecharModalFuncionario) {
-    fecharModalFuncionario.addEventListener(
-        "click",
-        fecharCadastroFuncionario
-    );
-}
-if (cancelarFuncionario) {
-    cancelarFuncionario.addEventListener(
-        "click",
-        fecharCadastroFuncionario
-    );
-}
+
+if (abrirModalFuncionario) abrirModalFuncionario.addEventListener("click", abrirCadastroFuncionario);
+if (cadastrarPrimeiroFuncionario) cadastrarPrimeiroFuncionario.addEventListener("click", abrirCadastroFuncionario);
+if (fecharModalFuncionario) fecharModalFuncionario.addEventListener("click", fecharCadastroFuncionario);
+if (cancelarFuncionario) cancelarFuncionario.addEventListener("click", fecharCadastroFuncionario);
 if (modalNovoFuncionario) {
-    modalNovoFuncionario.addEventListener(
-        "click",
-        function (event) {
-            if (
-                event.target === modalNovoFuncionario
-            ) {
-                fecharCadastroFuncionario();
-            }
-        }
-    );
+    modalNovoFuncionario.addEventListener("click", function (event) {
+        if (event.target === modalNovoFuncionario) fecharCadastroFuncionario();
+    });
 }
+
 function fecharModalDetalhesFuncionario() {
-    if (!modalDetalhesFuncionario) {
-        return;
-    }
-    modalDetalhesFuncionario.classList.remove("active");
+    if (modalDetalhesFuncionario) modalDetalhesFuncionario.classList.remove("active");
 }
-if (fecharDetalhesFuncionario) {
-    fecharDetalhesFuncionario.addEventListener(
-        "click",
-        fecharModalDetalhesFuncionario
-    );
-}
-if (fecharDetalhesFuncionarioBotao) {
-    fecharDetalhesFuncionarioBotao.addEventListener(
-        "click",
-        fecharModalDetalhesFuncionario
-    );
-}
+if (fecharDetalhesFuncionario) fecharDetalhesFuncionario.addEventListener("click", fecharModalDetalhesFuncionario);
+if (fecharDetalhesFuncionarioBotao) fecharDetalhesFuncionarioBotao.addEventListener("click", fecharModalDetalhesFuncionario);
 if (modalDetalhesFuncionario) {
-    modalDetalhesFuncionario.addEventListener(
-        "click",
-        function (event) {
-            if (
-                event.target === modalDetalhesFuncionario
-            ) {
-                fecharModalDetalhesFuncionario();
-            }
-        }
-    );
+    modalDetalhesFuncionario.addEventListener("click", function (event) {
+        if (event.target === modalDetalhesFuncionario) fecharModalDetalhesFuncionario();
+    });
 }
-// ESC
 
-document.addEventListener(
-    "keydown",
-    function (event) {
-        if (event.key !== "Escape") {
-            return;
-        }
-        fecharCadastroFuncionario();
-        fecharModalDetalhesFuncionario();
-    }
-);
-
-// RENDERIZAR FUNCIONÁRIOS
+document.addEventListener("keydown", function (event) {
+    if (event.key !== "Escape") return;
+    fecharCadastroFuncionario();
+    fecharModalDetalhesFuncionario();
+});
 
 function renderizarFuncionarios() {
-    const grid =
-        document.getElementById("funcionariosGrid");
-    const empty =
-        document.getElementById("funcionariosEmpty");
-    if (!grid || !empty) {
-        return;
-    }
+    const grid = document.getElementById("funcionariosGrid");
+    const empty = document.getElementById("funcionariosEmpty");
+    if (!grid || !empty) return;
     grid.innerHTML = "";
     if (funcionarios.length === 0) {
         empty.style.display = "flex";
@@ -3201,724 +2493,309 @@ function renderizarFuncionarios() {
     }
     empty.style.display = "none";
     grid.style.display = "grid";
-    funcionarios.forEach(
-        function (funcionario, index) {
-            const card =
-                document.createElement("div");
-            card.className =
-                "funcionario-card";
-            const iniciais =
-                funcionario.nome
-                    .split(" ")
-                    .map(
-                        nome => nome.charAt(0)
-                    )
-                    .slice(0, 2)
-                    .join("")
-                    .toUpperCase();
-            card.innerHTML = `
-                <div class="funcionario-avatar">
-                    ${iniciais}
-                </div>
-                <h3>
-                    ${funcionario.nome}
-                </h3>
-                <span class="funcionario-card-cargo">
-                    ${funcionario.cargo}
-                </span>
-                <div class="funcionario-card-info">
-                    <div>
-                        <span>MATRÍCULA:</span>
-                        <strong>${funcionario.matricula}</strong>
-                    </div>
-                    <div>
-                        <span>SETOR:</span>
-                        <strong>${funcionario.setor}</strong>
-                    </div>
-                </div>
-                <button
-                    class="funcionario-card-button"
-                    type="button"
-                    data-funcionario-index="${index}"
-                >
-                    VER DETALHES →
-                </button>
-            `;
-            grid.appendChild(card);
-        }
-    );
+    funcionarios.forEach(function (funcionario, index) {
+        const card = document.createElement("div");
+        card.className = "funcionario-card";
+        const iniciais = funcionario.nome.split(" ").map(n => n.charAt(0)).slice(0, 2).join("").toUpperCase();
+        card.innerHTML = `
+            <div class="funcionario-avatar">${iniciais}</div>
+            <h3>${funcionario.nome}</h3>
+            <span class="funcionario-card-cargo">${funcionario.cargo}</span>
+            <div class="funcionario-card-info">
+                <div><span>MATRÍCULA:</span><strong>${funcionario.matricula}</strong></div>
+                <div><span>SETOR:</span><strong>${funcionario.setor}</strong></div>
+            </div>
+            <button class="funcionario-card-button" type="button" data-funcionario-index="${index}">
+                VER DETALHES →
+            </button>
+        `;
+        grid.appendChild(card);
+    });
     adicionarEventosDetalhes();
 }
+
 async function removerFuncionarioSelecionado() {
-    if (!funcionarioSelecionado) {
-        return;
-    }
-    const confirmar = confirm(
-        `Deseja realmente remover o funcionário "${funcionarioSelecionado.nome}"?`
-    );
-    if (!confirmar) {
-        return;
-    }
+    if (!funcionarioSelecionado) return;
+    const confirmar = confirm(`Deseja realmente remover o funcionário "${funcionarioSelecionado.nome}"?`);
+    if (!confirmar) return;
     try {
-        const resposta = await fetch(
-            `${API_URL}/funcionarios/${funcionarioSelecionado.id}`,
-            {
-                method: "DELETE"
-            }
-        );
+        const resposta = await fetch(`${API_URL}/funcionarios/${funcionarioSelecionado.id}`, { method: "DELETE" });
         if (!resposta.ok) {
             const mensagem = await resposta.text();
-            throw new Error(
-                mensagem || `Erro HTTP: ${resposta.status}`
-            );
+            throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
         }
-
         fecharModalDetalhesFuncionario();
-
         funcionarioSelecionado = null;
         modoEdicaoFuncionario = false;
-
         await carregarFuncionarios();
-
         notificar("Funcionário removido com sucesso!");
     } catch (erro) {
-        console.error(
-            "Erro ao remover funcionário:",
-            erro
-        );
-
-        notificar(
-            `Não foi possível remover o funcionário.\n\n${erro.message}`
-        );
+        console.error("Erro ao remover funcionário:", erro);
+        notificar(`Não foi possível remover o funcionário.\n\n${erro.message}`);
     }
 }
-
-// =========================================================
-// EVENTOS DOS BOTÕES DE DETALHES
-// =========================================================
 
 function adicionarEventosDetalhes() {
-
-    const botoes =
-        document.querySelectorAll(
-            ".funcionario-card-button"
-        );
-
-
-    botoes.forEach(
-        function (botao) {
-
-            botao.addEventListener(
-                "click",
-                function () {
-
-                    const index =
-                        Number(
-                            botao.dataset.funcionarioIndex
-                        );
-
-
-                    abrirDetalhesFuncionario(
-                        funcionarios[index]
-                    );
-
-                }
-            );
-
-        }
-    );
-
+    document.querySelectorAll(".funcionario-card-button").forEach(function (botao) {
+        botao.addEventListener("click", function () {
+            const index = Number(botao.dataset.funcionarioIndex);
+            abrirDetalhesFuncionario(funcionarios[index]);
+        });
+    });
 }
 
-
-// =========================================================
-// ABRIR DETALHES
-// =========================================================
-
 function abrirDetalhesFuncionario(funcionario) {
-
-    if (
-        !modalDetalhesFuncionario ||
-        !funcionario
-    ) {
-        return;
-    }
+    if (!modalDetalhesFuncionario || !funcionario) return;
     funcionarioSelecionado = funcionario;
-
-    document.getElementById(
-        "detalhesFuncionarioNome"
-    ).textContent =
-        funcionario.nome;
-
-
-    document.getElementById(
-        "detalhesFuncionarioCargoInfo"
-    ).textContent =
-        funcionario.cargo;
-
-
-    document.getElementById(
-        "detalhesFuncionarioMatricula"
-    ).textContent =
-        funcionario.matricula;
-
-
-    document.getElementById(
-        "detalhesFuncionarioCpf"
-    ).textContent =
-        funcionario.cpf;
-
-
-    document.getElementById(
-        "detalhesFuncionarioIdade"
-    ).textContent =
-        funcionario.idade;
-
-    document.getElementById(
-        "detalhesFuncionarioSetor"
-    ).textContent =
-        funcionario.setor;
-
-
+    document.getElementById("detalhesFuncionarioNome").textContent = funcionario.nome;
+    document.getElementById("detalhesFuncionarioCargoInfo").textContent = funcionario.cargo;
+    document.getElementById("detalhesFuncionarioMatricula").textContent = funcionario.matricula;
+    document.getElementById("detalhesFuncionarioCpf").textContent = funcionario.cpf;
+    document.getElementById("detalhesFuncionarioIdade").textContent = funcionario.idade;
+    document.getElementById("detalhesFuncionarioSetor").textContent = funcionario.setor;
     document.getElementById("detalhesFuncionarioAdmissao").textContent =
-        funcionario.admissao
-            ? funcionario.admissao.split("T")[0]
-            : "-";
-
-    document.getElementById(
-        "detalhesFuncionarioTelefone"
-    ).textContent =
-        funcionario.telefone;
-
-
-    document.getElementById(
-        "detalhesFuncionarioEmail"
-    ).textContent =
-        funcionario.email;
-
-
-    document.getElementById(
-        "detalhesFuncionarioObservacoes"
-    ).textContent =
-        funcionario.observacoes ||
-        "Nenhuma observação registrada.";
-
-
+        funcionario.admissao ? funcionario.admissao.split("T")[0] : "-";
+    document.getElementById("detalhesFuncionarioTelefone").textContent = funcionario.telefone;
+    document.getElementById("detalhesFuncionarioEmail").textContent = funcionario.email;
+    document.getElementById("detalhesFuncionarioObservacoes").textContent =
+        funcionario.observacoes || "Nenhuma observação registrada.";
     fecharCadastroFuncionario();
-
-    modalDetalhesFuncionario.classList.add(
-        "active"
-    );
-
+    modalDetalhesFuncionario.classList.add("active");
 }
 
 function editarFuncionarioSelecionado() {
-
-    if (!funcionarioSelecionado) {
-        return;
-    }
-
+    if (!funcionarioSelecionado) return;
     modoEdicaoFuncionario = true;
-
     document.getElementById("funcionarioNome").value = funcionarioSelecionado.nome || "";
     document.getElementById("funcionarioMatricula").value = funcionarioSelecionado.matricula || "";
     document.getElementById("funcionarioCpf").value = funcionarioSelecionado.cpf || "";
     document.getElementById("funcionarioCargo").value = funcionarioSelecionado.cargo || "";
     document.getElementById("funcionarioIdade").value = funcionarioSelecionado.idade || "";
-
     const setor = funcionarioSelecionado.setor || "";
-
-    const setores = {
-        producao: "Produção",
-        usinagem: "Usinagem",
-        manutencao: "Manutenção"
-    };
-
+    const setores = { producao: "Produção", usinagem: "Usinagem", manutencao: "Manutenção" };
     document.getElementById("funcionarioSetor").value = setores[setor.toLowerCase()] || setor;
     document.getElementById("funcionarioAdmissao").value = funcionarioSelecionado.admissao
         ? funcionarioSelecionado.admissao.split("T")[0] : "";
     document.getElementById("funcionarioTelefone").value = funcionarioSelecionado.telefone || "";
     document.getElementById("funcionarioEmail").value = funcionarioSelecionado.email || "";
     document.getElementById("funcionarioObservacoes").value = funcionarioSelecionado.observacoes || "";
-
     fecharModalDetalhesFuncionario();
     modalNovoFuncionario.classList.add("active");
     document.getElementById("cadastrarFuncionario").textContent = "SALVAR ALTERAÇÕES";
 }
 
+// =========================================================
 // INICIALIZAÇÃO
+// =========================================================
 
-carregarFuncionarios();
-carregarMaquinas();
-carregarOrdensServico();
-carregarMateriais();
-carregarLotes();
+(async function inicializar() {
+    await carregarFuncionarios();   // selects de responsável dependem disso
+    await carregarMateriais();      // select de material em lote depende disso
+    carregarMaquinas();
+    carregarOrdensServico();
+    carregarLotes();
+})();
 
+// =========================================================
 // RELATÓRIO DE SERVIÇOS
+// =========================================================
 
-const limparFiltrosServicos =
-    document.getElementById("limparFiltrosServicos");
-
-const gerarRelatorioServicos =
-    document.getElementById("gerarRelatorioServicos");
-
-const servicosDataInicio =
-    document.getElementById("servicosDataInicio");
-
-const servicosDataFim =
-    document.getElementById("servicosDataFim");
-
-const servicosStatus =
-    document.getElementById("servicosStatus");
-
-
-// VARIÁVEIS DO RELATÓRIO
+const limparFiltrosServicos = document.getElementById("limparFiltrosServicos");
+const gerarRelatorioServicos = document.getElementById("gerarRelatorioServicos");
+const servicosDataInicio = document.getElementById("servicosDataInicio");
+const servicosDataFim = document.getElementById("servicosDataFim");
+const servicosStatus = document.getElementById("servicosStatus");
 
 let graficoServicosStatus = null;
 let graficoServicosTipo = null;
 
-
-// ELEMENTOS DO RELATÓRIO
-
-const secaoRelatorioServicos =
-    document.getElementById("relatorio-servicos");
-
-const indicadoresServicos =
-    secaoRelatorioServicos
-        ? secaoRelatorioServicos.querySelectorAll(".relatorio-indicador strong")
-        : [];
-
-const graficosServicos =
-    secaoRelatorioServicos
-        ? secaoRelatorioServicos.querySelectorAll(".relatorio-grafico")
-        : [];
-
-const tabelaRelatorioServicos =
-    document.getElementById("relatorio-servicosTabela");
-
-const registrosRelatorioServicos =
-    document.getElementById("relatorio-servicosRegistros");
-
-
-// FORMATADORES DO RELATÓRIO
+const secaoRelatorioServicos = document.getElementById("relatorio-servicos");
+const indicadoresServicos = secaoRelatorioServicos
+    ? secaoRelatorioServicos.querySelectorAll(".relatorio-indicador strong")
+    : [];
+const graficosServicos = secaoRelatorioServicos
+    ? secaoRelatorioServicos.querySelectorAll(".relatorio-grafico")
+    : [];
+const tabelaRelatorioServicos = document.getElementById("relatorio-servicosTabela");
+const registrosRelatorioServicos = document.getElementById("relatorio-servicosRegistros");
 
 function formatarMoedaRelatorioServicos(valor) {
-    return new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: "BRL"
-    }).format(Number(valor) || 0);
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(valor) || 0);
 }
 
-
 function formatarDataRelatorioServicos(valor) {
-    if (!valor) {
-        return "-";
-    }
-
+    if (!valor) return "-";
     const texto = String(valor);
-
     const iso = texto.match(/^(\d{4})-(\d{2})-(\d{2})/);
-
-    if (iso) {
-        return `${iso[3]}/${iso[2]}/${iso[1]}`;
-    }
-
+    if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
     const data = new Date(texto);
-
-    if (Number.isNaN(data.getTime())) {
-        return "-";
-    }
-
+    if (Number.isNaN(data.getTime())) return "-";
     return data.toLocaleDateString("pt-BR");
 }
 
-
-// NORMALIZAÇÃO DE STATUS (aceita string em vários formatos, número ou objeto)
-
-const STATUS_NUMERICO_RELATORIO_SERVICOS = {
-    0: "pendente",
-    1: "em_execucao",
-    2: "concluida"
-};
-
+const STATUS_NUMERICO_RELATORIO_SERVICOS = { 0: "pendente", 1: "em_execucao", 2: "concluida" };
 const ALIAS_STATUS_RELATORIO_SERVICOS = {
-    pendente: "pendente",
-    aberta: "pendente",
-    aberto: "pendente",
-    aguardando: "pendente",
-    emexecucao: "em_execucao",
-    emandamento: "em_execucao",
-    execucao: "em_execucao",
-    andamento: "em_execucao",
-    iniciada: "em_execucao",
-    concluida: "concluida",
-    concluido: "concluida",
-    finalizada: "concluida",
-    finalizado: "concluida",
-    baixada: "concluida",
-    encerrada: "concluida"
+    pendente: "pendente", aberta: "pendente", aberto: "pendente", aguardando: "pendente",
+    emexecucao: "em_execucao", emandamento: "em_execucao", execucao: "em_execucao",
+    andamento: "em_execucao", iniciada: "em_execucao",
+    concluida: "concluida", concluido: "concluida", finalizada: "concluida",
+    finalizado: "concluida", baixada: "concluida", encerrada: "concluida"
 };
 
 function normalizarStatusRelatorioServicos(valor) {
-
-    if (valor === null || valor === undefined) {
-        return null;
-    }
-
+    if (valor === null || valor === undefined) return null;
     if (typeof valor === "object") {
-        return normalizarStatusRelatorioServicos(
-            valor.nome ?? valor.descricao ?? valor.status ?? valor.valor ?? null
-        );
+        return normalizarStatusRelatorioServicos(valor.nome ?? valor.descricao ?? valor.status ?? valor.valor ?? null);
     }
-
-    if (typeof valor === "number") {
-        return STATUS_NUMERICO_RELATORIO_SERVICOS[valor] || null;
-    }
-
+    if (typeof valor === "number") return STATUS_NUMERICO_RELATORIO_SERVICOS[valor] || null;
     const texto = String(valor).trim();
-
-    if (/^\d+$/.test(texto)) {
-        return STATUS_NUMERICO_RELATORIO_SERVICOS[Number(texto)] || null;
-    }
-
-    const chave =
-        texto
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .toLowerCase()
-            .replace(/[^a-z0-9]/g, "");
-
+    if (/^\d+$/.test(texto)) return STATUS_NUMERICO_RELATORIO_SERVICOS[Number(texto)] || null;
+    const chave = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
     return ALIAS_STATUS_RELATORIO_SERVICOS[chave] || null;
 }
 
-
 function lerStatusRegistroRelatorioServicos(registro) {
-
-    if (!registro) {
-        return undefined;
-    }
-
-    return registro.status
-        ?? registro.statusOS
-        ?? registro.situacao
-        ?? registro.Status;
+    if (!registro) return undefined;
+    return registro.status ?? registro.statusOS ?? registro.situacao ?? registro.Status;
 }
 
-
 function obterRegistrosRelatorioServicos(dados) {
-
-    if (Array.isArray(dados)) {
-        return dados;
-    }
-
+    if (Array.isArray(dados)) return dados;
     const candidatos = [
-        dados?.registros,
-        dados?.Registros,
-        dados?.ordens,
-        dados?.ordensServico,
-        dados?.items,
-        dados?.data
+        dados?.registros, dados?.Registros, dados?.ordens,
+        dados?.ordensServico, dados?.items, dados?.data
     ];
-
     return candidatos.find(Array.isArray) || [];
 }
 
-
 function obterNomeStatusRelatorioServicos(status) {
-    const nomes = {
-        pendente: "Pendente",
-        em_execucao: "Em execução",
-        concluida: "Concluída"
-    };
-
+    const nomes = { pendente: "Pendente", em_execucao: "Em execução", concluida: "Concluída" };
     const chave = normalizarStatusRelatorioServicos(status);
-
     return nomes[chave] || status || "-";
 }
 
-
 function obterNomeTipoRelatorioServicos(tipo) {
-    if (!tipo) {
-        return "-";
-    }
-
+    if (!tipo) return "-";
     const nomes = {
-        usinagem: "Usinagem",
-        torneamento: "Torneamento",
-        fresagem: "Fresagem",
-        corte: "Corte",
-        solda: "Solda",
-        outro: "Outro"
+        usinagem: "Usinagem", torneamento: "Torneamento", fresagem: "Fresagem",
+        corte: "Corte", solda: "Solda", outro: "Outro"
     };
-
     return nomes[categorizarTipoServicoOS(tipo)] || "Outro";
 }
 
-
 function obterClasseStatusRelatorioServicos(status) {
-    const classes = {
-        pendente: "pendente",
-        em_execucao: "em-execucao",
-        concluida: "concluida"
-    };
-
+    const classes = { pendente: "pendente", em_execucao: "em-execucao", concluida: "concluida" };
     return classes[normalizarStatusRelatorioServicos(status)] || "pendente";
 }
 
-
-// LIMPAR GRÁFICOS
-
 function limparGraficosRelatorioServicos() {
-
-    if (graficoServicosStatus) {
-        graficoServicosStatus.destroy();
-        graficoServicosStatus = null;
-    }
-
-    if (graficoServicosTipo) {
-        graficoServicosTipo.destroy();
-        graficoServicosTipo = null;
-    }
-
+    if (graficoServicosStatus) { graficoServicosStatus.destroy(); graficoServicosStatus = null; }
+    if (graficoServicosTipo) { graficoServicosTipo.destroy(); graficoServicosTipo = null; }
     graficosServicos.forEach(function (container) {
-
         container.innerHTML = `
             <div class="relatorio-sem-dados">
                 <ion-icon name="bar-chart-outline"></ion-icon>
                 <span>SEM DADOS PARA EXIBIR</span>
-                <small>
-                    Gere o relatório para visualizar os dados.
-                </small>
+                <small>Gere o relatório para visualizar os dados.</small>
             </div>
         `;
-
     });
 }
 
-
-// LIMPAR FILTROS
-
 function limparFiltrosRelatorioServicos() {
-
-    if (servicosDataInicio) {
-        servicosDataInicio.value = "";
-    }
-
-    if (servicosDataFim) {
-        servicosDataFim.value = "";
-    }
-
-    if (servicosStatus) {
-        servicosStatus.value = "";
-    }
-
+    if (servicosDataInicio) servicosDataInicio.value = "";
+    if (servicosDataFim) servicosDataFim.value = "";
+    if (servicosStatus) servicosStatus.value = "";
     if (indicadoresServicos.length >= 4) {
-
         indicadoresServicos[0].textContent = "0";
         indicadoresServicos[1].textContent = "0";
         indicadoresServicos[2].textContent = "0";
         indicadoresServicos[3].textContent = "R$ 0,00";
-
     }
-
-    if (registrosRelatorioServicos) {
-        registrosRelatorioServicos.textContent = "0 REGISTROS";
-    }
-
+    if (registrosRelatorioServicos) registrosRelatorioServicos.textContent = "0 REGISTROS";
     if (tabelaRelatorioServicos) {
-
         tabelaRelatorioServicos.innerHTML = `
             <tr>
                 <td class="relatorio-tabela-vazia" colspan="7">
                     <ion-icon name="document-text-outline"></ion-icon>
                     <span>NENHUM REGISTRO ENCONTRADO</span>
-                    <small>
-                        Defina os filtros e clique em GERAR RELATÓRIO.
-                    </small>
+                    <small>Defina os filtros e clique em GERAR RELATÓRIO.</small>
                 </td>
             </tr>
         `;
-
     }
-
     limparGraficosRelatorioServicos();
 }
 
-
-// RENDERIZAR INDICADORES
-
 function renderizarIndicadoresRelatorioServicos(dados) {
-
-    if (indicadoresServicos.length < 4) {
-        console.warn(
-            "[RELATÓRIO SERVIÇOS] Indicadores não encontrados corretamente."
-        );
-        return;
-    }
-
-    indicadoresServicos[0].textContent =
-        dados.totalOS ?? 0;
-
-    indicadoresServicos[1].textContent =
-        dados.emExecucao ?? 0;
-
-    indicadoresServicos[2].textContent =
-        dados.concluidas ?? 0;
-
-    indicadoresServicos[3].textContent =
-        formatarMoedaRelatorioServicos(dados.valorTotal);
-
+    if (indicadoresServicos.length < 4) return;
+    indicadoresServicos[0].textContent = dados.totalOS ?? 0;
+    indicadoresServicos[1].textContent = dados.emExecucao ?? 0;
+    indicadoresServicos[2].textContent = dados.concluidas ?? 0;
+    indicadoresServicos[3].textContent = formatarMoedaRelatorioServicos(dados.valorTotal);
 }
 
-
-// RENDERIZAR TABELA
-
 function renderizarTabelaRelatorioServicos(registros) {
-
-    if (!tabelaRelatorioServicos) {
-        return;
-    }
-
+    if (!tabelaRelatorioServicos) return;
     if (!Array.isArray(registros) || registros.length === 0) {
-
         tabelaRelatorioServicos.innerHTML = `
             <tr>
                 <td class="relatorio-tabela-vazia" colspan="7">
                     <ion-icon name="document-text-outline"></ion-icon>
                     <span>NENHUM REGISTRO ENCONTRADO</span>
-                    <small>
-                        Nenhuma ordem de serviço corresponde aos filtros.
-                    </small>
+                    <small>Nenhuma ordem de serviço corresponde aos filtros.</small>
                 </td>
             </tr>
         `;
-
         return;
     }
-
     tabelaRelatorioServicos.innerHTML = "";
-
     registros.forEach(function (registro) {
-
         const linha = document.createElement("tr");
-
-        const statusTexto =
-            obterNomeStatusRelatorioServicos(lerStatusRegistroRelatorioServicos(registro));
-
-        const statusClasse =
-            obterClasseStatusRelatorioServicos(lerStatusRegistroRelatorioServicos(registro));
-
+        const statusTexto = obterNomeStatusRelatorioServicos(lerStatusRegistroRelatorioServicos(registro));
+        const statusClasse = obterClasseStatusRelatorioServicos(lerStatusRegistroRelatorioServicos(registro));
         linha.innerHTML = `
-            <td>
-                <strong>
-                    ${escaparHtmlOS(registro.numeroOS || "-")}
-                </strong>
-            </td>
-
-            <td>
-                ${escaparHtmlOS(registro.cliente || "-")}
-            </td>
-
-            <td>
-                ${escaparHtmlOS(
-            obterNomeTipoRelatorioServicos(registro.tipoServico)
-        )}
-            </td>
-
-            <td>
-                ${escaparHtmlOS(registro.responsavel || "Não definido")}
-            </td>
-
-            <td>
-                ${formatarDataRelatorioServicos(registro.dataEntrega)}
-            </td>
-
-            <td>
-                <span class="relatorio-status ${statusClasse}">
-                    ${escaparHtmlOS(statusTexto)}
-                </span>
-            </td>
-
-            <td>
-                <strong>
-                    ${formatarMoedaRelatorioServicos(registro.valorTotal)}
-                </strong>
-            </td>
+            <td><strong>${escaparHtmlOS(registro.numeroOS || "-")}</strong></td>
+            <td>${escaparHtmlOS(registro.cliente || "-")}</td>
+            <td>${escaparHtmlOS(obterNomeTipoRelatorioServicos(registro.tipoServico))}</td>
+            <td>${escaparHtmlOS(registro.responsavel || "Não definido")}</td>
+            <td>${formatarDataRelatorioServicos(registro.dataEntrega)}</td>
+            <td><span class="relatorio-status ${statusClasse}">${escaparHtmlOS(statusTexto)}</span></td>
+            <td><strong>${formatarMoedaRelatorioServicos(registro.valorTotal)}</strong></td>
         `;
-
         tabelaRelatorioServicos.appendChild(linha);
-
     });
-
 }
 
-
-// CRIAR GRÁFICO DE STATUS
-
 function renderizarGraficoStatusRelatorioServicos(dados) {
-
     const container = graficosServicos[0];
-
-    if (!container) {
-        return;
-    }
-
-    if (graficoServicosStatus) {
-        graficoServicosStatus.destroy();
-        graficoServicosStatus = null;
-    }
+    if (!container) return;
+    if (graficoServicosStatus) { graficoServicosStatus.destroy(); graficoServicosStatus = null; }
 
     const registros = obterRegistrosRelatorioServicos(dados);
-
-    const contadores = {
-        pendente: 0,
-        em_execucao: 0,
-        concluida: 0
-    };
-
+    const contadores = { pendente: 0, em_execucao: 0, concluida: 0 };
     const naoReconhecidos = new Set();
 
     registros.forEach(function (registro) {
-
         const bruto = lerStatusRegistroRelatorioServicos(registro);
         const status = normalizarStatusRelatorioServicos(bruto);
-
-        if (status) {
-            contadores[status]++;
-        } else {
-            naoReconhecidos.add(JSON.stringify(bruto));
-        }
-
+        if (status) contadores[status]++;
+        else naoReconhecidos.add(JSON.stringify(bruto));
     });
 
     if (naoReconhecidos.size > 0) {
-        console.warn(
-            "[RELATÓRIO SERVIÇOS] Status não reconhecidos:",
-            Array.from(naoReconhecidos)
-        );
+        console.warn("[RELATÓRIO SERVIÇOS] Status não reconhecidos:", Array.from(naoReconhecidos));
     }
 
-    let total =
-        contadores.pendente +
-        contadores.em_execucao +
-        contadores.concluida;
-
-    // Plano B: usa os totais agregados enviados pela API
-
+    let total = contadores.pendente + contadores.em_execucao + contadores.concluida;
     if (total === 0 && !Array.isArray(dados)) {
-
         contadores.pendente = Number(dados?.pendentes ?? dados?.pendente ?? 0) || 0;
         contadores.em_execucao = Number(dados?.emExecucao ?? 0) || 0;
         contadores.concluida = Number(dados?.concluidas ?? dados?.concluida ?? 0) || 0;
-
-        total =
-            contadores.pendente +
-            contadores.em_execucao +
-            contadores.concluida;
+        total = contadores.pendente + contadores.em_execucao + contadores.concluida;
     }
 
     if (total === 0) {
-
         container.innerHTML = `
             <div class="relatorio-sem-dados">
                 <ion-icon name="bar-chart-outline"></ion-icon>
@@ -3926,633 +2803,238 @@ function renderizarGraficoStatusRelatorioServicos(dados) {
                 <small>Ajuste os filtros e gere o relatório novamente.</small>
             </div>
         `;
-
         return;
     }
 
-    // Wrapper com altura definida para o Chart.js dimensionar o canvas
-
     container.innerHTML = "";
-
     const wrapper = document.createElement("div");
     wrapper.style.position = "relative";
     wrapper.style.width = "100%";
     wrapper.style.height = "270px";
-
     const canvas = document.createElement("canvas");
-
     wrapper.appendChild(canvas);
     container.appendChild(wrapper);
 
     graficoServicosStatus = new Chart(canvas, {
-
         type: "doughnut",
-
         data: {
             labels: ["Pendente", "Em execução", "Concluída"],
-
-            datasets: [
-                {
-                    data: [
-                        contadores.pendente,
-                        contadores.em_execucao,
-                        contadores.concluida
-                    ],
-
-                    backgroundColor: [
-                        "#f5c400",
-                        "#1688ff",
-                        "#00a651"
-                    ],
-
-                    borderWidth: 0
-                }
-            ]
+            datasets: [{
+                data: [contadores.pendente, contadores.em_execucao, contadores.concluida],
+                backgroundColor: ["#f5c400", "#1688ff", "#00a651"],
+                borderWidth: 0
+            }]
         },
-
         options: {
-
             responsive: true,
-
             maintainAspectRatio: false,
-
             cutout: "68%",
-
             plugins: {
-
                 legend: {
                     position: "bottom",
-
                     labels: {
                         color: "#9aa4aa",
-
-                        font: {
-                            family: "'Share Tech Mono', monospace",
-                            size: 13
-                        },
-
+                        font: { family: "'Share Tech Mono', monospace", size: 13 },
                         padding: 18
                     }
                 },
-
                 tooltip: {
-
                     enabled: true,
-
                     displayColors: false,
-
                     callbacks: {
-
-                        title: function (tooltipItems) {
-                            return tooltipItems[0].label;
-                        },
-
-                        label: function (context) {
-                            return `Quantidade: ${context.raw}`;
-                        }
-
+                        title: items => items[0].label,
+                        label: context => `Quantidade: ${context.raw}`
                     }
-
                 }
-
             }
-
         }
-
     });
 }
-
-// CRIAR GRÁFICO DE TIPOS DE SERVIÇO
 
 function renderizarGraficoTipoRelatorioServicos(dados) {
-
-    if (!graficosServicos[1]) {
-        return;
-    }
-
-    if (graficoServicosTipo) {
-        graficoServicosTipo.destroy();
-        graficoServicosTipo = null;
-    }
+    if (!graficosServicos[1]) return;
+    if (graficoServicosTipo) { graficoServicosTipo.destroy(); graficoServicosTipo = null; }
 
     const canvas = document.createElement("canvas");
-
     graficosServicos[1].innerHTML = "";
-
     graficosServicos[1].appendChild(canvas);
 
-    // =========================================================
-    // PEGA AS OS DO RELATÓRIO
-    // =========================================================
-
-    const registros =
-        obterRegistrosRelatorioServicos(dados);
-
-    // =========================================================
-    // CONTADOR DOS TIPOS DE SERVIÇO
-    // =========================================================
-
+    const registros = obterRegistrosRelatorioServicos(dados);
     const contadores = {};
 
-    // =========================================================
-    // CONTA O TIPO DE SERVIÇO DE CADA OS
-    // =========================================================
-
     registros.forEach(function (registro) {
-
-        let tipo =
-            String(registro.tipoServico || "")
-                .trim();
-
-        if (!tipo) {
-            tipo = "outro";
-        }
-
-        // Normaliza apenas para evitar que
-        // "Torneamento", "torneamento" e " TORNEAMENTO "
-        // sejam tratados como categorias diferentes.
-
-        const chave =
-            tipo
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .toLowerCase()
-                .trim();
-
-        if (!contadores[chave]) {
-            contadores[chave] = 0;
-        }
-
+        let tipo = String(registro.tipoServico || "").trim();
+        if (!tipo) tipo = "outro";
+        const chave = tipo.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+        if (!contadores[chave]) contadores[chave] = 0;
         contadores[chave]++;
-
     });
 
-    // =========================================================
-    // ORDENA OS TIPOS
-    // =========================================================
-
-    const ordemTipos = [
-        "usinagem",
-        "torneamento",
-        "fresagem",
-        "corte",
-        "solda",
-        "outro"
-    ];
-
+    const ordemTipos = ["usinagem", "torneamento", "fresagem", "corte", "solda", "outro"];
     const tiposOrdenados = [];
-
-    ordemTipos.forEach(function (tipo) {
-
-        if (contadores[tipo] !== undefined) {
-            tiposOrdenados.push(tipo);
-        }
-
-    });
-
-    // Adiciona qualquer tipo que exista no banco
-    // mas não esteja na lista padrão.
-
-    Object.keys(contadores).forEach(function (tipo) {
-
-        if (!tiposOrdenados.includes(tipo)) {
-            tiposOrdenados.push(tipo);
-        }
-
-    });
-
-    // =========================================================
-    // NOMES EXIBIDOS NO GRÁFICO
-    // =========================================================
+    ordemTipos.forEach(t => { if (contadores[t] !== undefined) tiposOrdenados.push(t); });
+    Object.keys(contadores).forEach(t => { if (!tiposOrdenados.includes(t)) tiposOrdenados.push(t); });
 
     const nomesTipos = {
-
-        usinagem: "Usinagem",
-
-        torneamento: "Torneamento",
-
-        fresagem: "Fresagem",
-
-        corte: "Corte",
-
-        solda: "Solda",
-
-        outro: "Outro"
-
+        usinagem: "Usinagem", torneamento: "Torneamento", fresagem: "Fresagem",
+        corte: "Corte", solda: "Solda", outro: "Outro"
     };
-
-    const labels =
-        tiposOrdenados.map(function (tipo) {
-
-            return nomesTipos[tipo] || tipo;
-
-        });
-
-    const valores =
-        tiposOrdenados.map(function (tipo) {
-
-            return contadores[tipo];
-
-        });
-
-    // =========================================================
-    // CRIA O GRÁFICO
-    // =========================================================
+    const labels = tiposOrdenados.map(t => nomesTipos[t] || t);
+    const valores = tiposOrdenados.map(t => contadores[t]);
 
     graficoServicosTipo = new Chart(canvas, {
-
         type: "bar",
-
         data: {
-
-            labels: labels,
-
-            datasets: [
-                {
-                    data: valores,
-
-                    backgroundColor: [
-                        "#1688ff",
-                        "#00a651",
-                        "#f5c400",
-                        "#e4002b",
-                        "#9c27b0",
-                        "#6c757d"
-                    ],
-
-                    borderWidth: 0,
-                    borderRadius: 4,
-                    barThickness: 35
-                }
-            ]
-
+            labels,
+            datasets: [{
+                data: valores,
+                backgroundColor: ["#1688ff", "#00a651", "#f5c400", "#e4002b", "#9c27b0", "#6c757d"],
+                borderWidth: 0,
+                borderRadius: 4,
+                barThickness: 35
+            }]
         },
-
         options: {
-
             responsive: true,
-
             maintainAspectRatio: false,
-
             plugins: {
-
-                legend: {
-                    display: false
-                },
-
+                legend: { display: false },
                 tooltip: {
-
                     enabled: true,
-
                     displayColors: false,
-
                     callbacks: {
-
-                        title: function (tooltipItems) {
-                            return tooltipItems[0].label;
-                        },
-
-                        label: function (context) {
-                            return `Valor: ${context.raw}`;
-                        }
-
+                        title: items => items[0].label,
+                        label: context => `Valor: ${context.raw}`
                     }
-
                 }
-
             },
-
             scales: {
-
                 x: {
-
-                    ticks: {
-                        color: "#9aa4aa",
-
-                        font: {
-                            family: "'Share Tech Mono', monospace",
-                            size: 13
-                        }
-                    },
-
-                    grid: {
-                        display: false
-                    }
-
+                    ticks: { color: "#9aa4aa", font: { family: "'Share Tech Mono', monospace", size: 13 } },
+                    grid: { display: false }
                 },
-
                 y: {
-
                     beginAtZero: true,
-
-                    ticks: {
-                        color: "#9aa4aa",
-
-                        precision: 0,
-
-                        font: {
-                            family: "'Share Tech Mono', monospace",
-                            size: 13
-                        }
-                    },
-
-                    grid: {
-                        color: "rgba(154, 164, 170, 0.12)"
-                    }
+                    ticks: { color: "#9aa4aa", precision: 0, font: { family: "'Share Tech Mono', monospace", size: 13 } },
+                    grid: { color: "rgba(154, 164, 170, 0.12)" }
                 }
             }
         }
     });
 }
 
-// GERAR RELATÓRIO
-
 async function gerarRelatorioDeServicos() {
-
-    const dataInicio =
-        servicosDataInicio?.value || "";
-
-    const dataFim =
-        servicosDataFim?.value || "";
-
-    const status =
-        servicosStatus?.value || "";
+    const dataInicio = servicosDataInicio?.value || "";
+    const dataFim = servicosDataFim?.value || "";
+    const status = servicosStatus?.value || "";
 
     if (dataInicio && dataFim && dataInicio > dataFim) {
-
-        notificar(
-            "A data inicial não pode ser maior que a data final.",
-            "aviso"
-        );
-
+        notificar("A data inicial não pode ser maior que a data final.", "aviso");
         return;
     }
 
-    const parametros =
-        new URLSearchParams();
+    const parametros = new URLSearchParams();
+    if (dataInicio) parametros.append("dataInicio", dataInicio);
+    if (dataFim) parametros.append("dataFim", dataFim);
+    if (status) parametros.append("status", status);
 
-    if (dataInicio) {
-        parametros.append("dataInicio", dataInicio);
-    }
-
-    if (dataFim) {
-        parametros.append("dataFim", dataFim);
-    }
-
-    if (status) {
-        parametros.append("status", status);
-    }
-
-
-    const url =
-        `${API_URL}/relatorios/servicos` +
-        (parametros.toString()
-            ? `?${parametros.toString()}`
-            : "");
+    const url = `${API_URL}/relatorios/servicos` +
+        (parametros.toString() ? `?${parametros.toString()}` : "");
 
     if (gerarRelatorioServicos) {
-
         gerarRelatorioServicos.disabled = true;
-
-        gerarRelatorioServicos.textContent =
-            "CARREGANDO...";
+        gerarRelatorioServicos.textContent = "CARREGANDO...";
     }
-
 
     try {
-
-        console.log(
-            "[RELATÓRIO SERVIÇOS] Buscando:",
-            url
-        );
-
-
-        const resposta =
-            await fetch(url);
-
-
+        const resposta = await fetch(url);
         if (!resposta.ok) {
-
-            const mensagem =
-                await resposta.text();
-
-            throw new Error(
-                mensagem ||
-                `Erro HTTP: ${resposta.status}`
-            );
+            const mensagem = await resposta.text();
+            throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
         }
-
-
-        const dados =
-            await resposta.json();
-
-
-        console.log(
-            "[RELATÓRIO SERVIÇOS] Dados recebidos:",
-            dados
-        );
+        const dados = await resposta.json();
 
         renderizarIndicadoresRelatorioServicos(dados);
-
-        renderizarTabelaRelatorioServicos(
-            obterRegistrosRelatorioServicos(dados)
-        );
-
-        renderizarGraficoStatusRelatorioServicos(
-            dados
-        );
-
-        renderizarGraficoTipoRelatorioServicos(
-            dados
-        );
-
+        renderizarTabelaRelatorioServicos(obterRegistrosRelatorioServicos(dados));
+        renderizarGraficoStatusRelatorioServicos(dados);
+        renderizarGraficoTipoRelatorioServicos(dados);
 
         if (registrosRelatorioServicos) {
-
-            const quantidade =
-                obterRegistrosRelatorioServicos(dados).length;
-
-            registrosRelatorioServicos.textContent =
-                `${quantidade} REGISTRO${quantidade === 1 ? "" : "S"}`;
+            const quantidade = obterRegistrosRelatorioServicos(dados).length;
+            registrosRelatorioServicos.textContent = `${quantidade} REGISTRO${quantidade === 1 ? "" : "S"}`;
         }
 
-
-        notificar(
-            "Relatório de serviços gerado com sucesso!",
-            "sucesso"
-        );
-
-
+        notificar("Relatório de serviços gerado com sucesso!", "sucesso");
     } catch (erro) {
-
-        console.error(
-            "Erro ao gerar relatório de serviços:",
-            erro
-        );
-
-
-        notificar(
-            `Não foi possível gerar o relatório de serviços.\n\n${erro.message}`,
-            "erro"
-        );
-
+        console.error("Erro ao gerar relatório de serviços:", erro);
+        notificar(`Não foi possível gerar o relatório de serviços.\n\n${erro.message}`, "erro");
     } finally {
-
         if (gerarRelatorioServicos) {
-
             gerarRelatorioServicos.disabled = false;
-
-            gerarRelatorioServicos.textContent =
-                "GERAR RELATÓRIO";
+            gerarRelatorioServicos.textContent = "GERAR RELATÓRIO";
         }
-
     }
-
 }
 
-// EVENTOS
-
-if (limparFiltrosServicos) {
-
-    limparFiltrosServicos.addEventListener(
-        "click",
-        limparFiltrosRelatorioServicos
-    );
-
-}
-
-
-if (gerarRelatorioServicos) {
-
-    gerarRelatorioServicos.addEventListener(
-        "click",
-        gerarRelatorioDeServicos
-    );
-
-}
+if (limparFiltrosServicos) limparFiltrosServicos.addEventListener("click", limparFiltrosRelatorioServicos);
+if (gerarRelatorioServicos) gerarRelatorioServicos.addEventListener("click", gerarRelatorioDeServicos);
 
 // =========================================================
 // RELATÓRIO DE ESTOQUE
 // =========================================================
 
-// VARIÁVEIS DO RELATÓRIO
-
 let graficoEstoqueMovimentacao = null;
 let graficoEstoqueConsumo = null;
 
+const limparFiltrosEstoque = document.getElementById("limparFiltrosEstoque");
+const gerarRelatorioEstoque = document.getElementById("gerarRelatorioEstoque");
+const estoqueDataInicio = document.getElementById("estoqueDataInicio");
+const estoqueDataFim = document.getElementById("estoqueDataFim");
+const estoqueTipoMovimentacao = document.getElementById("estoqueTipoMovimentacao");
+const estoqueMaterial = document.getElementById("estoqueMaterial");
 
-// ELEMENTOS DO RELATÓRIO
-
-const limparFiltrosEstoque =
-    document.getElementById("limparFiltrosEstoque");
-
-const gerarRelatorioEstoque =
-    document.getElementById("gerarRelatorioEstoque");
-
-const estoqueDataInicio =
-    document.getElementById("estoqueDataInicio");
-
-const estoqueDataFim =
-    document.getElementById("estoqueDataFim");
-
-const estoqueTipoMovimentacao =
-    document.getElementById("estoqueTipoMovimentacao");
-
-const estoqueMaterial =
-    document.getElementById("estoqueMaterial");
-
-const secaoRelatorioEstoque =
-    document.getElementById("relatorio-estoque");
-
-const indicadoresEstoque =
-    secaoRelatorioEstoque
-        ? secaoRelatorioEstoque.querySelectorAll(".relatorio-indicador strong")
-        : [];
-
-const graficosEstoque =
-    secaoRelatorioEstoque
-        ? secaoRelatorioEstoque.querySelectorAll(".relatorio-grafico")
-        : [];
-
-const tabelaRelatorioEstoque =
-    document.getElementById("relatorio-estoqueTabela");
-
-const registrosRelatorioEstoque =
-    document.getElementById("relatorio-estoqueRegistros");
-
-
-// FORMATADORES
+const secaoRelatorioEstoque = document.getElementById("relatorio-estoque");
+const indicadoresEstoque = secaoRelatorioEstoque
+    ? secaoRelatorioEstoque.querySelectorAll(".relatorio-indicador strong")
+    : [];
+const graficosEstoque = secaoRelatorioEstoque
+    ? secaoRelatorioEstoque.querySelectorAll(".relatorio-grafico")
+    : [];
+const tabelaRelatorioEstoque = document.getElementById("relatorio-estoqueTabela");
+const registrosRelatorioEstoque = document.getElementById("relatorio-estoqueRegistros");
 
 function formatarQuantidadeRelatorioEstoque(valor) {
-    return new Intl.NumberFormat("pt-BR", {
-        maximumFractionDigits: 4
-    }).format(Number(valor) || 0);
+    return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 4 }).format(Number(valor) || 0);
 }
 
-
 function formatarDataHoraRelatorioEstoque(valor) {
-
-    if (!valor) {
-        return "-";
-    }
-
+    if (!valor) return "-";
     const data = new Date(valor);
-
-    if (Number.isNaN(data.getTime())) {
-        return "-";
-    }
-
+    if (Number.isNaN(data.getTime())) return "-";
     const dia = data.toLocaleDateString("pt-BR");
-
-    const hora = data.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit"
-    });
-
+    const hora = data.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
     return `${dia} ${hora}`;
 }
 
-
 function normalizarTipoRelatorioEstoque(tipo) {
-
-    const texto =
-        String(tipo ?? "")
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .toLowerCase()
-            .trim();
-
-    return texto === "entrada" || texto === "saida" || texto === "ajuste"
-        ? texto
-        : "";
+    const texto = String(tipo ?? "")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase().trim();
+    return texto === "entrada" || texto === "saida" || texto === "ajuste" ? texto : "";
 }
 
-
 function obterNomeTipoRelatorioEstoque(tipo) {
-
-    const nomes = {
-        entrada: "Entrada",
-        saida: "Saída",
-        ajuste: "Ajuste"
-    };
-
+    const nomes = { entrada: "Entrada", saida: "Saída", ajuste: "Ajuste" };
     return nomes[normalizarTipoRelatorioEstoque(tipo)] || "-";
 }
 
 function obterClasseTipoRelatorioEstoque(tipo) {
-
-    const classes = {
-        entrada: "concluida",
-        saida: "pendente"
-    };
-
+    const classes = { entrada: "concluida", saida: "pendente" };
     return classes[normalizarTipoRelatorioEstoque(tipo)] || "pendente";
 }
 
 function obterRegistrosRelatorioEstoque(dados) {
-    return Array.isArray(dados?.registros)
-        ? dados.registros
-        : [];
+    return Array.isArray(dados?.registros) ? dados.registros : [];
 }
 
 function htmlSemDadosRelatorioEstoque(mensagem) {
@@ -4565,477 +3047,240 @@ function htmlSemDadosRelatorioEstoque(mensagem) {
     `;
 }
 
-
-// SELECT DE MATERIAIS
-
 function preencherSelectMaterialRelatorioEstoque() {
-    if (!estoqueMaterial) {
-        return;
-    }
+    if (!estoqueMaterial) return;
     const selecionado = estoqueMaterial.value;
-    estoqueMaterial.innerHTML =
-        `<option value="">Todos os materiais</option>`;
+    estoqueMaterial.innerHTML = `<option value="">Todos os materiais</option>`;
     [...materiais]
-        .sort(function (a, b) {
-            return String(a.nome).localeCompare(String(b.nome), "pt-BR");
-        })
+        .sort((a, b) => String(a.nome).localeCompare(String(b.nome), "pt-BR"))
         .forEach(function (material) {
             const opcao = document.createElement("option");
             opcao.value = material.id;
             opcao.textContent = `${material.codigo} - ${material.nome}`;
-
             estoqueMaterial.appendChild(opcao);
         });
     estoqueMaterial.value = selecionado;
 }
 
-
-// LIMPAR
-
 function limparGraficosRelatorioEstoque() {
-
-    if (graficoEstoqueMovimentacao) {
-        graficoEstoqueMovimentacao.destroy();
-        graficoEstoqueMovimentacao = null;
-    }
-
-    if (graficoEstoqueConsumo) {
-        graficoEstoqueConsumo.destroy();
-        graficoEstoqueConsumo = null;
-    }
-
+    if (graficoEstoqueMovimentacao) { graficoEstoqueMovimentacao.destroy(); graficoEstoqueMovimentacao = null; }
+    if (graficoEstoqueConsumo) { graficoEstoqueConsumo.destroy(); graficoEstoqueConsumo = null; }
     graficosEstoque.forEach(function (container) {
-
-        container.innerHTML = htmlSemDadosRelatorioEstoque(
-            "Gere o relatório para visualizar os dados."
-        );
-
+        container.innerHTML = htmlSemDadosRelatorioEstoque("Gere o relatório para visualizar os dados.");
     });
 }
 
-
 function limparFiltrosRelatorioEstoque() {
-
-    if (estoqueDataInicio) {
-        estoqueDataInicio.value = "";
-    }
-
-    if (estoqueDataFim) {
-        estoqueDataFim.value = "";
-    }
-
-    if (estoqueTipoMovimentacao) {
-        estoqueTipoMovimentacao.value = "";
-    }
-
-    if (estoqueMaterial) {
-        estoqueMaterial.value = "";
-    }
-
-    indicadoresEstoque.forEach(function (indicador) {
-        indicador.textContent = "0";
-    });
-
-    if (registrosRelatorioEstoque) {
-        registrosRelatorioEstoque.textContent = "0 REGISTROS";
-    }
-
+    if (estoqueDataInicio) estoqueDataInicio.value = "";
+    if (estoqueDataFim) estoqueDataFim.value = "";
+    if (estoqueTipoMovimentacao) estoqueTipoMovimentacao.value = "";
+    if (estoqueMaterial) estoqueMaterial.value = "";
+    indicadoresEstoque.forEach(i => i.textContent = "0");
+    if (registrosRelatorioEstoque) registrosRelatorioEstoque.textContent = "0 REGISTROS";
     if (tabelaRelatorioEstoque) {
-
         tabelaRelatorioEstoque.innerHTML = `
             <tr>
                 <td class="relatorio-tabela-vazia" colspan="7">
                     <ion-icon name="document-text-outline"></ion-icon>
                     <span>NENHUM REGISTRO ENCONTRADO</span>
-                    <small>
-                        Defina os filtros e clique em GERAR RELATÓRIO.
-                    </small>
+                    <small>Defina os filtros e clique em GERAR RELATÓRIO.</small>
                 </td>
             </tr>
         `;
-
     }
-
     limparGraficosRelatorioEstoque();
 }
 
-
-// INDICADORES
-
 function renderizarIndicadoresRelatorioEstoque(dados) {
-
-    if (indicadoresEstoque.length < 4) {
-        console.warn(
-            "[RELATÓRIO ESTOQUE] Indicadores não encontrados corretamente."
-        );
-        return;
-    }
-
-    indicadoresEstoque[0].textContent =
-        dados.totalMateriais ?? 0;
-
-    indicadoresEstoque[1].textContent =
-        formatarQuantidadeRelatorioEstoque(dados.totalEntradas);
-
-    indicadoresEstoque[2].textContent =
-        formatarQuantidadeRelatorioEstoque(dados.totalSaidas);
-
-    indicadoresEstoque[3].textContent =
-        dados.abaixoDoMinimo ?? 0;
+    if (indicadoresEstoque.length < 4) return;
+    indicadoresEstoque[0].textContent = dados.totalMateriais ?? 0;
+    indicadoresEstoque[1].textContent = formatarQuantidadeRelatorioEstoque(dados.totalEntradas);
+    indicadoresEstoque[2].textContent = formatarQuantidadeRelatorioEstoque(dados.totalSaidas);
+    indicadoresEstoque[3].textContent = dados.abaixoDoMinimo ?? 0;
 }
 
-
-// TABELA
-
 function renderizarTabelaRelatorioEstoque(registros) {
-
-    if (!tabelaRelatorioEstoque) {
-        return;
-    }
-
+    if (!tabelaRelatorioEstoque) return;
     if (!Array.isArray(registros) || registros.length === 0) {
-
         tabelaRelatorioEstoque.innerHTML = `
             <tr>
                 <td class="relatorio-tabela-vazia" colspan="7">
                     <ion-icon name="document-text-outline"></ion-icon>
                     <span>NENHUM REGISTRO ENCONTRADO</span>
-                    <small>
-                        Nenhuma movimentação corresponde aos filtros.
-                    </small>
+                    <small>Nenhuma movimentação corresponde aos filtros.</small>
                 </td>
             </tr>
         `;
-
         return;
     }
-
     tabelaRelatorioEstoque.innerHTML = "";
-
     registros.forEach(function (registro) {
-
         const linha = document.createElement("tr");
-
         linha.innerHTML = `
-            <td>
-                ${formatarDataHoraRelatorioEstoque(registro.data)}
-            </td>
-
-            <td>
-                <strong>
-                    ${escaparHtmlOS(registro.material || "-")}
-                </strong>
-            </td>
-
-            <td>
-                ${escaparHtmlOS(registro.lote || "-")}
-            </td>
-
-            <td>
-                <span class="relatorio-status ${obterClasseTipoRelatorioEstoque(registro.tipo)}">
-                    ${obterNomeTipoRelatorioEstoque(registro.tipo)}
-                </span>
-            </td>
-
-            <td>
-                ${formatarQuantidadeRelatorioEstoque(registro.quantidade)}
-                ${escaparHtmlOS(registro.unidade || "")}
-            </td>
-
-            <td>
-                ${formatarMoedaRelatorioServicos(registro.custoUnitario)}
-            </td>
-
-            <td>
-                <strong>
-                    ${formatarMoedaRelatorioServicos(registro.total)}
-                </strong>
-            </td>
+            <td>${formatarDataHoraRelatorioEstoque(registro.data)}</td>
+            <td><strong>${escaparHtmlOS(registro.material || "-")}</strong></td>
+            <td>${escaparHtmlOS(registro.lote || "-")}</td>
+            <td><span class="relatorio-status ${obterClasseTipoRelatorioEstoque(registro.tipo)}">${obterNomeTipoRelatorioEstoque(registro.tipo)}</span></td>
+            <td>${formatarQuantidadeRelatorioEstoque(registro.quantidade)} ${escaparHtmlOS(registro.unidade || "")}</td>
+            <td>${formatarMoedaRelatorioServicos(registro.custoUnitario)}</td>
+            <td><strong>${formatarMoedaRelatorioServicos(registro.total)}</strong></td>
         `;
-
         tabelaRelatorioEstoque.appendChild(linha);
-
     });
 }
-
-
-// GRÁFICOS ESTOQUE
 
 const FONTE_GRAFICO_RELATORIO_ESTOQUE = {
     family: "'Share Tech Mono', monospace",
     size: 13
 };
 
-
 function criarCanvasGraficoRelatorioEstoque(container) {
-
     container.innerHTML = "";
-
     const wrapper = document.createElement("div");
-
     wrapper.style.position = "relative";
     wrapper.style.width = "100%";
     wrapper.style.height = "270px";
-
     const canvas = document.createElement("canvas");
-
     wrapper.appendChild(canvas);
     container.appendChild(wrapper);
-
     return canvas;
 }
 
-
-// ENTRADAS x SAÍDAS NO PERÍODO
-
 function renderizarGraficoMovimentacaoRelatorioEstoque(dados) {
-
     const container = graficosEstoque[0];
+    if (!container) return;
+    if (graficoEstoqueMovimentacao) { graficoEstoqueMovimentacao.destroy(); graficoEstoqueMovimentacao = null; }
 
-    if (!container) {
-        return;
-    }
-
-    if (graficoEstoqueMovimentacao) {
-        graficoEstoqueMovimentacao.destroy();
-        graficoEstoqueMovimentacao = null;
-    }
-
-    const periodos = Array.isArray(dados?.porPeriodo)
-        ? dados.porPeriodo
-        : [];
-
+    const periodos = Array.isArray(dados?.porPeriodo) ? dados.porPeriodo : [];
     if (periodos.length === 0) {
-
-        container.innerHTML = htmlSemDadosRelatorioEstoque(
-            "Nenhuma movimentação encontrada no período."
-        );
-
+        container.innerHTML = htmlSemDadosRelatorioEstoque("Nenhuma movimentação encontrada no período.");
         return;
     }
 
     const canvas = criarCanvasGraficoRelatorioEstoque(container);
-
     graficoEstoqueMovimentacao = new Chart(canvas, {
-
         type: "bar",
-
         data: {
-
-            labels: periodos.map(function (p) {
-                return p.periodo;
-            }),
-
+            labels: periodos.map(p => p.periodo),
             datasets: [
                 {
                     label: "Entradas",
-                    data: periodos.map(function (p) {
-                        return p.entradas;
-                    }),
+                    data: periodos.map(p => p.entradas),
                     backgroundColor: "#00a651",
                     borderWidth: 0,
                     borderRadius: 4
                 },
                 {
                     label: "Saídas",
-                    data: periodos.map(function (p) {
-                        return p.saidas;
-                    }),
+                    data: periodos.map(p => p.saidas),
                     backgroundColor: "#e4002b",
                     borderWidth: 0,
                     borderRadius: 4
                 }
             ]
         },
-
         options: {
-
             responsive: true,
-
             maintainAspectRatio: false,
-
             plugins: {
-
                 legend: {
                     position: "bottom",
-                    labels: {
-                        color: "#9aa4aa",
-                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE,
-                        padding: 18
-                    }
+                    labels: { color: "#9aa4aa", font: FONTE_GRAFICO_RELATORIO_ESTOQUE, padding: 18 }
                 },
-
                 tooltip: {
                     enabled: true,
                     callbacks: {
-                        label: function (context) {
-                            return `${context.dataset.label}: ${formatarQuantidadeRelatorioEstoque(context.raw)}`;
-                        }
+                        label: context => `${context.dataset.label}: ${formatarQuantidadeRelatorioEstoque(context.raw)}`
                     }
                 }
             },
-
             scales: {
-
                 x: {
-                    ticks: {
-                        color: "#9aa4aa",
-                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE
-                    },
-                    grid: {
-                        display: false
-                    }
+                    ticks: { color: "#9aa4aa", font: FONTE_GRAFICO_RELATORIO_ESTOQUE },
+                    grid: { display: false }
                 },
-
                 y: {
                     beginAtZero: true,
-                    ticks: {
-                        color: "#9aa4aa",
-                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE
-                    },
-                    grid: {
-                        color: "rgba(154, 164, 170, 0.12)"
-                    }
+                    ticks: { color: "#9aa4aa", font: FONTE_GRAFICO_RELATORIO_ESTOQUE },
+                    grid: { color: "rgba(154, 164, 170, 0.12)" }
                 }
             }
         }
     });
 }
 
-
-// CONSUMO POR MATERIAL
-
 function renderizarGraficoConsumoRelatorioEstoque(dados) {
     const container = graficosEstoque[1];
-    if (!container) {
-        return;
-    }
-    if (graficoEstoqueConsumo) {
-        graficoEstoqueConsumo.destroy();
-        graficoEstoqueConsumo = null;
-    }
-    const consumo = Array.isArray(dados?.consumoPorMaterial)
-        ? dados.consumoPorMaterial
-        : [];
+    if (!container) return;
+    if (graficoEstoqueConsumo) { graficoEstoqueConsumo.destroy(); graficoEstoqueConsumo = null; }
 
+    const consumo = Array.isArray(dados?.consumoPorMaterial) ? dados.consumoPorMaterial : [];
     if (consumo.length === 0) {
-        container.innerHTML = htmlSemDadosRelatorioEstoque(
-            "Nenhuma saída de material encontrada no período."
-        );
-
+        container.innerHTML = htmlSemDadosRelatorioEstoque("Nenhuma saída de material encontrada no período.");
         return;
     }
+
     const canvas = criarCanvasGraficoRelatorioEstoque(container);
     graficoEstoqueConsumo = new Chart(canvas, {
         type: "bar",
         data: {
-            labels: consumo.map(function (c) {
-                return c.unidade
-                    ? `${c.material} (${c.unidade})`
-                    : c.material;
-            }),
-            datasets: [
-                {
-                    data: consumo.map(function (c) {
-                        return c.quantidade;
-                    }),
-                    backgroundColor: "#f5c400",
-                    borderWidth: 0,
-                    borderRadius: 4,
-                    barThickness: 22
-                }
-            ]
+            labels: consumo.map(c => c.unidade ? `${c.material} (${c.unidade})` : c.material),
+            datasets: [{
+                data: consumo.map(c => c.quantidade),
+                backgroundColor: "#f5c400",
+                borderWidth: 0,
+                borderRadius: 4,
+                barThickness: 22
+            }]
         },
-
         options: {
             indexAxis: "y",
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false
-                },
-
+                legend: { display: false },
                 tooltip: {
                     enabled: true,
                     displayColors: false,
                     callbacks: {
-                        label: function (context) {
-                            return `Consumo: ${formatarQuantidadeRelatorioEstoque(context.raw)}`;
-                        }
+                        label: context => `Consumo: ${formatarQuantidadeRelatorioEstoque(context.raw)}`
                     }
                 }
             },
-
             scales: {
-
                 x: {
                     beginAtZero: true,
-                    ticks: {
-                        color: "#9aa4aa",
-                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE
-                    },
-                    grid: {
-                        color: "rgba(154, 164, 170, 0.12)"
-                    }
+                    ticks: { color: "#9aa4aa", font: FONTE_GRAFICO_RELATORIO_ESTOQUE },
+                    grid: { color: "rgba(154, 164, 170, 0.12)" }
                 },
-
                 y: {
-                    ticks: {
-                        color: "#9aa4aa",
-                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE
-                    },
-                    grid: {
-                        display: false
-                    }
+                    ticks: { color: "#9aa4aa", font: FONTE_GRAFICO_RELATORIO_ESTOQUE },
+                    grid: { display: false }
                 }
             }
         }
     });
 }
 
-// GERAR RELATÓRIO ESTOQUE
-
 async function gerarRelatorioDeEstoque() {
-
     const dataInicio = estoqueDataInicio?.value || "";
     const dataFim = estoqueDataFim?.value || "";
     const tipo = estoqueTipoMovimentacao?.value || "";
     const materialId = estoqueMaterial?.value || "";
 
     if (dataInicio && dataFim && dataInicio > dataFim) {
-
-        notificar(
-            "A data inicial não pode ser maior que a data final.",
-            "aviso"
-        );
-
+        notificar("A data inicial não pode ser maior que a data final.", "aviso");
         return;
     }
 
     const parametros = new URLSearchParams();
+    if (dataInicio) parametros.append("dataInicio", dataInicio);
+    if (dataFim) parametros.append("dataFim", dataFim);
+    if (tipo) parametros.append("tipo", tipo);
+    if (materialId) parametros.append("materialId", materialId);
 
-    if (dataInicio) {
-        parametros.append("dataInicio", dataInicio);
-    }
-
-    if (dataFim) {
-        parametros.append("dataFim", dataFim);
-    }
-
-    if (tipo) {
-        parametros.append("tipo", tipo);
-    }
-
-    if (materialId) {
-        parametros.append("materialId", materialId);
-    }
-
-    const url =
-        `${API_URL}/relatorios/estoque` +
-        (parametros.toString()
-            ? `?${parametros.toString()}`
-            : "");
+    const url = `${API_URL}/relatorios/estoque` +
+        (parametros.toString() ? `?${parametros.toString()}` : "");
 
     if (gerarRelatorioEstoque) {
         gerarRelatorioEstoque.disabled = true;
@@ -5043,82 +3288,41 @@ async function gerarRelatorioDeEstoque() {
     }
 
     try {
-
-        console.log("[RELATÓRIO ESTOQUE] Buscando:", url);
-
         const resposta = await fetch(url);
-
         if (!resposta.ok) {
-
             const mensagem = await resposta.text();
-
-            throw new Error(
-                mensagem || `Erro HTTP: ${resposta.status}`
-            );
+            throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
         }
-
         const dados = await resposta.json();
-
-        console.log("[RELATÓRIO ESTOQUE] Dados recebidos:", dados);
-
         const registros = obterRegistrosRelatorioEstoque(dados);
 
         renderizarIndicadoresRelatorioEstoque(dados);
-
         renderizarTabelaRelatorioEstoque(registros);
-
         renderizarGraficoMovimentacaoRelatorioEstoque(dados);
-
         renderizarGraficoConsumoRelatorioEstoque(dados);
 
         if (registrosRelatorioEstoque) {
             registrosRelatorioEstoque.textContent =
                 `${registros.length} REGISTRO${registros.length === 1 ? "" : "S"}`;
         }
-
-        notificar(
-            "Relatório de estoque gerado com sucesso!",
-            "sucesso"
-        );
-
+        notificar("Relatório de estoque gerado com sucesso!", "sucesso");
     } catch (erro) {
-
         console.error("Erro ao gerar relatório de estoque:", erro);
-
-        notificar(
-            `Não foi possível gerar o relatório de estoque.\n\n${erro.message}`,
-            "erro"
-        );
-
+        notificar(`Não foi possível gerar o relatório de estoque.\n\n${erro.message}`, "erro");
     } finally {
-
         if (gerarRelatorioEstoque) {
             gerarRelatorioEstoque.disabled = false;
             gerarRelatorioEstoque.textContent = "GERAR RELATÓRIO";
         }
-
     }
 }
 
-// EVENTOS ESTOQUE
+if (limparFiltrosEstoque) limparFiltrosEstoque.addEventListener("click", limparFiltrosRelatorioEstoque);
+if (gerarRelatorioEstoque) gerarRelatorioEstoque.addEventListener("click", gerarRelatorioDeEstoque);
 
-if (limparFiltrosEstoque) {
-
-    limparFiltrosEstoque.addEventListener(
-        "click",
-        limparFiltrosRelatorioEstoque
-    );
-
-}
-
-if (gerarRelatorioEstoque) {
-    gerarRelatorioEstoque.addEventListener(
-        "click",
-        gerarRelatorioDeEstoque
-    );
-}
-
-// CONTROLE DO MODAL DE CONFIRMAÇÃO
+// =========================================================
+// MODAL DE CONFIRMAÇÃO DE EXCLUSÃO
+// =========================================================
 
 const modalConfirmacaoExclusao = document.getElementById("modalConfirmacaoExclusao");
 const nomeMaterialExclusao = document.getElementById("nomeMaterialExclusao");
@@ -5168,55 +3372,32 @@ function fecharConfirmacaoExclusao(resultado) {
     }
 }
 
-btnConfirmarExclusao.addEventListener("click", () => {
-    fecharConfirmacaoExclusao(true);
-});
-
-btnCancelarExclusao.addEventListener("click", () => {
-    fecharConfirmacaoExclusao(false);
-});
-
-btnFecharConfirmacao.addEventListener("click", () => {
-    fecharConfirmacaoExclusao(false);
-});
-
-modalConfirmacaoExclusao.addEventListener("click", (event) => {
-    if (event.target === modalConfirmacaoExclusao) {
-        fecharConfirmacaoExclusao(false);
-    }
-});
-
+if (btnConfirmarExclusao) btnConfirmarExclusao.addEventListener("click", () => fecharConfirmacaoExclusao(true));
+if (btnCancelarExclusao) btnCancelarExclusao.addEventListener("click", () => fecharConfirmacaoExclusao(false));
+if (btnFecharConfirmacao) btnFecharConfirmacao.addEventListener("click", () => fecharConfirmacaoExclusao(false));
+if (modalConfirmacaoExclusao) {
+    modalConfirmacaoExclusao.addEventListener("click", (event) => {
+        if (event.target === modalConfirmacaoExclusao) fecharConfirmacaoExclusao(false);
+    });
+}
 document.addEventListener("keydown", (event) => {
-    if (
-        event.key === "Escape" &&
-        modalConfirmacaoExclusao.classList.contains("ativo")
-    ) {
+    if (event.key === "Escape" && modalConfirmacaoExclusao?.classList.contains("ativo")) {
         fecharConfirmacaoExclusao(false);
     }
 });
 
-const limparFiltrosFinanceiro =
-    document.getElementById("limparFiltrosFinanceiro");
+// =========================================================
+// RELATÓRIO FINANCEIRO
+// =========================================================
 
-const gerarRelatorioFinanceiro =
-    document.getElementById("gerarRelatorioFinanceiro");
+const limparFiltrosFinanceiro = document.getElementById("limparFiltrosFinanceiro");
+const gerarRelatorioFinanceiro = document.getElementById("gerarRelatorioFinanceiro");
+const financeiroDataInicio = document.getElementById("financeiroDataInicio");
+const financeiroDataFim = document.getElementById("financeiroDataFim");
+const financeiroTipo = document.getElementById("financeiroTipo");
+const financeiroStatus = document.getElementById("financeiroStatus");
+const financeiroPagamento = document.getElementById("financeiroPagamento");
 
-const financeiroDataInicio =
-    document.getElementById("financeiroDataInicio");
-
-const financeiroDataFim =
-    document.getElementById("financeiroDataFim");
-
-const financeiroTipo =
-    document.getElementById("financeiroTipo");
-
-const financeiroStatus =
-    document.getElementById("financeiroStatus");
-
-const financeiroPagamento =
-    document.getElementById("financeiroPagamento");
-
-// Elementos novos (ids que você precisa adicionar no index.html)
 const financeiroReceitasEl = document.getElementById("finReceitas");
 const financeiroDespesasEl = document.getElementById("finDespesas");
 const financeiroSaldoEl = document.getElementById("finSaldo");
@@ -5229,199 +3410,89 @@ const financeiroGraficoPagamentoEl = document.getElementById("finGraficoPagament
 let graficoFinanceiroResultado = null;
 let graficoFinanceiroPagamento = null;
 
-
-// =========================================================
-// AUXILIARES
-// =========================================================
-
 function chaveFinanceira(valor) {
     return String(valor ?? "").trim().toLowerCase();
 }
 
-// yyyy-MM-dd sem passar por new Date() (evita voltar um dia por causa do fuso)
 function dataFinanceiraISO(valor) {
     const m = String(valor ?? "").match(/^(\d{4})-(\d{2})-(\d{2})/);
     return m ? `${m[1]}-${m[2]}-${m[3]}` : "";
 }
 
-function corCssFinanceiro(variavel, reserva) {
-    return getComputedStyle(document.documentElement)
-        .getPropertyValue(variavel)
-        .trim() || reserva;
-}
-
-
-// =========================================================
-// MONTAGEM DOS LANÇAMENTOS
-// Cada lançamento: { data, descricao, tipo, pagamento, status, valor }
-// =========================================================
-
 function montarReceitasFinanceiro(ordens) {
-
     return ordens.map(function (os) {
-
         const concluida = chaveFinanceira(os.status) === "concluida";
-
-        const numero =
-            lerCampoOS(os, ["numeroOS", "numeroOs", "numero"]) || "OS";
-
-        const cliente =
-            lerCampoOS(os, ["cliente", "clienteNome"]) || "Cliente não informado";
-
-        // Concluída usa a data da baixa; as demais usam a entrega prevista
+        const numero = lerCampoOS(os, ["numeroOS", "numeroOs", "numero"]) || "OS";
+        const cliente = lerCampoOS(os, ["cliente", "clienteNome"]) || "Cliente não informado";
         const data =
             (concluida ? dataFinanceiraISO(os.dataConclusao) : "") ||
             dataFinanceiraISO(os.dataEntrega) ||
             dataFinanceiraISO(os.dataAbertura);
-
         return {
-            data: data,
+            data,
             descricao: `${numero} — ${cliente}`,
             tipo: "receita",
             pagamento: categorizarCondicaoPagamentoOS(os.condicaoPagamento),
             status: concluida ? "pago" : "pendente",
             valor: Number(calcularTotalOS(os)) || 0
         };
-
     });
-
 }
 
 function montarDespesasFinanceiro(registrosEstoque) {
-
     return registrosEstoque
-        .filter(function (r) {
-            return normalizarTipoRelatorioEstoque(r.tipo) === "entrada";
-        })
+        .filter(r => normalizarTipoRelatorioEstoque(r.tipo) === "entrada")
         .map(function (r) {
-
             const quantidade = Number(r.quantidade) || 0;
             const custoUnitario = Number(r.custoUnitario) || 0;
-
             return {
                 data: dataFinanceiraISO(r.data),
-                descricao:
-                    `Compra de ${r.material || "material"}` +
-                    (r.lote ? ` · Lote ${r.lote}` : ""),
+                descricao: `Compra de ${r.material || "material"}` + (r.lote ? ` · Lote ${r.lote}` : ""),
                 tipo: "despesa",
                 pagamento: "",
                 status: "pago",
                 valor: quantidade * custoUnitario
             };
-
         });
-
 }
 
-
-// =========================================================
-// FILTROS E CÁLCULOS
-// =========================================================
-
 function filtrarLancamentosFinanceiro(lancamentos, filtros) {
-
     return lancamentos.filter(function (l) {
-
-        if (filtros.dataInicio && (!l.data || l.data < filtros.dataInicio)) {
-            return false;
-        }
-
-        if (filtros.dataFim && (!l.data || l.data > filtros.dataFim)) {
-            return false;
-        }
-
-        if (filtros.tipo && l.tipo !== filtros.tipo) {
-            return false;
-        }
-
-        if (filtros.status && l.status !== filtros.status) {
-            return false;
-        }
-
-        // Despesas de material não têm forma de pagamento,
-        // então saem quando esse filtro está ativo
+        if (filtros.dataInicio && (!l.data || l.data < filtros.dataInicio)) return false;
+        if (filtros.dataFim && (!l.data || l.data > filtros.dataFim)) return false;
+        if (filtros.tipo && l.tipo !== filtros.tipo) return false;
+        if (filtros.status && l.status !== filtros.status) return false;
         if (filtros.pagamento &&
-            normalizarChaveOS(l.pagamento) !== normalizarChaveOS(filtros.pagamento)) {
-            return false;
-        }
-
+            normalizarChaveOS(l.pagamento) !== normalizarChaveOS(filtros.pagamento)) return false;
         return true;
-
     });
-
 }
 
 function calcularResumoFinanceiro(lancamentos) {
-
     function somar(condicao) {
-        return lancamentos
-            .filter(condicao)
-            .reduce(function (total, l) { return total + l.valor; }, 0);
+        return lancamentos.filter(condicao).reduce((total, l) => total + l.valor, 0);
     }
-
-    const receitas = somar(function (l) {
-        return l.tipo === "receita" && l.status === "pago";
-    });
-
-    const aReceber = somar(function (l) {
-        return l.tipo === "receita" && l.status === "pendente";
-    });
-
-    const despesas = somar(function (l) {
-        return l.tipo === "despesa";
-    });
-
-    return {
-        receitas: receitas,
-        aReceber: aReceber,
-        despesas: despesas,
-        saldo: receitas - despesas
-    };
-
+    const receitas = somar(l => l.tipo === "receita" && l.status === "pago");
+    const aReceber = somar(l => l.tipo === "receita" && l.status === "pendente");
+    const despesas = somar(l => l.tipo === "despesa");
+    return { receitas, aReceber, despesas, saldo: receitas - despesas };
 }
 
-
-// =========================================================
-// RENDERIZAÇÃO
-// =========================================================
-
 function renderizarIndicadoresFinanceiro(resumo) {
-
-    if (financeiroReceitasEl) {
-        financeiroReceitasEl.textContent =
-            formatarMoedaRelatorioServicos(resumo.receitas);
-    }
-
-    if (financeiroDespesasEl) {
-        financeiroDespesasEl.textContent =
-            formatarMoedaRelatorioServicos(resumo.despesas);
-    }
-
-    if (financeiroSaldoEl) {
-        financeiroSaldoEl.textContent =
-            formatarMoedaRelatorioServicos(resumo.saldo);
-    }
-
-    if (financeiroAReceberEl) {
-        financeiroAReceberEl.textContent =
-            formatarMoedaRelatorioServicos(resumo.aReceber);
-    }
-
+    if (financeiroReceitasEl) financeiroReceitasEl.textContent = formatarMoedaRelatorioServicos(resumo.receitas);
+    if (financeiroDespesasEl) financeiroDespesasEl.textContent = formatarMoedaRelatorioServicos(resumo.despesas);
+    if (financeiroSaldoEl) financeiroSaldoEl.textContent = formatarMoedaRelatorioServicos(resumo.saldo);
+    if (financeiroAReceberEl) financeiroAReceberEl.textContent = formatarMoedaRelatorioServicos(resumo.aReceber);
 }
 
 function renderizarTabelaFinanceiro(lancamentos) {
-
     if (financeiroRegistrosEl) {
         financeiroRegistrosEl.textContent =
             `${lancamentos.length} REGISTRO${lancamentos.length === 1 ? "" : "S"}`;
     }
-
-    if (!financeiroTabelaEl) {
-        return;
-    }
+    if (!financeiroTabelaEl) return;
 
     if (lancamentos.length === 0) {
-
         financeiroTabelaEl.innerHTML = `
             <tr>
                 <td class="relatorio-tabela-vazia" colspan="6">
@@ -5431,81 +3502,38 @@ function renderizarTabelaFinanceiro(lancamentos) {
                 </td>
             </tr>
         `;
-
         return;
-
     }
 
-    const ordenados = lancamentos.slice().sort(function (a, b) {
-        return String(b.data).localeCompare(String(a.data));
-    });
-
+    const ordenados = lancamentos.slice().sort((a, b) => String(b.data).localeCompare(String(a.data)));
     financeiroTabelaEl.innerHTML = "";
-
     ordenados.forEach(function (l) {
-
         const linha = document.createElement("tr");
-
         const sinal = l.tipo === "despesa" ? "- " : "+ ";
-
         linha.innerHTML = `
             <td>${formatarDataRelatorioServicos(l.data)}</td>
             <td><strong>${escaparHtmlOS(l.descricao)}</strong></td>
             <td>${l.tipo === "receita" ? "Receita" : "Despesa"}</td>
             <td>${l.pagamento ? escaparHtmlOS(obterCondicaoPagamentoOS(l.pagamento)) : "-"}</td>
-            <td>
-                <span class="relatorio-status ${l.status === "pago" ? "concluida" : "pendente"}">
-                    ${l.status === "pago" ? "Pago" : "Pendente"}
-                </span>
-            </td>
+            <td><span class="relatorio-status ${l.status === "pago" ? "concluida" : "pendente"}">${l.status === "pago" ? "Pago" : "Pendente"}</span></td>
             <td><strong>${sinal}${formatarMoedaRelatorioServicos(l.valor)}</strong></td>
         `;
-
         financeiroTabelaEl.appendChild(linha);
-
     });
-
 }
 
 function limparGraficosFinanceiro() {
-
-    if (graficoFinanceiroResultado) {
-        graficoFinanceiroResultado.destroy();
-        graficoFinanceiroResultado = null;
-    }
-
-    if (graficoFinanceiroPagamento) {
-        graficoFinanceiroPagamento.destroy();
-        graficoFinanceiroPagamento = null;
-    }
-
+    if (graficoFinanceiroResultado) { graficoFinanceiroResultado.destroy(); graficoFinanceiroResultado = null; }
+    if (graficoFinanceiroPagamento) { graficoFinanceiroPagamento.destroy(); graficoFinanceiroPagamento = null; }
 }
 
-const CORES_GRAFICO_FINANCEIRO = {
-    receita: "#00a651",
-    aReceber: "#f5c400",
-    despesa: "#e4002b"
-};
-
-const PALETA_GRAFICO_FINANCEIRO = [
-    "#f5c400",
-    "#1688ff",
-    "#00a651",
-    "#e4002b",
-    "#9c27b0",
-    "#6c757d",
-    "#ff7043",
-    "#26a69a"
-];
-
+const CORES_GRAFICO_FINANCEIRO = { receita: "#00a651", aReceber: "#f5c400", despesa: "#e4002b" };
+const PALETA_GRAFICO_FINANCEIRO = ["#f5c400", "#1688ff", "#00a651", "#e4002b", "#9c27b0", "#6c757d", "#ff7043", "#26a69a"];
 const COR_TEXTO_GRAFICO_FINANCEIRO = "#9aa4aa";
 const COR_GRADE_GRAFICO_FINANCEIRO = "rgba(154, 164, 170, 0.12)";
 
 function opcoesGraficoFinanceiro() {
-    return {
-        responsive: true,
-        maintainAspectRatio: false
-    };
+    return { responsive: true, maintainAspectRatio: false };
 }
 
 function tooltipGraficoFinanceiro(rotulo) {
@@ -5513,83 +3541,54 @@ function tooltipGraficoFinanceiro(rotulo) {
         enabled: true,
         displayColors: false,
         callbacks: {
-            title: function (itens) {
-                return itens[0].label;
-            },
-            label: function (contexto) {
-                return `${rotulo}: ${formatarMoedaRelatorioServicos(contexto.raw)}`;
-            }
+            title: itens => itens[0].label,
+            label: contexto => `${rotulo}: ${formatarMoedaRelatorioServicos(contexto.raw)}`
         }
     };
 }
 
 function renderizarGraficoResultadoFinanceiro(resumo) {
-    if (!financeiroGraficoResultadoEl) {
-        return;
-    }
-    if (graficoFinanceiroResultado) {
-        graficoFinanceiroResultado.destroy();
-        graficoFinanceiroResultado = null;
-    }
+    if (!financeiroGraficoResultadoEl) return;
+    if (graficoFinanceiroResultado) { graficoFinanceiroResultado.destroy(); graficoFinanceiroResultado = null; }
+
     if (resumo.receitas + resumo.aReceber + resumo.despesas === 0) {
-        financeiroGraficoResultadoEl.innerHTML =
-            htmlSemDadosRelatorioEstoque("Nenhum valor no período selecionado.");
+        financeiroGraficoResultadoEl.innerHTML = htmlSemDadosRelatorioEstoque("Nenhum valor no período selecionado.");
         return;
     }
-    const canvas =
-        criarCanvasGraficoRelatorioEstoque(financeiroGraficoResultadoEl);
+
+    const canvas = criarCanvasGraficoRelatorioEstoque(financeiroGraficoResultadoEl);
     graficoFinanceiroResultado = new Chart(canvas, {
         type: "bar",
         data: {
             labels: ["Receitas", "A receber", "Despesas"],
-            datasets: [
-                {
-                    data: [
-                        resumo.receitas,
-                        resumo.aReceber,
-                        resumo.despesas
-                    ],
-                    backgroundColor: [
-                        CORES_GRAFICO_FINANCEIRO.receita,
-                        CORES_GRAFICO_FINANCEIRO.aReceber,
-                        CORES_GRAFICO_FINANCEIRO.despesa
-                    ],
-                    borderWidth: 0,
-                    borderRadius: 4,
-                    barThickness: 35
-                }
-            ]
+            datasets: [{
+                data: [resumo.receitas, resumo.aReceber, resumo.despesas],
+                backgroundColor: [
+                    CORES_GRAFICO_FINANCEIRO.receita,
+                    CORES_GRAFICO_FINANCEIRO.aReceber,
+                    CORES_GRAFICO_FINANCEIRO.despesa
+                ],
+                borderWidth: 0,
+                borderRadius: 4,
+                barThickness: 35
+            }]
         },
         options: {
             ...opcoesGraficoFinanceiro(),
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: tooltipGraficoFinanceiro("Valor")
-            },
+            plugins: { legend: { display: false }, tooltip: tooltipGraficoFinanceiro("Valor") },
             scales: {
                 x: {
-                    ticks: {
-                        color: COR_TEXTO_GRAFICO_FINANCEIRO,
-                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE
-                    },
-                    grid: {
-                        display: false
-                    }
+                    ticks: { color: COR_TEXTO_GRAFICO_FINANCEIRO, font: FONTE_GRAFICO_RELATORIO_ESTOQUE },
+                    grid: { display: false }
                 },
                 y: {
                     beginAtZero: true,
                     ticks: {
                         color: COR_TEXTO_GRAFICO_FINANCEIRO,
                         font: FONTE_GRAFICO_RELATORIO_ESTOQUE,
-                        callback: function (valor) {
-                            return formatarMoedaRelatorioServicos(valor);
-                        }
+                        callback: v => formatarMoedaRelatorioServicos(v)
                     },
-                    grid: {
-                        color: COR_GRADE_GRAFICO_FINANCEIRO
-                    }
+                    grid: { color: COR_GRADE_GRAFICO_FINANCEIRO }
                 }
             }
         }
@@ -5597,47 +3596,33 @@ function renderizarGraficoResultadoFinanceiro(resumo) {
 }
 
 function renderizarGraficoPagamentoFinanceiro(lancamentos) {
-    if (!financeiroGraficoPagamentoEl) {
-        return;
-    }
-    if (graficoFinanceiroPagamento) {
-        graficoFinanceiroPagamento.destroy();
-        graficoFinanceiroPagamento = null;
-    }
+    if (!financeiroGraficoPagamentoEl) return;
+    if (graficoFinanceiroPagamento) { graficoFinanceiroPagamento.destroy(); graficoFinanceiroPagamento = null; }
 
-    // Soma o valor das OS por forma de pagamento
     const porPagamento = {};
     lancamentos
-        .filter(function (l) { return l.tipo === "receita"; })
-        .forEach(function (l) {
+        .filter(l => l.tipo === "receita")
+        .forEach(l => {
             const chave = l.pagamento || "outro";
             porPagamento[chave] = (porPagamento[chave] || 0) + l.valor;
         });
+
     const chaves = Object.keys(porPagamento);
     if (chaves.length === 0) {
-        financeiroGraficoPagamentoEl.innerHTML =
-            htmlSemDadosRelatorioEstoque("Nenhuma receita no período selecionado.");
+        financeiroGraficoPagamentoEl.innerHTML = htmlSemDadosRelatorioEstoque("Nenhuma receita no período selecionado.");
         return;
     }
-    const canvas =
-        criarCanvasGraficoRelatorioEstoque(financeiroGraficoPagamentoEl);
+
+    const canvas = criarCanvasGraficoRelatorioEstoque(financeiroGraficoPagamentoEl);
     graficoFinanceiroPagamento = new Chart(canvas, {
         type: "doughnut",
         data: {
-            labels: chaves.map(function (c) {
-                return obterCondicaoPagamentoOS(c);
-            }),
-            datasets: [
-                {
-                    data: chaves.map(function (c) {
-                        return porPagamento[c];
-                    }),
-                    backgroundColor: chaves.map(function (_, i) {
-                        return PALETA_GRAFICO_FINANCEIRO[i % PALETA_GRAFICO_FINANCEIRO.length];
-                    }),
-                    borderWidth: 0
-                }
-            ]
+            labels: chaves.map(c => obterCondicaoPagamentoOS(c)),
+            datasets: [{
+                data: chaves.map(c => porPagamento[c]),
+                backgroundColor: chaves.map((_, i) => PALETA_GRAFICO_FINANCEIRO[i % PALETA_GRAFICO_FINANCEIRO.length]),
+                borderWidth: 0
+            }]
         },
         options: {
             ...opcoesGraficoFinanceiro(),
@@ -5657,25 +3642,10 @@ function renderizarGraficoPagamentoFinanceiro(lancamentos) {
     });
 }
 
-// LIMPAR FILTROS
-
 function limparFiltrosRelatorioFinanceiro() {
-
-    [
-        financeiroDataInicio,
-        financeiroDataFim,
-        financeiroTipo,
-        financeiroStatus,
-        financeiroPagamento
-    ].forEach(function (campo) {
-        if (campo) {
-            campo.value = "";
-        }
-    });
-
+    [financeiroDataInicio, financeiroDataFim, financeiroTipo, financeiroStatus, financeiroPagamento]
+        .forEach(campo => { if (campo) campo.value = ""; });
 }
-
-// GERAR RELATÓRIO
 
 async function gerarRelatorioDeFinanceiro() {
     const filtros = {
@@ -5685,115 +3655,67 @@ async function gerarRelatorioDeFinanceiro() {
         status: financeiroStatus?.value || "",
         pagamento: financeiroPagamento?.value || ""
     };
-    if (filtros.dataInicio && filtros.dataFim &&
-        filtros.dataInicio > filtros.dataFim) {
-        notificar(
-            "A data inicial não pode ser maior que a data final.",
-            "aviso"
-        );
+
+    if (filtros.dataInicio && filtros.dataFim && filtros.dataInicio > filtros.dataFim) {
+        notificar("A data inicial não pode ser maior que a data final.", "aviso");
         return;
     }
+
     if (gerarRelatorioFinanceiro) {
         gerarRelatorioFinanceiro.disabled = true;
         gerarRelatorioFinanceiro.textContent = "CARREGANDO...";
     }
+
     try {
         const buscarReceitas = filtros.tipo !== "despesa";
         const buscarDespesas = filtros.tipo !== "receita";
-
-        // Só as entradas interessam para despesa (consumo não é gasto novo)
         const parametros = new URLSearchParams({ tipo: "entrada" });
-
-        if (filtros.dataInicio) {
-            parametros.append("dataInicio", filtros.dataInicio);
-        }
-
-        if (filtros.dataFim) {
-            parametros.append("dataFim", filtros.dataFim);
-        }
+        if (filtros.dataInicio) parametros.append("dataInicio", filtros.dataInicio);
+        if (filtros.dataFim) parametros.append("dataFim", filtros.dataFim);
 
         const [respostaOS, respostaEstoque] = await Promise.all([
-            buscarReceitas
-                ? fetch(`${API_URL}/OrdensServico`)
-                : null,
-            buscarDespesas
-                ? fetch(`${API_URL}/relatorios/estoque?${parametros.toString()}`)
-                : null
+            buscarReceitas ? fetch(`${API_URL}/OrdensServico`) : null,
+            buscarDespesas ? fetch(`${API_URL}/relatorios/estoque?${parametros.toString()}`) : null
         ]);
 
-        if (respostaOS && !respostaOS.ok) {
-            throw new Error(`Ordens de serviço: erro HTTP ${respostaOS.status}`);
-        }
-
-        if (respostaEstoque && !respostaEstoque.ok) {
-            throw new Error(`Estoque: erro HTTP ${respostaEstoque.status}`);
-        }
+        if (respostaOS && !respostaOS.ok) throw new Error(`Ordens de serviço: erro HTTP ${respostaOS.status}`);
+        if (respostaEstoque && !respostaEstoque.ok) throw new Error(`Estoque: erro HTTP ${respostaEstoque.status}`);
 
         const ordens = respostaOS ? await respostaOS.json() : [];
-
-        const dadosEstoque = respostaEstoque
-            ? await respostaEstoque.json()
-            : null;
+        const dadosEstoque = respostaEstoque ? await respostaEstoque.json() : null;
 
         const lancamentos = filtrarLancamentosFinanceiro(
             montarReceitasFinanceiro(ordens).concat(
-                montarDespesasFinanceiro(
-                    obterRegistrosRelatorioEstoque(dadosEstoque)
-                )
+                montarDespesasFinanceiro(obterRegistrosRelatorioEstoque(dadosEstoque))
             ),
             filtros
         );
 
-        console.log("[RELATÓRIO FINANCEIRO] Lançamentos:", lancamentos);
-
         const resumo = calcularResumoFinanceiro(lancamentos);
 
         limparGraficosFinanceiro();
-
         renderizarIndicadoresFinanceiro(resumo);
         renderizarTabelaFinanceiro(lancamentos);
         renderizarGraficoResultadoFinanceiro(resumo);
         renderizarGraficoPagamentoFinanceiro(lancamentos);
-
     } catch (erro) {
-
         console.error("[RELATÓRIO FINANCEIRO] Erro:", erro);
-
         notificar("Não foi possível gerar o relatório financeiro.", "erro");
-
     } finally {
-
         if (gerarRelatorioFinanceiro) {
             gerarRelatorioFinanceiro.disabled = false;
             gerarRelatorioFinanceiro.textContent = "GERAR RELATÓRIO";
         }
-
     }
-
 }
 
-// EVENTOS
-
-if (limparFiltrosFinanceiro) {
-    limparFiltrosFinanceiro.addEventListener(
-        "click",
-        limparFiltrosRelatorioFinanceiro
-    );
-}
-
-if (gerarRelatorioFinanceiro) {
-    gerarRelatorioFinanceiro.addEventListener(
-        "click",
-        gerarRelatorioDeFinanceiro
-    );
-}
-
+if (limparFiltrosFinanceiro) limparFiltrosFinanceiro.addEventListener("click", limparFiltrosRelatorioFinanceiro);
+if (gerarRelatorioFinanceiro) gerarRelatorioFinanceiro.addEventListener("click", gerarRelatorioDeFinanceiro);
 
 // =========================================================
-// PRECIFICAÇÃO
+// PRECIFICAÇÃO — NÚCLEO (modal continua igual; sem tela antiga)
 // =========================================================
 
-let precificacoes = [];
 let precificacaoSelecionada = null;
 
 const STATUS_PRECIFICACAO = {
@@ -5815,17 +3737,13 @@ const modalPrecificacao = document.getElementById("modalPrecificacao");
 const campoPrecoAprovado = document.getElementById("precPrecoAprovado");
 const botaoAprovarPrecificacao = document.getElementById("precAprovar");
 
-// FORMATADORES
-
 function obterStatusPrecificacao(precificacao) {
     const chave = String(precificacao?.status || "").toUpperCase();
     return STATUS_PRECIFICACAO[chave] ? chave : "RASCUNHO";
 }
 
 function htmlBadgeStatusPrecificacao(precificacao) {
-    if (!precificacao) {
-        return '<span class="os-status os-status-pendente">SEM PRECIFICAÇÃO</span>';
-    }
+    if (!precificacao) return '<span class="os-status os-status-pendente">SEM ORÇAMENTO</span>';
     const chave = obterStatusPrecificacao(precificacao);
     return `<span class="os-status os-status-${STATUS_PRECIFICACAO[chave].classe}">${STATUS_PRECIFICACAO[chave].texto}</span>`;
 }
@@ -5843,12 +3761,10 @@ function lerPrecoDigitado(valor) {
     return Number.isFinite(numero) ? Math.round(numero * 100) / 100 : 0;
 }
 
-// Monta a mensagem de erro da API (400/404 trazem { mensagem }, validações trazem { title })
 async function lerMensagemErroPrecificacao(resposta, padrao) {
     try {
         const dados = await resposta.json();
         const linhas = [dados?.mensagem || dados?.title || padrao];
-
         if (dados?.quantidadeNecessaria !== undefined && dados?.saldoDisponivel !== undefined) {
             const unidade = dados.unidade ? " " + dados.unidade : "";
             linhas.push(
@@ -5856,194 +3772,27 @@ async function lerMensagemErroPrecificacao(resposta, padrao) {
                 `Disponível: ${formatarNumeroPrecificacao(dados.saldoDisponivel)}${unidade}`
             );
         }
-
         if (Array.isArray(dados?.candidatasSemEstoque) && dados.candidatasSemEstoque.length > 0) {
-            const menor = dados.candidatasSemEstoque.reduce(function (a, b) {
-                return paraNumeroOS(a.quantidadeNecessaria) <= paraNumeroOS(b.quantidadeNecessaria) ? a : b;
-            });
+            const menor = dados.candidatasSemEstoque.reduce((a, b) =>
+                paraNumeroOS(a.quantidadeNecessaria) <= paraNumeroOS(b.quantidadeNecessaria) ? a : b);
             linhas.push(
                 `${dados.candidatasSemEstoque.length} configuração(ões) sem estoque. ` +
                 `Menor necessidade: ${formatarNumeroPrecificacao(menor.quantidadeNecessaria)} ` +
                 `(disponível: ${formatarNumeroPrecificacao(menor.saldoDisponivel)})`
             );
         }
-
         return linhas.join("\n");
     } catch (erro) {
         return padrao;
     }
 }
 
-// CARREGAMENTO
-
-async function carregarPrecificacoes() {
-    try {
-        await carregarOrdensServico();
-
-        const resposta = await fetch(`${API_URL}/Precificacoes`);
-        if (!resposta.ok) {
-            throw new Error(`Erro HTTP: ${resposta.status}`);
-        }
-
-        precificacoes = await resposta.json();
-        renderizarPrecificacoes();
-    } catch (erro) {
-        console.error("Erro ao carregar precificações:", erro);
-        notificar("Não foi possível carregar as precificações.\n" + erro.message, "erro");
-    }
-}
-
-// Precificação "vigente" da OS: a aprovada, se existir; senão a mais recente
-function obterPrecificacaoDaOS(ordemId) {
-    const lista = precificacoes
-        .filter(function (p) { return p.ordemServicoId === ordemId; })
-        .sort(function (a, b) {
-            return String(b.dataCalculo).localeCompare(String(a.dataCalculo)) || b.id - a.id;
-        });
-
-    return lista.find(function (p) { return obterStatusPrecificacao(p) === "APROVADA"; }) || lista[0] || null;
-}
-
-// LISTAGEM
-
-function renderizarPrecificacoes() {
-    const tabela = document.getElementById("precTabela");
-    if (!tabela) {
-        return;
-    }
-
-    const linhasOS = ordensServico.map(function (ordem) {
-        return { ordem: ordem, precificacao: obterPrecificacaoDaOS(ordem.id) };
-    });
-
-    atualizarIndicadoresPrecificacao(linhasOS);
-
-    const busca = normalizarChaveOS(document.getElementById("precBusca")?.value || "");
-    const filtro = document.getElementById("precFiltroStatus")?.value || "";
-
-    const visiveis = linhasOS.filter(function (linha) {
-        const situacao = linha.precificacao ? obterStatusPrecificacao(linha.precificacao) : "SEM";
-        if (filtro && situacao !== filtro) {
-            return false;
-        }
-        if (busca) {
-            const texto = normalizarChaveOS(`${linha.ordem.numeroOS} ${linha.ordem.cliente}`);
-            return texto.includes(busca);
-        }
-        return true;
-    });
-
-    definirTexto("precRegistros", `${visiveis.length} ${visiveis.length === 1 ? "REGISTRO" : "REGISTROS"}`);
-
-    if (visiveis.length === 0) {
-        tabela.innerHTML = `
-            <tr>
-                <td class="relatorio-tabela-vazia" colspan="8">
-                    <ion-icon name="calculator-outline"></ion-icon>
-                    <span>NENHUMA ORDEM DE SERVIÇO ENCONTRADA</span>
-                    <small>Ajuste os filtros ou cadastre uma OS para poder precificá-la.</small>
-                </td>
-            </tr>`;
-        return;
-    }
-
-    tabela.innerHTML = visiveis.map(function (linha) {
-        const ordem = linha.ordem;
-        const p = linha.precificacao;
-        const aprovada = p && obterStatusPrecificacao(p) === "APROVADA";
-        const vazio = '<span class="prec-valor-vazio">—</span>';
-
-        let acoes = "";
-        if (p) {
-            acoes += `<button type="button" class="btn-prec btn-prec-detalhes" data-prec-acao="detalhes" data-prec-id="${p.id}">DETALHES</button>`;
-        }
-        if (!aprovada) {
-            acoes += `<button type="button" class="btn-prec btn-prec-calcular" data-prec-acao="calcular" data-os-id="${ordem.id}">${p ? "RECALCULAR" : "CALCULAR"}</button>`;
-        }
-
-        return `
-            <tr>
-                <td>
-                    <div class="prec-os-celula">
-                        <strong>${escaparHtmlOS(ordem.numeroOS)}</strong>
-                        <small>${escaparHtmlOS(ordem.cliente)}</small>
-                    </div>
-                </td>
-                <td>${escaparHtmlOS(obterTipoServicoOS(ordem.tipoServico))}</td>
-                <td>${escaparHtmlOS(ordem.quantidade ?? "-")}</td>
-                <td>${p ? formatarMoedaOS(p.custoTotalEstimado) : vazio}</td>
-                <td>${p ? formatarMoedaOS(p.precoSugerido) : vazio}</td>
-                <td>${aprovada ? `<strong class="prec-valor-destaque">${formatarMoedaOS(p.precoAprovado)}</strong>` : vazio}</td>
-                <td>${htmlBadgeStatusPrecificacao(p)}</td>
-                <td><div class="prec-acoes">${acoes}</div></td>
-            </tr>`;
-    }).join("");
-}
-
-function atualizarIndicadoresPrecificacao(linhasOS) {
-    let sem = 0;
-    let rascunhos = 0;
-    let aprovadas = 0;
-    let totalAprovado = 0;
-
-    linhasOS.forEach(function (linha) {
-        if (!linha.precificacao) {
-            sem++;
-        } else if (obterStatusPrecificacao(linha.precificacao) === "APROVADA") {
-            aprovadas++;
-            totalAprovado += paraNumeroOS(linha.precificacao.precoAprovado);
-        } else {
-            rascunhos++;
-        }
-    });
-
-    definirTexto("precIndSemPrecificacao", sem);
-    definirTexto("precIndRascunhos", rascunhos);
-    definirTexto("precIndAprovadas", aprovadas);
-    definirTexto("precIndTotalAprovado", formatarMoedaOS(totalAprovado));
-}
-
-// CÁLCULO
-
-async function calcularPrecificacaoOS(ordemId, botao) {
-    const textoOriginal = botao ? botao.textContent : "";
-
-    if (botao) {
-        botao.disabled = true;
-        botao.textContent = "CALCULANDO...";
-    }
-
-    try {
-        const resposta = await fetch(`${API_URL}/Precificacoes/calcular/${ordemId}`, { method: "POST" });
-
-        if (!resposta.ok) {
-            const mensagem = await lerMensagemErroPrecificacao(resposta, "Não foi possível calcular a precificação.");
-            notificar(mensagem, resposta.status >= 500 ? "erro" : "aviso");
-            return;
-        }
-
-        const nova = await resposta.json();
-        notificar("Precificação calculada com sucesso!", "sucesso");
-
-        await carregarPrecificacoes();
-        abrirDetalhesPrecificacao(precificacoes.find(function (p) { return p.id === nova.id; }) || nova);
-    } catch (erro) {
-        console.error("Erro ao calcular precificação:", erro);
-        notificar("Não foi possível calcular a precificação.\n" + erro.message, "erro");
-    } finally {
-        if (botao && document.body.contains(botao)) {
-            botao.disabled = false;
-            botao.textContent = textoOriginal;
-        }
-    }
-}
-
-// MODAL DE DETALHES
+// =========================================================
+// MODAL DE PRECIFICAÇÃO
+// =========================================================
 
 function abrirDetalhesPrecificacao(precificacao) {
-    if (!precificacao) {
-        return;
-    }
+    if (!precificacao) return;
     preencherDetalhesPrecificacao(precificacao);
     modalPrecificacao.classList.add("active");
     document.body.style.overflow = "hidden";
@@ -6058,7 +3807,7 @@ function fecharDetalhesPrecificacao() {
 function preencherDetalhesPrecificacao(p) {
     precificacaoSelecionada = p;
 
-    const ordem = ordensServico.find(function (o) { return o.id === p.ordemServicoId; });
+    const ordem = ordensServico.find(o => o.id === p.ordemServicoId);
     const aprovada = obterStatusPrecificacao(p) === "APROVADA";
 
     definirTexto("precOS", ordem?.numeroOS || `OS ${p.ordemServicoId}`);
@@ -6068,9 +3817,11 @@ function preencherDetalhesPrecificacao(p) {
     definirTexto("precDataCalculo", formatarDataOS(p.dataCalculo));
 
     const badge = document.getElementById("precStatus");
-    const chave = obterStatusPrecificacao(p);
-    badge.textContent = STATUS_PRECIFICACAO[chave].texto;
-    badge.className = `os-status os-status-${STATUS_PRECIFICACAO[chave].classe}`;
+    if (badge) {
+        const chave = obterStatusPrecificacao(p);
+        badge.textContent = STATUS_PRECIFICACAO[chave].texto;
+        badge.className = `os-status os-status-${STATUS_PRECIFICACAO[chave].classe}`;
+    }
 
     definirTexto("precCustoMaterial", formatarMoedaOS(p.custoMaterialEstimado));
     definirTexto("precCustoMaquina", formatarMoedaOS(p.custoMaquinaEstimado));
@@ -6078,12 +3829,10 @@ function preencherDetalhesPrecificacao(p) {
     definirTexto("precCustoSetup", formatarMoedaOS(p.custoSetupEstimado));
     definirTexto("precCustoIndireto", formatarMoedaOS(p.custoIndiretoEstimado));
     definirTexto("precCustoTotal", formatarMoedaOS(p.custoTotalEstimado));
-
     definirTexto("precMargem", formatarPercentualPrecificacao(p.margemDesejadaPercentual));
     definirTexto("precImpostos", formatarPercentualPrecificacao(p.impostosPercentual));
     definirTexto("precDespesas", formatarPercentualPrecificacao(p.despesasVariaveisPercentual));
     definirTexto("precIndiretosPercentual", formatarPercentualPrecificacao(p.custosIndiretosPercentual));
-
     definirTexto("precPrecoSugerido", formatarMoedaOS(p.precoSugerido));
     definirTexto("precObservacoes", p.observacoes || "Nenhuma observação registrada.");
 
@@ -6098,6 +3847,7 @@ function preencherDetalhesPrecificacao(p) {
 
 function renderizarItensPrecificacao(itens) {
     const corpo = document.getElementById("precItensTabela");
+    if (!corpo) return;
 
     if (!Array.isArray(itens) || itens.length === 0) {
         corpo.innerHTML = `
@@ -6119,7 +3869,6 @@ function renderizarItensPrecificacao(itens) {
     corpo.innerHTML = ordenados.map(function (item) {
         const tipo = String(item.tipoItem || "").toUpperCase();
         const unidade = item.unidade ? " " + item.unidade : "";
-
         return `
             <tr>
                 <td>${escaparHtmlOS(ROTULOS_ITEM_PRECIFICACAO[tipo] || tipo)}</td>
@@ -6131,14 +3880,10 @@ function renderizarItensPrecificacao(itens) {
     }).join("");
 }
 
-// Compara o preço digitado com o sugerido e com o custo total
 function atualizarIndicadorPrecoPrecificacao() {
     const indicador = document.getElementById("precDesvio");
     const p = precificacaoSelecionada;
-
-    if (!indicador || !p) {
-        return;
-    }
+    if (!indicador || !p) return;
 
     if (obterStatusPrecificacao(p) === "APROVADA") {
         indicador.textContent = "Preço já aprovado. A OS foi atualizada com este valor.";
@@ -6155,7 +3900,6 @@ function atualizarIndicadorPrecoPrecificacao() {
         indicador.dataset.nivel = "alerta";
         return;
     }
-
     if (valor < custo) {
         indicador.textContent = "Abaixo do custo total estimado: aprovar este valor gera prejuízo.";
         indicador.dataset.nivel = "alerta";
@@ -6168,13 +3912,13 @@ function atualizarIndicadorPrecoPrecificacao() {
     indicador.dataset.nivel = "ok";
 }
 
-// APROVAÇÃO
+// =========================================================
+// APROVAÇÃO (encadeia liberação da OS para execução)
+// =========================================================
 
 async function aprovarPrecificacaoSelecionada() {
     const p = precificacaoSelecionada;
-    if (!p) {
-        return;
-    }
+    if (!p) return;
 
     const valor = lerPrecoDigitado(campoPrecoAprovado.value);
     if (valor <= 0) {
@@ -6186,6 +3930,7 @@ async function aprovarPrecificacaoSelecionada() {
     botaoAprovarPrecificacao.disabled = true;
 
     try {
+        // 1) Aprova o preço
         const resposta = await fetch(`${API_URL}/Precificacoes/${p.id}/aprovar`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -6198,85 +3943,98 @@ async function aprovarPrecificacaoSelecionada() {
             return;
         }
 
-        notificar("Preço aprovado com sucesso! O valor total da OS foi atualizado.", "sucesso");
+        // 2) Libera a OS para execução
+        let liberouExecucao = false;
+        try {
+            const respostaStatus = await fetch(
+                `${API_URL}/OrdensServico/${p.ordemServicoId}/status`,
+                {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: "em_execucao" })
+                }
+            );
+            if (respostaStatus.ok) liberouExecucao = true;
+            else {
+                const texto = await respostaStatus.text().catch(() => "");
+                console.warn("[PRECIFICAÇÃO] Preço aprovado, mas a OS não foi liberada.", respostaStatus.status, texto);
+            }
+        } catch (erroStatus) {
+            console.error("[PRECIFICAÇÃO] Erro ao liberar OS:", erroStatus);
+        }
 
-        // Recarrega precificações e OS para a tela não ficar com valores antigos
-        await carregarPrecificacoes();
+        if (liberouExecucao) {
+            notificar("Preço aprovado! A OS foi liberada para execução.", "sucesso");
+        } else {
+            notificar(
+                "Preço aprovado. Não foi possível liberar a OS automaticamente — verifique na tela de Ordens.",
+                "aviso"
+            );
+        }
 
-        const atualizada = precificacoes.find(function (x) { return x.id === p.id; });
+        // 3) Recarrega estado
+        await carregarOrdensServico();
+        const atualizada = precificacoes.find(x => x.id === p.id);
         if (atualizada && modalPrecificacao.classList.contains("active")) {
             preencherDetalhesPrecificacao(atualizada);
         }
     } catch (erro) {
-        console.error("Erro ao aprovar precificação:", erro);
+        console.error("Erro ao aprovar orçamento:", erro);
         notificar("Não foi possível aprovar o preço.\n" + erro.message, "erro");
     } finally {
         botaoAprovarPrecificacao.disabled = false;
     }
 }
 
-// EVENTOS
+// =========================================================
+// EVENTOS DO MODAL DE PRECIFICAÇÃO
+// =========================================================
 
-const menuPrecificacao = document.querySelector('.menu-item[data-section="precificacao"]');
-if (menuPrecificacao) {
-    menuPrecificacao.addEventListener("click", carregarPrecificacoes);
-}
-
-const botaoAtualizarPrecificacoes = document.getElementById("atualizarPrecificacoes");
-if (botaoAtualizarPrecificacoes) {
-    botaoAtualizarPrecificacoes.addEventListener("click", carregarPrecificacoes);
-}
-
-const campoBuscaPrecificacao = document.getElementById("precBusca");
-if (campoBuscaPrecificacao) {
-    campoBuscaPrecificacao.addEventListener("input", renderizarPrecificacoes);
-}
-
-const filtroStatusPrecificacao = document.getElementById("precFiltroStatus");
-if (filtroStatusPrecificacao) {
-    filtroStatusPrecificacao.addEventListener("change", renderizarPrecificacoes);
-}
-
-const tabelaPrecificacoes = document.getElementById("precTabela");
-if (tabelaPrecificacoes) {
-    tabelaPrecificacoes.addEventListener("click", function (event) {
-        const botao = event.target.closest("[data-prec-acao]");
-        if (!botao) {
-            return;
-        }
-
-        if (botao.dataset.precAcao === "detalhes") {
-            const p = precificacoes.find(function (x) { return x.id === Number(botao.dataset.precId); });
-            abrirDetalhesPrecificacao(p);
-        } else if (botao.dataset.precAcao === "calcular") {
-            calcularPrecificacaoOS(Number(botao.dataset.osId), botao);
-        }
-    });
-}
-
-if (campoPrecoAprovado) {
-    campoPrecoAprovado.addEventListener("input", atualizarIndicadorPrecoPrecificacao);
-}
-
-if (botaoAprovarPrecificacao) {
-    botaoAprovarPrecificacao.addEventListener("click", aprovarPrecificacaoSelecionada);
-}
+if (campoPrecoAprovado) campoPrecoAprovado.addEventListener("input", atualizarIndicadorPrecoPrecificacao);
+if (botaoAprovarPrecificacao) botaoAprovarPrecificacao.addEventListener("click", aprovarPrecificacaoSelecionada);
 
 const fecharPrecX = document.getElementById("fecharPrecificacao");
 const fecharPrecBotao = document.getElementById("fecharPrecificacaoBotao");
 if (fecharPrecX) fecharPrecX.addEventListener("click", fecharDetalhesPrecificacao);
 if (fecharPrecBotao) fecharPrecBotao.addEventListener("click", fecharDetalhesPrecificacao);
-
 if (modalPrecificacao) {
     modalPrecificacao.addEventListener("click", function (event) {
-        if (event.target === modalPrecificacao) {
-            fecharDetalhesPrecificacao();
-        }
+        if (event.target === modalPrecificacao) fecharDetalhesPrecificacao();
     });
 }
-
 document.addEventListener("keydown", function (event) {
     if (event.key === "Escape" && modalPrecificacao && modalPrecificacao.classList.contains("active")) {
         fecharDetalhesPrecificacao();
     }
 });
+
+// =========================================================
+// CONFERÊNCIA FINAL DE IDs
+// =========================================================
+
+function conferirIdsOS() {
+    const idsFixos = [
+        "modalOS", "novaOS", "criarOS", "fecharModalOS", "cancelarOS",
+        "salvarOS", "salvarImprimirOS",
+        "modalDetalhesOS", "fecharDetalhesOS", "fecharDetalhesOSBotao",
+        "editarOS", "removerOS", "tituloModalOS", "statusOS", "detalhesOSBloqueio",
+        "ordensServicoLista", "ordensServicoEmpty",
+        "togglePainelPrecificacao", "painelPrecificacao",
+        "ordensResumoSemPrecificacao", "ordensResumoRascunhos",
+        "ordensResumoAprovadas", "ordensResumoTotalAprovado",
+        "buscarOS", "filtroSituacaoOS",
+        "numeroOS", "clienteOS", "contatoOS", "enderecoOS", "dataOS",
+        "dataEntregaOS", "descricaoOS", "tipoServico", "responsavelOS",
+        "observacoesOS",
+        "modalPrecificacao", "precOS", "precStatus", "precCliente",
+        "precPrecoAprovado", "precAprovar", "precItensTabela", "precDesvio"
+    ];
+    const todos = idsFixos.concat(Object.values(IDS_DETALHES_OS));
+    const faltando = todos.filter(id => !document.getElementById(id));
+    if (faltando.length > 0) {
+        console.warn("[OS] IDs não encontrados no HTML:", faltando);
+    } else {
+        console.log("[OS] Todos os IDs foram encontrados.");
+    }
+}
+conferirIdsOS();

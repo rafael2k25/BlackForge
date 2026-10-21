@@ -33,7 +33,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddHostedService<BlackForge.Services.ProducaoBackgroundService>();
+// builder.Services.AddHostedService<BlackForge.Services.ProducaoBackgroundService>();
 
 var app = builder.Build();
 
