@@ -139,6 +139,7 @@ menuItems.forEach(menuItem => {
         menuItem.classList.add("active");
         if (sectionId === "maquinas") carregarMaquinas();
         if (sectionId === "ordens") atualizarResumoPrecificacoes();
+        if (sectionId === "dashboard") atualizarDashboard();
     });
 });
 
@@ -2585,6 +2586,195 @@ function editarFuncionarioSelecionado() {
 }
 
 // =========================================================
+// DASHBOARD
+// =========================================================
+
+const dashPendentes = document.getElementById("dashPendentes");
+const dashEmExecucao = document.getElementById("dashEmExecucao");
+const dashEstoqueAlerta = document.getElementById("dashEstoqueAlerta");
+const dashStatusPendentes = document.getElementById("dashStatusPendentes");
+const dashStatusExecucao = document.getElementById("dashStatusExecucao");
+const dashStatusEstoque = document.getElementById("dashStatusEstoque");
+const dashEventList = document.getElementById("dashEventList");
+const HTML_EVENTOS_VAZIO = dashEventList ? dashEventList.innerHTML : "";
+
+let atualizandoDashboard = false;
+
+function definirBadgeDashboard(el, texto, alerta) {
+    if (!el) return;
+    el.textContent = texto;
+    el.classList.toggle("warning", alerta);
+    el.classList.toggle("active", !alerta);
+}
+
+function renderizarCardsDashboard(ordens, listaMateriais) {
+    const pendentes = ordens.filter(o => obterStatusOS(o) === "pendente").length;
+    const emExecucao = ordens.filter(o => obterStatusOS(o) === "em_execucao").length;
+    const abaixoMinimo = listaMateriais.filter(m => m.abaixoDoMinimo).length;
+
+    if (dashPendentes) dashPendentes.textContent = pendentes;
+    if (dashEmExecucao) dashEmExecucao.textContent = emExecucao;
+    if (dashEstoqueAlerta) dashEstoqueAlerta.textContent = abaixoMinimo;
+
+    definirBadgeDashboard(dashStatusPendentes, pendentes > 0 ? "EM FILA" : "SEM PENDÊNCIAS", false);
+    definirBadgeDashboard(dashStatusExecucao, emExecucao > 0 ? "EM PRODUÇÃO" : "OCIOSO", false);
+    definirBadgeDashboard(dashStatusEstoque, abaixoMinimo > 0 ? "ALERTA" : "NORMAL", abaixoMinimo > 0);
+}
+
+function montarEventosDashboard(ordens, registrosEstoque) {
+    const eventos = [];
+
+    ordens.forEach(os => {
+        if (os.dataAbertura) {
+            eventos.push({
+                data: new Date(os.dataAbertura),
+                icone: "document-text-outline",
+                classe: "",
+                titulo: `OS ${os.numeroOS} aberta`,
+                detalhe: os.cliente
+            });
+        }
+        if (obterStatusOS(os) === "concluida" && os.dataConclusao) {
+            eventos.push({
+                data: new Date(os.dataConclusao),
+                icone: "checkmark-done-outline",
+                classe: "sucesso",
+                titulo: `OS ${os.numeroOS} concluída`,
+                detalhe: os.cliente
+            });
+        }
+    });
+
+    registrosEstoque.forEach(r => {
+        const tipo = normalizarTipoRelatorioEstoque(r.tipo);
+        eventos.push({
+            data: new Date(r.data),
+            icone: tipo === "entrada" ? "arrow-down-outline" : "arrow-up-outline",
+            classe: tipo === "entrada" ? "sucesso" : "aviso",
+            titulo: `${obterNomeTipoRelatorioEstoque(r.tipo)} · ${r.material || "-"}`,
+            detalhe: `${formatarQuantidadeRelatorioEstoque(r.quantidade)} ${r.unidade || ""}` +
+                (r.lote ? ` · lote ${r.lote}` : "")
+        });
+    });
+
+    return eventos
+        .filter(e => !Number.isNaN(e.data.getTime()))
+        .sort((a, b) => b.data - a.data)
+        .slice(0, 8);
+}
+
+function renderizarEventosDashboard(eventos) {
+    if (!dashEventList) return;
+    if (eventos.length === 0) {
+        dashEventList.innerHTML = HTML_EVENTOS_VAZIO;
+        return;
+    }
+    dashEventList.innerHTML = eventos.map(e => `
+        <div class="event-item">
+            <div class="event-item-icone ${e.classe}">
+                <ion-icon name="${e.icone}"></ion-icon>
+            </div>
+            <div class="event-item-texto">
+                <span class="event-item-titulo">${escaparHtmlOS(e.titulo)}</span>
+                <small>${escaparHtmlOS(e.detalhe || "")}</small>
+            </div>
+            <span class="event-item-data">${formatarDataHoraRelatorioEstoque(e.data)}</span>
+        </div>
+    `).join("");
+}
+
+async function atualizarDashboard() {
+    if (atualizandoDashboard) return;
+    atualizandoDashboard = true;
+    try {
+        const inicio = new Date();
+        inicio.setDate(inicio.getDate() - 30);
+        const urlEstoque = `${API_URL}/relatorios/estoque?dataInicio=${inicio.toISOString().slice(0, 10)}`;
+
+        const [respOS, respMateriais, respEstoque, respMaquinas, respProcessos] = await Promise.all([
+            fetch(`${API_URL}/OrdensServico`),
+            fetch(`${API_URL}/materiais`),
+            fetch(urlEstoque),
+            fetch(`${API_URL}/Maquinas`),
+            fetch(`${API_URL}/ProcessosProducao/ativos`)
+        ]);
+        
+        const listaMaquinas = respMaquinas.ok ? await respMaquinas.json() : [];
+        const processos = respProcessos.ok ? await respProcessos.json() : [];
+
+        const ordens = respOS.ok ? await respOS.json() : [];
+        const listaMateriais = respMateriais.ok ? await respMateriais.json() : [];
+        const registros = respEstoque.ok ? obterRegistrosRelatorioEstoque(await respEstoque.json()) : [];
+
+        renderizarCardsDashboard(ordens, listaMateriais);
+        renderizarEventosDashboard(montarEventosDashboard(ordens, registros));
+        renderizarMaquinasDashboard(listaMaquinas, processos);
+    } catch (erro) {
+        console.error("[DASHBOARD] Erro ao atualizar:", erro);
+    } finally {
+        atualizandoDashboard = false;
+    }
+}
+
+// Atualiza a cada 10s, só enquanto o dashboard está na tela
+setInterval(() => {
+    if (document.getElementById("dashboard")?.classList.contains("active-section")) {
+        atualizarDashboard();
+    }
+}, 10000);
+
+function renderizarMaquinasDashboard(listaMaquinas, processos) {
+    const lista = document.getElementById("dashMaquinasLista");
+    const resumo = document.getElementById("dashMaquinasResumo");
+    if (!lista) return;
+
+    // só máquinas com processo em execução
+    const emOperacao = listaMaquinas
+        .map(maquina => ({
+            maquina,
+            processo: processos.find(p => p.maquinaId === maquina.id && p.status === "EM_EXECUCAO")
+        }))
+        .filter(item => item.processo);
+
+    if (resumo) resumo.textContent = `${emOperacao.length} / ${listaMaquinas.length} PRODUZINDO`;
+
+    if (emOperacao.length === 0) {
+        lista.innerHTML = `
+            <div class="event-empty">
+                <div class="event-icon">
+                    <ion-icon name="hardware-chip-outline"></ion-icon>
+                </div>
+                <span>NENHUMA MÁQUINA EM OPERAÇÃO</span>
+                <small>As máquinas em produção aparecerão aqui.</small>
+            </div>
+        `;
+        return;
+    }
+
+    lista.innerHTML = emOperacao.map(({ maquina, processo }) => {
+        const produzida = Math.round(Number(processo.quantidadeProduzida) || 0);
+        const planejada = Math.round(Number(processo.quantidadePlanejada) || 0);
+        const percentual = planejada > 0 ? Math.min(100, Math.round((produzida / planejada) * 100)) : 0;
+
+        return `
+            <div class="dash-maquina">
+                <div class="dash-maquina-topo">
+                    <div class="dash-maquina-nome">
+                        <span class="dash-maquina-titulo">${escaparHtmlOS(maquina.nome)}</span>
+                        <small>${escaparHtmlOS(maquina.codigo || "")}</small>
+                    </div>
+                    <span class="dash-maquina-status produzindo">PRODUZINDO</span>
+                </div>
+                <div class="dash-maquina-progresso">
+                    <div class="dash-maquina-barra"><div style="width:${percentual}%"></div></div>
+                    <span>${escaparHtmlOS(processo.numeroOS || "OS")} · ${produzida} / ${planejada} · ${percentual}%</span>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+// =========================================================
 // INICIALIZAÇÃO
 // =========================================================
 
@@ -2594,6 +2784,7 @@ function editarFuncionarioSelecionado() {
     carregarMaquinas();
     carregarOrdensServico();
     carregarLotes();
+    atualizarDashboard();
 })();
 
 // =========================================================

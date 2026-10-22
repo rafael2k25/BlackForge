@@ -31,7 +31,6 @@ namespace BlackForge.Services
 
             // Ao iniciar a API, reinicia a referência temporal dos processos
             // ativos. O tempo em que a API esteve desligada não é contado.
-            // Protegido por try/catch: uma falha aqui não pode derrubar o host.
             try
             {
                 await InicializarRelogiosAsync(stoppingToken);

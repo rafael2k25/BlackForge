@@ -64,7 +64,7 @@
     margin-bottom: 4px;
     color: var(--yellow);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 2px;
 }
 
@@ -82,7 +82,7 @@
     border: 1px solid var(--border);
     color: var(--text-primary);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 1px;
 }
 
@@ -130,7 +130,7 @@
     margin-bottom: 22px;
     color: var(--text-secondary);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.6;
 }
 
@@ -392,7 +392,7 @@
 .funcionario-observacoes p {
     color: var(--text-secondary);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.7;
 }
 
@@ -433,7 +433,7 @@
     background: rgba(240, 200, 8, 0.08);
     color: var(--yellow);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -466,7 +466,7 @@
     background: rgba(237, 66, 69, 0.08);
     color: var(--danger);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -498,7 +498,7 @@
     background: var(--panel-light);
     color: var(--text-secondary);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -595,7 +595,7 @@
     margin: 0;
     color: var(--text-secondary);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.7;
     white-space: pre-wrap;
     word-break: break-word;
@@ -638,7 +638,7 @@
     background: rgba(240, 200, 8, 0.08);
     color: var(--yellow);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -671,7 +671,7 @@
     background: rgba(237, 66, 69, 0.08);
     color: var(--danger);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -703,7 +703,7 @@
     background: var(--panel-light);
     color: var(--text-secondary);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -1510,7 +1510,7 @@
 .maquina-codigo span {
     color: var(--text-secondary);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 8px;
+    font-size: 12px;
     letter-spacing: 1.4px;
 }
 .maquina-codigo strong {
@@ -1609,7 +1609,7 @@
 .maquina-processo-label {
     color: var(--text-secondary);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 8px;
+    font-size: 12px;
     letter-spacing: 1.5px;
 }
 
@@ -1617,7 +1617,7 @@
     overflow: hidden;
     color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.6px;
     text-overflow: ellipsis;
@@ -1864,7 +1864,7 @@
     color: var(--text-secondary);
 
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
 
@@ -2143,7 +2143,7 @@
     overflow: hidden;
     color: var(--text-secondary);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 1px;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -2163,7 +2163,7 @@
 .os-coluna span {
     color: var(--text-secondary);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 8px;
+    font-size: 12px;
     letter-spacing: 1.5px;
 }
 
@@ -2440,7 +2440,7 @@
     margin-bottom: 7px;
     color: var(--yellow);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 1px;
 }
 
@@ -2461,7 +2461,7 @@
     border: 1px solid currentColor;
     border-radius: 3px;
     font-family: 'Share Tech Mono', monospace;
-    font-size: 9px;
+    font-size: 10px;
     letter-spacing: .4px;
     text-align: center;
 }
@@ -2520,7 +2520,7 @@
     padding-top: 13px;
     border-top: 1px solid var(--border);
     color: var(--text-primary);
-    font-size: 13px;
+    font-size: 15px;
     line-height: 1.5;
     overflow-wrap: anywhere;
 }
@@ -2768,7 +2768,7 @@
     margin-bottom: 10px;
     color: var(--danger, #e04444);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 1.5px;
 }
 
@@ -2839,7 +2839,7 @@
     background: var(--panel-light);
     color: var(--text-secondary);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -3032,7 +3032,7 @@
 
 .toast-titulo {
     font-family: "Share Tech Mono", monospace;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 2px;
     color: var(--toast-cor);
 }
@@ -3046,7 +3046,7 @@
 
 .toast-detalhe {
     margin-top: 4px;
-    font-size: 13px;
+    font-size: 12px;
     line-height: 1.3;
     opacity: 0.75;
     white-space: pre-line;
@@ -3142,7 +3142,7 @@
     background: color-mix(in srgb, var(--cor-status) 8%, transparent);
     color: var(--cor-status);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     white-space: nowrap;
@@ -3194,7 +3194,7 @@
     background: color-mix(in srgb, var(--cor-botao) 8%, transparent);
     color: var(--cor-botao);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -3568,7 +3568,7 @@
     border: 1px solid var(--border);
     color: var(--text-primary);
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     cursor: pointer;
     outline: none;
 }
@@ -3722,7 +3722,7 @@
     gap: 8px;
     border-radius: 5px;
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1px;
     cursor: pointer;
@@ -3733,7 +3733,7 @@
 .btn-excluir-maquina { border: 1px solid var(--danger); background: rgba(237,66,69,.08); color: var(--danger); }
 .btn-excluir-maquina:hover:not(:disabled) { background: var(--danger); color: var(--text-primary); }
 .btn-excluir-maquina:disabled { opacity: .4; cursor: not-allowed; }
-.maquina-bloqueio-aviso { flex: 1 1 100%; margin: 0; color: var(--warning); font-family: 'Share Tech Mono', monospace; font-size: 11px; line-height: 1.5; }
+.maquina-bloqueio-aviso { flex: 1 1 100%; margin: 0; color: var(--warning); font-family: 'Share Tech Mono', monospace; font-size: 12px; line-height: 1.5; }
 .maquina-bloqueio-aviso[hidden] { display: none !important; }
 
 @media (max-width: 1150px) {

@@ -171,13 +171,11 @@
                 <div class="dashboard-card">
                     <div class="card-top">
                         <span>01</span>
-                        <span class="card-status active">
+                        <!-- <span class="card-status active">
                             STATUS #1
-                        </span>
+                        </span> -->
                     </div>
-                    <strong>
-                        0
-                    </strong>
+                    <strong id="dashPendentes">0</strong>
                     <div class="card-footer">
                         OPERAÇÕES PENDENTES
                     </div>
@@ -185,13 +183,11 @@
                 <div class="dashboard-card">
                     <div class="card-top">
                         <span>02</span>
-                        <span class="card-status active">
+                        <!-- <span class="card-status active">
                             STATUS #2
-                        </span>
+                        </span> -->
                     </div>
-                    <strong>
-                        0
-                    </strong>
+                    <strong id="dashEmExecucao">0</strong>
                     <div class="card-footer">
                         ORDENS EM PROCESSAMENTO
                     </div>
@@ -199,13 +195,11 @@
                 <div class="dashboard-card warning-card">
                     <div class="card-top">
                         <span>03</span>
-                        <span class="card-status warning">
+                        <!-- <span class="card-status warning">
                             STATUS #3
-                        </span>
+                        </span> -->
                     </div>
-                    <strong>
-                        0
-                    </strong>
+                    <strong id="dashEstoqueAlerta">0</strong>
                     <div class="card-footer">
                         ESTOQUE
                     </div>
@@ -213,29 +207,37 @@
             </div>
 
             <div class="dashboard-grid">
-                <div class="industrial-panel"></div>
-            </div>
-            <div class="industrial-panel">
-                <div class="panel-header">
-                    <div>
-                        <span>ATIVIDADE</span>
-                        <h3>Últimos Eventos</h3>
-                    </div>
-                    <div class="panel-code"></div>
-                </div>
-                <div class="event-list">
-                    <div class="event-empty">
-                        <div class="event-icon">
-                            <ion-icon name="warning-sharp"></ion-icon>
+
+                <!-- MÁQUINAS -->
+                <div class="industrial-panel">
+                    <div class="panel-header">
+                        <div>
+                            <span>PRODUÇÃO</span>
+                            <h3>Máquinas em Operação</h3>
                         </div>
-                        <span style="font-size: 14px;">
-                            Nenhuma atividade registrada
-                        </span>
-                        <small style="font-size: 13px;">
-                            Os eventos do sistema aparecerão aqui.
-                        </small>
+                        <div class="panel-code" id="dashMaquinasResumo">0 / 0</div>
+                    </div>
+                    <div class="dash-maquinas-lista" id="dashMaquinasLista">
+                        <div class="event-empty">
+                            <span>NENHUMA MÁQUINA CADASTRADA</span>
+                        </div>
                     </div>
                 </div>
+            
+                <!-- EVENTOS (o painel que já existia, movido pra cá) -->
+                <div class="industrial-panel">
+                    <div class="panel-header">
+                        <div>
+                            <span>ATIVIDADE</span>
+                            <h3>Últimos Eventos</h3>
+                        </div>
+                        <div class="panel-code"></div>
+                    </div>
+                    <div class="event-list" id="dashEventList">
+                        <!-- mantenha aqui o .event-empty que já existe -->
+                    </div>
+                </div>
+            
             </div>
         </section>
 
