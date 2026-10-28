@@ -3322,15 +3322,51 @@ function renderizarTabelaRelatorioEstoque(registros) {
 
 const FONTE_GRAFICO_RELATORIO_ESTOQUE = {
     family: "'Share Tech Mono', monospace",
-    size: 13
+    size: 12
 };
 
-function criarCanvasGraficoRelatorioEstoque(container) {
+// Lê uma variável CSS do :root / tema ativo, para os gráficos seguirem o tema
+function corCssGrafico(nome, fallback) {
+    const valor = getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
+    return valor || fallback;
+}
+
+function coresGraficoRelatorioEstoque() {
+    return {
+        texto: corCssGrafico("--chart-text", "#9aa4aa"),
+        grade: corCssGrafico("--chart-grid", "rgba(154, 164, 170, 0.14)"),
+        entrada: corCssGrafico("--success", "#57c76c"),
+        saida: corCssGrafico("--danger", "#ed4245"),
+        destaque: corCssGrafico("--yellow", "#f0c808"),
+        destaqueHover: corCssGrafico("--yellow-bright", "#ffd83d"),
+        tooltipFundo: corCssGrafico("--chart-tooltip-bg", "#1a1c1f"),
+        tooltipBorda: corCssGrafico("--border-yellow", "#806f13"),
+        tooltipTexto: "#f2f3f5"
+    };
+}
+
+function tooltipGraficoRelatorioEstoque(cores, extra = {}) {
+    return {
+        enabled: true,
+        backgroundColor: cores.tooltipFundo,
+        borderColor: cores.tooltipBorda,
+        borderWidth: 1,
+        titleColor: cores.tooltipTexto,
+        bodyColor: cores.tooltipTexto,
+        titleFont: FONTE_GRAFICO_RELATORIO_ESTOQUE,
+        bodyFont: FONTE_GRAFICO_RELATORIO_ESTOQUE,
+        padding: 10,
+        cornerRadius: 0,
+        ...extra
+    };
+}
+
+function criarCanvasGraficoRelatorioEstoque(container, altura = 270) {
     container.innerHTML = "";
     const wrapper = document.createElement("div");
     wrapper.style.position = "relative";
     wrapper.style.width = "100%";
-    wrapper.style.height = "270px";
+    wrapper.style.height = `${altura}px`;
     const canvas = document.createElement("canvas");
     wrapper.appendChild(canvas);
     container.appendChild(wrapper);
@@ -3348,6 +3384,7 @@ function renderizarGraficoMovimentacaoRelatorioEstoque(dados) {
         return;
     }
 
+    const cores = coresGraficoRelatorioEstoque();
     const canvas = criarCanvasGraficoRelatorioEstoque(container);
     graficoEstoqueMovimentacao = new Chart(canvas, {
         type: "bar",
@@ -3357,43 +3394,65 @@ function renderizarGraficoMovimentacaoRelatorioEstoque(dados) {
                 {
                     label: "Entradas",
                     data: periodos.map(p => p.entradas),
-                    backgroundColor: "#00a651",
+                    backgroundColor: cores.entrada,
                     borderWidth: 0,
-                    borderRadius: 4
+                    borderRadius: 0,
+                    borderSkipped: false,
+                    maxBarThickness: 34
                 },
                 {
                     label: "Saídas",
                     data: periodos.map(p => p.saidas),
-                    backgroundColor: "#e4002b",
+                    backgroundColor: cores.saida,
                     borderWidth: 0,
-                    borderRadius: 4
+                    borderRadius: 0,
+                    borderSkipped: false,
+                    maxBarThickness: 34
                 }
             ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            datasets: {
+                bar: { categoryPercentage: 0.7, barPercentage: 0.9 }
+            },
             plugins: {
                 legend: {
                     position: "bottom",
-                    labels: { color: "#9aa4aa", font: FONTE_GRAFICO_RELATORIO_ESTOQUE, padding: 18 }
+                    labels: {
+                        color: cores.texto,
+                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE,
+                        padding: 18,
+                        usePointStyle: true,
+                        pointStyle: "rect",
+                        boxWidth: 10,
+                        boxHeight: 10
+                    }
                 },
-                tooltip: {
-                    enabled: true,
+                tooltip: tooltipGraficoRelatorioEstoque(cores, {
                     callbacks: {
                         label: context => `${context.dataset.label}: ${formatarQuantidadeRelatorioEstoque(context.raw)}`
                     }
-                }
+                })
             },
             scales: {
                 x: {
-                    ticks: { color: "#9aa4aa", font: FONTE_GRAFICO_RELATORIO_ESTOQUE },
-                    grid: { display: false }
+                    ticks: { color: cores.texto, font: FONTE_GRAFICO_RELATORIO_ESTOQUE, maxRotation: 0, autoSkipPadding: 12 },
+                    grid: { display: false },
+                    border: { color: cores.grade }
                 },
                 y: {
                     beginAtZero: true,
-                    ticks: { color: "#9aa4aa", font: FONTE_GRAFICO_RELATORIO_ESTOQUE },
-                    grid: { color: "rgba(154, 164, 170, 0.12)" }
+                    ticks: {
+                        color: cores.texto,
+                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE,
+                        maxTicksLimit: 6,
+                        callback: valor => formatarQuantidadeRelatorioEstoque(valor)
+                    },
+                    grid: { color: cores.grade },
+                    border: { display: false }
                 }
             }
         }
@@ -3405,23 +3464,34 @@ function renderizarGraficoConsumoRelatorioEstoque(dados) {
     if (!container) return;
     if (graficoEstoqueConsumo) { graficoEstoqueConsumo.destroy(); graficoEstoqueConsumo = null; }
 
-    const consumo = Array.isArray(dados?.consumoPorMaterial) ? dados.consumoPorMaterial : [];
+    const consumo = Array.isArray(dados?.consumoPorMaterial) ? [...dados.consumoPorMaterial] : [];
     if (consumo.length === 0) {
         container.innerHTML = htmlSemDadosRelatorioEstoque("Nenhuma saída de material encontrada no período.");
         return;
     }
 
-    const canvas = criarCanvasGraficoRelatorioEstoque(container);
+    // Maiores consumos no topo
+    consumo.sort((a, b) => (Number(b.quantidade) || 0) - (Number(a.quantidade) || 0));
+
+    // Altura proporcional ao número de materiais: cada barra ganha uma faixa fixa
+    const altura = Math.max(270, consumo.length * 34 + 56);
+
+    const cores = coresGraficoRelatorioEstoque();
+    const canvas = criarCanvasGraficoRelatorioEstoque(container, altura);
     graficoEstoqueConsumo = new Chart(canvas, {
         type: "bar",
         data: {
             labels: consumo.map(c => c.unidade ? `${c.material} (${c.unidade})` : c.material),
             datasets: [{
                 data: consumo.map(c => c.quantidade),
-                backgroundColor: "#f5c400",
+                backgroundColor: cores.destaque,
+                hoverBackgroundColor: cores.destaqueHover,
                 borderWidth: 0,
-                borderRadius: 4,
-                barThickness: 22
+                borderRadius: 0,
+                borderSkipped: false,
+                maxBarThickness: 18,
+                barPercentage: 0.7,
+                categoryPercentage: 1
             }]
         },
         options: {
@@ -3430,23 +3500,29 @@ function renderizarGraficoConsumoRelatorioEstoque(dados) {
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
-                tooltip: {
-                    enabled: true,
+                tooltip: tooltipGraficoRelatorioEstoque(cores, {
                     displayColors: false,
                     callbacks: {
                         label: context => `Consumo: ${formatarQuantidadeRelatorioEstoque(context.raw)}`
                     }
-                }
+                })
             },
             scales: {
                 x: {
                     beginAtZero: true,
-                    ticks: { color: "#9aa4aa", font: FONTE_GRAFICO_RELATORIO_ESTOQUE },
-                    grid: { color: "rgba(154, 164, 170, 0.12)" }
+                    ticks: {
+                        color: cores.texto,
+                        font: FONTE_GRAFICO_RELATORIO_ESTOQUE,
+                        maxTicksLimit: 6,
+                        callback: valor => formatarQuantidadeRelatorioEstoque(valor)
+                    },
+                    grid: { color: cores.grade },
+                    border: { display: false }
                 },
                 y: {
-                    ticks: { color: "#9aa4aa", font: FONTE_GRAFICO_RELATORIO_ESTOQUE },
-                    grid: { display: false }
+                    ticks: { color: cores.texto, font: FONTE_GRAFICO_RELATORIO_ESTOQUE, autoSkip: false },
+                    grid: { display: false },
+                    border: { color: cores.grade }
                 }
             }
         }
