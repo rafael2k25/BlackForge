@@ -1,5 +1,4 @@
-﻿
-using BlackForge.Models;
+﻿using BlackForge.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlackForge.Data

@@ -5,8 +5,7 @@
 const API_URL = "https://localhost:7089/api";
 
 // =========================================================
-// BUSCA (compartilhada: OS, materiais e lotes)
-// Ignora maiúsculas/minúsculas e acentos ("aco" encontra "Aço")
+// BUSCA
 // =========================================================
 
 function normalizarBusca(texto) {
@@ -23,7 +22,7 @@ function correspondeBusca(termo, ...campos) {
 }
 
 // =========================================================
-// NOTIFICAÇÕES (substitui alert())
+// NOTIFICAÇÕES
 // =========================================================
 
 const TOAST_TIPOS = {
@@ -234,7 +233,6 @@ const STATUS_OS = {
     concluida: { texto: "CONCLUÍDA", classe: "concluida" }
 };
 
-// NOVO FLUXO: pendente não tem transição direta; abre precificação
 const ACOES_STATUS_OS = {
     pendente: { proximo: null, rotulo: "PRECIFICAR OS", icone: "calculator-outline", classe: "precificar" },
     em_execucao: { proximo: "concluida", rotulo: "DAR BAIXA", icone: "checkmark-done-outline", classe: "baixa" },
@@ -260,7 +258,6 @@ function htmlBadgeStatusOS(ordem) {
     return `<span class="os-status os-status-${STATUS_OS[chave].classe}">${STATUS_OS[chave].texto}</span>`;
 }
 
-// Status visual considerando a precificação em rascunho
 function obterStatusVisualOS(ordem) {
     const chave = obterStatusOS(ordem);
     if (chave !== "pendente") {
@@ -279,7 +276,6 @@ function obterStatusVisualOS(ordem) {
     return { chave: "pendente", texto: STATUS_OS.pendente.texto, classe: STATUS_OS.pendente.classe };
 }
 
-// Precificação "vigente" da OS: aprovada se existir, senão a mais recente
 function obterPrecificacaoDaOS(ordemId) {
     const lista = precificacoes
         .filter(p => p.ordemServicoId === ordemId)
@@ -635,7 +631,7 @@ function adicionarEventosDetalhesOS() {
 }
 
 // =========================================================
-// PAINEL COLAPSÁVEL DE PRECIFICAÇÃO
+// PAINEL PRECIFICAÇÃO
 // =========================================================
 
 const STORAGE_KEY_PAINEL_PREC = "blackforge.ordens.painelPrecAberto";
@@ -656,7 +652,7 @@ function inicializarPainelPrecificacao() {
     let aberto = false;
     try {
         aberto = localStorage.getItem(STORAGE_KEY_PAINEL_PREC) === "1";
-    } catch (_) { /* localStorage indisponível */ }
+    } catch (_) { /* localStorage  */ }
 
     aplicarEstadoPainelPrecificacao(aberto);
 
@@ -916,8 +912,6 @@ async function salvarOrdemServico(imprimir = false) {
 
     if (editando) {
         ordem.id = ordemSelecionadaOS.id;
-        // O formulário não exibe dados financeiros; reenvia os valores já existentes
-        // para que a edição não os zere no backend.
         ["valorMaoObra", "valorMateriais", "desconto", "condicaoPagamento", "valorTotal"].forEach(campo => {
             if (ordemSelecionadaOS[campo] !== undefined && ordemSelecionadaOS[campo] !== null) {
                 ordem[campo] = ordemSelecionadaOS[campo];
@@ -983,7 +977,6 @@ function imprimirOS(ordem) {
 
     const linha = (rotulo, valor) => `<tr><th>${rotulo}</th><td>${escaparHtmlOS(valor)}</td></tr>`;
 
-    // Dados financeiros só aparecem na impressão após a aprovação da precificação
     const precAprovada = ordem.id ? obterPrecificacaoDaOS(ordem.id) : null;
     const linhasFinanceiras = precAprovada && obterStatusPrecificacao(precAprovada) === "APROVADA"
         ? [
@@ -1091,10 +1084,7 @@ async function avancarStatusOS() {
 
     const chave = obterStatusOS(ordemSelecionadaOS);
 
-    // -------- NOVO FLUXO: pendente vai para a precificação --------
     if (chave === "pendente") {
-        // Trava contra cliques repetidos (o modal fecha antes do cálculo,
-        // então o botão deixa de existir; a flag cobre qualquer reentrada)
         if (calculandoPrecificacaoOS) return;
         calculandoPrecificacaoOS = true;
 
@@ -1140,7 +1130,6 @@ async function avancarStatusOS() {
         return;
     }
 
-    // -------- Fluxo antigo (em_execucao → concluida) --------
     const acao = ACOES_STATUS_OS[chave];
     if (!acao || !acao.proximo) {
         notificar("Esta OS não possui uma transição de status disponível.", "info");
@@ -2716,7 +2705,6 @@ async function atualizarDashboard() {
     }
 }
 
-// Atualiza a cada 10s, só enquanto o dashboard está na tela
 setInterval(() => {
     if (document.getElementById("dashboard")?.classList.contains("active-section")) {
         atualizarDashboard();
@@ -2728,7 +2716,6 @@ function renderizarMaquinasDashboard(listaMaquinas, processos) {
     const resumo = document.getElementById("dashMaquinasResumo");
     if (!lista) return;
 
-    // só máquinas com processo em execução
     const emOperacao = listaMaquinas
         .map(maquina => ({
             maquina,
@@ -2779,8 +2766,8 @@ function renderizarMaquinasDashboard(listaMaquinas, processos) {
 // =========================================================
 
 (async function inicializar() {
-    await carregarFuncionarios();   // selects de responsável dependem disso
-    await carregarMateriais();      // select de material em lote depende disso
+    await carregarFuncionarios();   
+    await carregarMateriais();      
     carregarMaquinas();
     carregarOrdensServico();
     carregarLotes();
@@ -3325,7 +3312,6 @@ const FONTE_GRAFICO_RELATORIO_ESTOQUE = {
     size: 12
 };
 
-// Lê uma variável CSS do :root / tema ativo, para os gráficos seguirem o tema
 function corCssGrafico(nome, fallback) {
     const valor = getComputedStyle(document.documentElement).getPropertyValue(nome).trim();
     return valor || fallback;
@@ -3470,10 +3456,8 @@ function renderizarGraficoConsumoRelatorioEstoque(dados) {
         return;
     }
 
-    // Maiores consumos no topo
     consumo.sort((a, b) => (Number(b.quantidade) || 0) - (Number(a.quantidade) || 0));
 
-    // Altura proporcional ao número de materiais: cada barra ganha uma faixa fixa
     const altura = Math.max(270, consumo.length * 34 + 56);
 
     const cores = coresGraficoRelatorioEstoque();
@@ -3980,7 +3964,7 @@ if (limparFiltrosFinanceiro) limparFiltrosFinanceiro.addEventListener("click", l
 if (gerarRelatorioFinanceiro) gerarRelatorioFinanceiro.addEventListener("click", gerarRelatorioDeFinanceiro);
 
 // =========================================================
-// PRECIFICAÇÃO — NÚCLEO (modal continua igual; sem tela antiga)
+// PRECIFICAÇÃO
 // =========================================================
 
 let precificacaoSelecionada = null;
@@ -4180,7 +4164,7 @@ function atualizarIndicadorPrecoPrecificacao() {
 }
 
 // =========================================================
-// APROVAÇÃO (encadeia liberação da OS para execução)
+// APROVAÇÃO
 // =========================================================
 
 async function aprovarPrecificacaoSelecionada() {
@@ -4197,7 +4181,7 @@ async function aprovarPrecificacaoSelecionada() {
     botaoAprovarPrecificacao.disabled = true;
 
     try {
-        // 1) Aprova o preço
+
         const resposta = await fetch(`${API_URL}/Precificacoes/${p.id}/aprovar`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -4210,7 +4194,7 @@ async function aprovarPrecificacaoSelecionada() {
             return;
         }
 
-        // 2) Libera a OS para execução
+
         let liberouExecucao = false;
         try {
             const respostaStatus = await fetch(
@@ -4239,7 +4223,7 @@ async function aprovarPrecificacaoSelecionada() {
             );
         }
 
-        // 3) Recarrega estado
+
         await carregarOrdensServico();
         const atualizada = precificacoes.find(x => x.id === p.id);
         if (atualizada && modalPrecificacao.classList.contains("active")) {
