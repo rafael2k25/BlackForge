@@ -1,0 +1,538 @@
+CREATE DATABASE BANCOBLACKFORGE;
+GO
+
+USE BANCOBLACKFORGE;
+GO
+
+-- =============================================
+-- TABELAS
+-- =============================================
+
+CREATE TABLE dbo.ApuracoesCustoOS (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    OrdemServicoId INT NOT NULL,
+    Versao INT NOT NULL,
+    DataApuracao DATETIME2(0) NOT NULL,
+    CustoMaterialReal DECIMAL(18,2) NOT NULL,
+    CustoMaquinaReal DECIMAL(18,2) NOT NULL,
+    CustoOperadorReal DECIMAL(18,2) NOT NULL,
+    CustoSetupReal DECIMAL(18,2) NOT NULL,
+    CustoIndiretoReal DECIMAL(18,2) NOT NULL,
+    CustoTotalReal DECIMAL(18,2) NOT NULL,
+    ReceitaReal DECIMAL(18,2) NOT NULL,
+    ResultadoReal AS CONVERT(DECIMAL(18,2), ReceitaReal - CustoTotalReal) PERSISTED,
+    MargemRealPercentual AS CONVERT(DECIMAL(9,3),
+        CASE WHEN ReceitaReal > 0
+        THEN ((ReceitaReal - CustoTotalReal) * 100.0) / ReceitaReal
+        END) PERSISTED,
+    Status NVARCHAR(20) NOT NULL,
+    Observacoes NVARCHAR(1000) NULL,
+    CONSTRAINT UQ_ApuracoesCustoOS_Versao UNIQUE (OrdemServicoId, Versao)
+);
+
+CREATE TABLE dbo.ConfiguracaoSistema (
+    Id INT PRIMARY KEY,
+    TemaId INT NOT NULL
+);
+
+CREATE TABLE dbo.ConfiguracoesMaquina (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    MaquinaId INT NOT NULL,
+    TipoServico NVARCHAR(50) NOT NULL,
+    ProducaoPorMinuto DECIMAL(18,2) NOT NULL,
+    ConsumoPorUnidade DECIMAL(18,4) NOT NULL,
+    Ativa BIT NOT NULL,
+    MaterialId INT NULL
+);
+
+CREATE TABLE dbo.ConfiguracoesPrecificacao (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    MargemDesejadaPercentual DECIMAL(7,3) NOT NULL,
+    ImpostosPercentual DECIMAL(7,3) NOT NULL,
+    DespesasVariaveisPercentual DECIMAL(7,3) NOT NULL,
+    CustosIndiretosPercentual DECIMAL(7,3) NOT NULL,
+    SetupPadraoMinutos DECIMAL(18,2) NOT NULL,
+    CustoHoraOperadorPadrao DECIMAL(18,4) NOT NULL,
+    Ativa BIT NOT NULL,
+    DataVigencia DATETIME2(0) NOT NULL,
+    Observacoes NVARCHAR(500) NULL
+);
+
+CREATE TABLE dbo.CustosMaquina (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    MaquinaId INT NOT NULL UNIQUE,
+    ValorAquisicao DECIMAL(18,2) NOT NULL,
+    ValorResidual DECIMAL(18,2) NOT NULL,
+    VidaUtilHoras DECIMAL(18,2) NOT NULL,
+    ConsumoEnergiaKW DECIMAL(18,4) NOT NULL,
+    CustoKWh DECIMAL(18,4) NOT NULL,
+    CustoManutencaoHora DECIMAL(18,4) NOT NULL,
+    OutrosCustosHora DECIMAL(18,4) NOT NULL,
+    CustoHoraManual DECIMAL(18,4) NULL,
+    MetodoCalculo NVARCHAR(20) NOT NULL,
+    Ativa BIT NOT NULL,
+    DataAtualizacao DATETIME2(0) NOT NULL,
+    Observacoes NVARCHAR(500) NULL
+);
+
+CREATE TABLE dbo.CustosOperador (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    FuncionarioId INT NULL,
+    Cargo NVARCHAR(100) NULL,
+    CustoMensalTotal DECIMAL(18,2) NOT NULL,
+    HorasProdutivasMes DECIMAL(18,2) NOT NULL,
+    CustoHora AS CONVERT(DECIMAL(18,4),
+        CustoMensalTotal / NULLIF(HorasProdutivasMes, 0)) PERSISTED,
+    Ativo BIT NOT NULL,
+    DataAtualizacao DATETIME2(0) NOT NULL,
+    Observacoes NVARCHAR(500) NULL
+);
+
+CREATE TABLE dbo.Funcionarios (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nome NVARCHAR(150) NOT NULL,
+    Matricula NVARCHAR(50) NOT NULL UNIQUE,
+    CPF NVARCHAR(14) NOT NULL UNIQUE,
+    Cargo NVARCHAR(100) NOT NULL,
+    Idade INT NOT NULL,
+    Telefone NVARCHAR(20) NULL,
+    Setor NVARCHAR(100) NOT NULL,
+    DataAdmissao DATETIME2(7) NOT NULL,
+    Email NVARCHAR(150) NULL,
+    Observacoes NVARCHAR(500) NULL
+);
+
+CREATE TABLE dbo.ItensPrecificacao (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    PrecificacaoId INT NOT NULL,
+    TipoItem NVARCHAR(20) NOT NULL,
+    Descricao NVARCHAR(250) NOT NULL,
+    MaterialId INT NULL,
+    LoteId INT NULL,
+    CodigoMaterialSnapshot NVARCHAR(50) NULL,
+    NomeMaterialSnapshot NVARCHAR(150) NULL,
+    CodigoLoteSnapshot NVARCHAR(100) NULL,
+    Quantidade DECIMAL(18,4) NOT NULL,
+    Unidade NVARCHAR(20) NULL,
+    CustoUnitario DECIMAL(18,4) NOT NULL,
+    CustoTotal DECIMAL(18,2) NOT NULL
+);
+
+CREATE TABLE dbo.Lotes (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Codigo NVARCHAR(50) NOT NULL,
+    Quantidade DECIMAL(18,4) NOT NULL,
+    CustoUnitario DECIMAL(18,2) NOT NULL,
+    DataEntrada DATETIME2(7) NOT NULL,
+    DataFabricacao DATETIME2(7) NULL,
+    DataValidade DATETIME2(7) NULL,
+    MaterialId INT NOT NULL,
+    Observacoes NVARCHAR(500) NULL,
+    CONSTRAINT UQ_Lotes_Material_Codigo UNIQUE (MaterialId, Codigo)
+);
+
+CREATE TABLE dbo.Maquinas (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nome NVARCHAR(150) NOT NULL,
+    Codigo NVARCHAR(50) NOT NULL UNIQUE,
+    Fabricante NVARCHAR(100) NOT NULL,
+    Modelo NVARCHAR(100) NOT NULL,
+    NumeroSerie NVARCHAR(100) NOT NULL UNIQUE,
+    DataAquisicao DATETIME2(7) NOT NULL
+);
+
+CREATE TABLE dbo.Materiais (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Codigo NVARCHAR(50) NOT NULL UNIQUE,
+    Nome NVARCHAR(150) NOT NULL,
+    Categoria NVARCHAR(50) NOT NULL,
+    Unidade NVARCHAR(20) NOT NULL,
+    Descricao NVARCHAR(500) NULL,
+    EstoqueMinimo DECIMAL(18,2) NOT NULL
+);
+
+CREATE TABLE dbo.Movimentacoes (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Tipo NVARCHAR(20) NOT NULL,
+    Quantidade DECIMAL(18,4) NOT NULL,
+    DataMovimentacao DATETIME2(7) NOT NULL,
+    Observacoes NVARCHAR(500) NULL,
+    MaterialId INT NOT NULL,
+    LoteId INT NULL,
+    ProcessoProducaoId INT NULL
+);
+
+CREATE TABLE dbo.OrdensServico (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    NumeroOS NVARCHAR(50) NOT NULL UNIQUE,
+    Cliente NVARCHAR(150) NOT NULL,
+    Contato NVARCHAR(100) NULL,
+    Endereco NVARCHAR(300) NULL,
+    DataAbertura DATETIME2(7) NOT NULL,
+    DescricaoServico NVARCHAR(1000) NOT NULL,
+    TipoServico NVARCHAR(50) NOT NULL,
+    DataEntrega DATETIME2(7) NULL,
+    FuncionarioId INT NULL,
+    MaquinaId INT NULL,
+    ValorMateriais DECIMAL(18,2) NOT NULL,
+    ValorMaoObra DECIMAL(18,2) NOT NULL,
+    Desconto DECIMAL(18,2) NOT NULL,
+    ValorTotal DECIMAL(18,2) NOT NULL,
+    CondicaoPagamento NVARCHAR(MAX) NULL,
+    Observacoes NVARCHAR(500) NULL,
+    Status NVARCHAR(MAX) NOT NULL,
+    DataConclusao DATETIME2(7) NULL,
+    Quantidade INT NOT NULL,
+    MaterialId INT NULL
+);
+
+CREATE TABLE dbo.Precificacoes (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    OrdemServicoId INT NOT NULL,
+    ConfiguracaoPrecificacaoId INT NOT NULL,
+    DataCalculo DATETIME2(0) NOT NULL,
+    QuantidadeConsiderada INT NOT NULL,
+    CustoMaterialEstimado DECIMAL(18,2) NOT NULL,
+    CustoMaquinaEstimado DECIMAL(18,2) NOT NULL,
+    CustoOperadorEstimado DECIMAL(18,2) NOT NULL,
+    CustoSetupEstimado DECIMAL(18,2) NOT NULL,
+    CustoIndiretoEstimado DECIMAL(18,2) NOT NULL,
+    CustoTotalEstimado DECIMAL(18,2) NOT NULL,
+    MargemDesejadaPercentual DECIMAL(7,3) NOT NULL,
+    ImpostosPercentual DECIMAL(7,3) NOT NULL,
+    DespesasVariaveisPercentual DECIMAL(7,3) NOT NULL,
+    CustosIndiretosPercentual DECIMAL(7,3) NOT NULL,
+    PrecoSugerido DECIMAL(18,2) NOT NULL,
+    PrecoAprovado DECIMAL(18,2) NULL,
+    Status NVARCHAR(20) NOT NULL,
+    Observacoes NVARCHAR(1000) NULL
+);
+
+CREATE TABLE dbo.ProcessosProducao (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    OrdemServicoId INT NOT NULL,
+    MaquinaId INT NOT NULL,
+    DataInicio DATETIME2(7) NOT NULL,
+    DataFim DATETIME2(7) NULL,
+    QuantidadePlanejada INT NOT NULL,
+    QuantidadeProduzida INT NOT NULL,
+    ProducaoPorMinuto DECIMAL(18,2) NOT NULL,
+    ConsumoPorUnidade DECIMAL(18,4) NOT NULL,
+    MaterialConsumido DECIMAL(18,4) NOT NULL,
+    Status NVARCHAR(30) NOT NULL,
+    MaterialId INT NULL,
+    QuantidadeConsumidaRegistrada DECIMAL(18,4) NOT NULL,
+    TempoProducaoSegundos DECIMAL(18,4) NOT NULL,
+    UltimaAtualizacaoProducao DATETIME2(7) NULL
+);
+
+CREATE TABLE dbo.Temas (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    Nome NVARCHAR(100) NOT NULL,
+    Codigo NVARCHAR(50) NOT NULL UNIQUE,
+    Ativo BIT NOT NULL
+);
+
+-- =============================================
+-- VALORES PADRÃO
+-- =============================================
+
+ALTER TABLE dbo.ApuracoesCustoOS
+ADD CONSTRAINT DF_ApuracoesCustoOS_Data DEFAULT (SYSDATETIME()) FOR DataApuracao;
+
+ALTER TABLE dbo.ApuracoesCustoOS
+ADD CONSTRAINT DF_ApuracoesCustoOS_Status DEFAULT ('RASCUNHO') FOR Status;
+
+ALTER TABLE dbo.ConfiguracoesMaquina
+ADD CONSTRAINT DF_ConfiguracoesMaquina_Ativa DEFAULT (1) FOR Ativa;
+
+ALTER TABLE dbo.ConfiguracoesPrecificacao
+ADD CONSTRAINT DF_ConfigPrec_Setup DEFAULT (0) FOR SetupPadraoMinutos;
+
+ALTER TABLE dbo.ConfiguracoesPrecificacao
+ADD CONSTRAINT DF_ConfigPrec_Operador DEFAULT (0) FOR CustoHoraOperadorPadrao;
+
+ALTER TABLE dbo.ConfiguracoesPrecificacao
+ADD CONSTRAINT DF_ConfigPrec_Ativa DEFAULT (1) FOR Ativa;
+
+ALTER TABLE dbo.ConfiguracoesPrecificacao
+ADD CONSTRAINT DF_ConfigPrec_Vigencia DEFAULT (SYSDATETIME()) FOR DataVigencia;
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT DF_CustosMaquina_Aquisicao DEFAULT (0) FOR ValorAquisicao;
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT DF_CustosMaquina_Residual DEFAULT (0) FOR ValorResidual;
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT DF_CustosMaquina_VidaUtil DEFAULT (0) FOR VidaUtilHoras;
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT DF_CustosMaquina_Energia DEFAULT (0) FOR ConsumoEnergiaKW;
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT DF_CustosMaquina_KWh DEFAULT (0) FOR CustoKWh;
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT DF_CustosMaquina_Manutencao DEFAULT (0) FOR CustoManutencaoHora;
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT DF_CustosMaquina_Outros DEFAULT (0) FOR OutrosCustosHora;
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT DF_CustosMaquina_Metodo DEFAULT ('DETALHADO') FOR MetodoCalculo;
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT DF_CustosMaquina_Ativa DEFAULT (1) FOR Ativa;
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT DF_CustosMaquina_Atualizacao DEFAULT (SYSDATETIME()) FOR DataAtualizacao;
+
+ALTER TABLE dbo.CustosOperador
+ADD CONSTRAINT DF_CustosOperador_Ativo DEFAULT (1) FOR Ativo;
+
+ALTER TABLE dbo.CustosOperador
+ADD CONSTRAINT DF_CustosOperador_Atualizacao DEFAULT (SYSDATETIME()) FOR DataAtualizacao;
+
+ALTER TABLE dbo.Materiais
+ADD CONSTRAINT DF_Materiais_EstoqueMinimo DEFAULT (0) FOR EstoqueMinimo;
+
+ALTER TABLE dbo.OrdensServico
+ADD CONSTRAINT DF_OS_ValorMateriais DEFAULT (0) FOR ValorMateriais;
+
+ALTER TABLE dbo.OrdensServico
+ADD CONSTRAINT DF_OS_ValorMaoObra DEFAULT (0) FOR ValorMaoObra;
+
+ALTER TABLE dbo.OrdensServico
+ADD CONSTRAINT DF_OS_Desconto DEFAULT (0) FOR Desconto;
+
+ALTER TABLE dbo.OrdensServico
+ADD CONSTRAINT DF_OS_ValorTotal DEFAULT (0) FOR ValorTotal;
+
+ALTER TABLE dbo.OrdensServico
+ADD DEFAULT ('pendente') FOR Status;
+
+ALTER TABLE dbo.OrdensServico
+ADD DEFAULT (1) FOR Quantidade;
+
+ALTER TABLE dbo.Precificacoes
+ADD CONSTRAINT DF_Precificacoes_Data DEFAULT (SYSDATETIME()) FOR DataCalculo;
+
+ALTER TABLE dbo.Precificacoes
+ADD CONSTRAINT DF_Precificacoes_Status DEFAULT ('RASCUNHO') FOR Status;
+
+ALTER TABLE dbo.ProcessosProducao
+ADD CONSTRAINT DF_ProcessosProducao_QuantidadeConsumidaRegistrada DEFAULT (0) FOR QuantidadeConsumidaRegistrada;
+
+ALTER TABLE dbo.ProcessosProducao
+ADD CONSTRAINT DF_ProcessosProducao_TempoProducaoSegundos DEFAULT (0) FOR TempoProducaoSegundos;
+
+ALTER TABLE dbo.Temas
+ADD CONSTRAINT DF_Temas_Ativo DEFAULT (1) FOR Ativo;
+
+-- =============================================
+-- CHAVES ESTRANGEIRAS
+-- =============================================
+
+ALTER TABLE dbo.ApuracoesCustoOS
+ADD CONSTRAINT FK_ApuracoesCustoOS_OrdensServico
+FOREIGN KEY (OrdemServicoId) REFERENCES dbo.OrdensServico(Id);
+
+ALTER TABLE dbo.ConfiguracaoSistema
+ADD CONSTRAINT FK_ConfiguracaoSistema_Temas
+FOREIGN KEY (TemaId) REFERENCES dbo.Temas(Id);
+
+ALTER TABLE dbo.ConfiguracoesMaquina
+ADD CONSTRAINT FK_ConfiguracoesMaquina_Maquinas
+FOREIGN KEY (MaquinaId) REFERENCES dbo.Maquinas(Id) ON DELETE CASCADE;
+
+ALTER TABLE dbo.ConfiguracoesMaquina
+ADD CONSTRAINT FK_ConfiguracoesMaquina_Materiais
+FOREIGN KEY (MaterialId) REFERENCES dbo.Materiais(Id);
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT FK_CustosMaquina_Maquinas
+FOREIGN KEY (MaquinaId) REFERENCES dbo.Maquinas(Id);
+
+ALTER TABLE dbo.CustosOperador
+ADD CONSTRAINT FK_CustosOperador_Funcionarios
+FOREIGN KEY (FuncionarioId) REFERENCES dbo.Funcionarios(Id);
+
+ALTER TABLE dbo.ItensPrecificacao
+ADD CONSTRAINT FK_ItensPrecificacao_Lotes
+FOREIGN KEY (LoteId) REFERENCES dbo.Lotes(Id);
+
+ALTER TABLE dbo.ItensPrecificacao
+ADD CONSTRAINT FK_ItensPrecificacao_Materiais
+FOREIGN KEY (MaterialId) REFERENCES dbo.Materiais(Id);
+
+ALTER TABLE dbo.ItensPrecificacao
+ADD CONSTRAINT FK_ItensPrecificacao_Precificacoes
+FOREIGN KEY (PrecificacaoId) REFERENCES dbo.Precificacoes(Id);
+
+ALTER TABLE dbo.Lotes
+ADD CONSTRAINT FK_Lotes_Materiais
+FOREIGN KEY (MaterialId) REFERENCES dbo.Materiais(Id) ON DELETE CASCADE;
+
+ALTER TABLE dbo.Movimentacoes
+ADD CONSTRAINT FK_Movimentacoes_Lotes
+FOREIGN KEY (LoteId) REFERENCES dbo.Lotes(Id);
+
+ALTER TABLE dbo.Movimentacoes
+ADD CONSTRAINT FK_Movimentacoes_Materiais
+FOREIGN KEY (MaterialId) REFERENCES dbo.Materiais(Id) ON DELETE CASCADE;
+
+ALTER TABLE dbo.Movimentacoes
+ADD CONSTRAINT FK_Movimentacoes_ProcessosProducao
+FOREIGN KEY (ProcessoProducaoId) REFERENCES dbo.ProcessosProducao(Id);
+
+ALTER TABLE dbo.OrdensServico
+ADD CONSTRAINT FK_OrdensServico_Funcionarios
+FOREIGN KEY (FuncionarioId) REFERENCES dbo.Funcionarios(Id) ON DELETE SET NULL;
+
+ALTER TABLE dbo.OrdensServico
+ADD CONSTRAINT FK_OrdensServico_Maquinas
+FOREIGN KEY (MaquinaId) REFERENCES dbo.Maquinas(Id) ON DELETE SET NULL;
+
+ALTER TABLE dbo.Precificacoes
+ADD CONSTRAINT FK_Precificacoes_Config
+FOREIGN KEY (ConfiguracaoPrecificacaoId) REFERENCES dbo.ConfiguracoesPrecificacao(Id);
+
+ALTER TABLE dbo.Precificacoes
+ADD CONSTRAINT FK_Precificacoes_OrdensServico
+FOREIGN KEY (OrdemServicoId) REFERENCES dbo.OrdensServico(Id);
+
+ALTER TABLE dbo.ProcessosProducao
+ADD CONSTRAINT FK_ProcessosProducao_Maquinas
+FOREIGN KEY (MaquinaId) REFERENCES dbo.Maquinas(Id);
+
+ALTER TABLE dbo.ProcessosProducao
+ADD CONSTRAINT FK_ProcessosProducao_Materiais
+FOREIGN KEY (MaterialId) REFERENCES dbo.Materiais(Id);
+
+ALTER TABLE dbo.ProcessosProducao
+ADD CONSTRAINT FK_ProcessosProducao_OrdensServico
+FOREIGN KEY (OrdemServicoId) REFERENCES dbo.OrdensServico(Id);
+
+-- =============================================
+-- ÍNDICES
+-- =============================================
+
+CREATE INDEX IX_ApuracoesCustoOS_OrdemServico
+ON dbo.ApuracoesCustoOS (OrdemServicoId, Versao DESC);
+
+CREATE UNIQUE INDEX UX_ConfigPrec_UmaAtiva
+ON dbo.ConfiguracoesPrecificacao (Ativa)
+WHERE Ativa = 1;
+
+CREATE UNIQUE INDEX UX_CustosOperador_Cargo
+ON dbo.CustosOperador (Cargo)
+WHERE FuncionarioId IS NULL;
+
+CREATE UNIQUE INDEX UX_CustosOperador_Funcionario
+ON dbo.CustosOperador (FuncionarioId)
+WHERE FuncionarioId IS NOT NULL;
+
+CREATE INDEX IX_ItensPrecificacao_Precificacao
+ON dbo.ItensPrecificacao (PrecificacaoId);
+
+CREATE INDEX IX_Movimentacoes_ProcessoProducaoId
+ON dbo.Movimentacoes (ProcessoProducaoId);
+
+CREATE INDEX IX_Precificacoes_OrdemServico
+ON dbo.Precificacoes (OrdemServicoId, DataCalculo DESC);
+
+CREATE UNIQUE INDEX UX_ProcessosProducao_Maquina_Ativa
+ON dbo.ProcessosProducao (MaquinaId)
+WHERE Status = 'EM_EXECUCAO';
+
+CREATE UNIQUE INDEX UX_ProcessosProducao_OS_Ativa
+ON dbo.ProcessosProducao (OrdemServicoId)
+WHERE Status = 'EM_EXECUCAO';
+
+-- =============================================
+-- RESTRIÇÕES CHECK
+-- =============================================
+
+ALTER TABLE dbo.ApuracoesCustoOS
+ADD CONSTRAINT CK_ApuracoesCustoOS_Status
+CHECK (Status IN ('REVISADA', 'FECHADA', 'RASCUNHO'));
+
+ALTER TABLE dbo.ApuracoesCustoOS
+ADD CONSTRAINT CK_ApuracoesCustoOS_Valores
+CHECK (
+    CustoMaterialReal >= 0 AND CustoMaquinaReal >= 0
+    AND CustoOperadorReal >= 0 AND CustoSetupReal >= 0
+    AND CustoIndiretoReal >= 0 AND CustoTotalReal >= 0
+    AND ReceitaReal >= 0
+);
+
+ALTER TABLE dbo.ApuracoesCustoOS
+ADD CONSTRAINT CK_ApuracoesCustoOS_Versao
+CHECK (Versao > 0);
+
+ALTER TABLE dbo.ConfiguracoesPrecificacao
+ADD CONSTRAINT CK_ConfigPrec_Percentuais
+CHECK (
+    MargemDesejadaPercentual >= 0 AND MargemDesejadaPercentual < 100
+    AND ImpostosPercentual >= 0 AND ImpostosPercentual < 100
+    AND DespesasVariaveisPercentual >= 0 AND DespesasVariaveisPercentual < 100
+    AND CustosIndiretosPercentual >= 0
+);
+
+ALTER TABLE dbo.ConfiguracoesPrecificacao
+ADD CONSTRAINT CK_ConfigPrec_Valores
+CHECK (SetupPadraoMinutos >= 0 AND CustoHoraOperadorPadrao >= 0);
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT CK_CustosMaquina_Metodo
+CHECK (MetodoCalculo IN ('MANUAL', 'DETALHADO'));
+
+ALTER TABLE dbo.CustosMaquina
+ADD CONSTRAINT CK_CustosMaquina_Valores
+CHECK (
+    ValorAquisicao >= 0 AND ValorResidual >= 0
+    AND ValorResidual <= ValorAquisicao AND VidaUtilHoras >= 0
+    AND ConsumoEnergiaKW >= 0 AND CustoKWh >= 0
+    AND CustoManutencaoHora >= 0 AND OutrosCustosHora >= 0
+    AND (CustoHoraManual IS NULL OR CustoHoraManual >= 0)
+);
+
+ALTER TABLE dbo.CustosOperador
+ADD CONSTRAINT CK_CustosOperador_Identificacao
+CHECK (
+    (FuncionarioId IS NOT NULL AND Cargo IS NULL)
+    OR (FuncionarioId IS NULL AND Cargo IS NOT NULL)
+);
+
+ALTER TABLE dbo.CustosOperador
+ADD CONSTRAINT CK_CustosOperador_Valores
+CHECK (CustoMensalTotal >= 0 AND HorasProdutivasMes > 0);
+
+ALTER TABLE dbo.ItensPrecificacao
+ADD CONSTRAINT CK_ItensPrecificacao_Tipo
+CHECK (TipoItem IN ('OUTRO', 'INDIRETO', 'SETUP', 'OPERADOR', 'MAQUINA', 'MATERIAL'));
+
+ALTER TABLE dbo.ItensPrecificacao
+ADD CONSTRAINT CK_ItensPrecificacao_Valores
+CHECK (Quantidade >= 0 AND CustoUnitario >= 0 AND CustoTotal >= 0);
+
+ALTER TABLE dbo.Precificacoes
+ADD CONSTRAINT CK_Precificacoes_Custos
+CHECK (
+    CustoMaterialEstimado >= 0 AND CustoMaquinaEstimado >= 0
+    AND CustoOperadorEstimado >= 0 AND CustoSetupEstimado >= 0
+    AND CustoIndiretoEstimado >= 0 AND CustoTotalEstimado >= 0
+    AND PrecoSugerido >= 0
+    AND (PrecoAprovado IS NULL OR PrecoAprovado >= 0)
+);
+
+ALTER TABLE dbo.Precificacoes
+ADD CONSTRAINT CK_Precificacoes_Quantidade
+CHECK (QuantidadeConsiderada > 0);
+
+ALTER TABLE dbo.Precificacoes
+ADD CONSTRAINT CK_Precificacoes_Status
+CHECK (Status IN ('SUBSTITUIDA', 'REJEITADA', 'APROVADA', 'RASCUNHO'));
+
+GO

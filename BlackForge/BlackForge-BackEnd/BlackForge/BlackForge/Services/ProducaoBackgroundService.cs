@@ -12,7 +12,6 @@ namespace BlackForge.Services
         private static readonly TimeSpan Intervalo =
             TimeSpan.FromSeconds(5);
 
-        // Simulação: após 120s de produção efetiva acumulada, a OS é concluída.
         private const decimal LimiteTempoProducaoSegundos = 120m;
 
         public ProducaoBackgroundService(
@@ -29,8 +28,6 @@ namespace BlackForge.Services
             _logger.LogInformation(
                 "Serviço automático de produção do BlackForge iniciado.");
 
-            // Ao iniciar a API, reinicia a referência temporal dos processos
-            // ativos. O tempo em que a API esteve desligada não é contado.
             try
             {
                 await InicializarRelogiosAsync(stoppingToken);

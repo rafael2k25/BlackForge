@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "targets": {
     "net8.0": {
       "Azure.Core/1.38.0": {
@@ -4422,23 +4422,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Tarde.cetafaju\\.nuget\\packages\\": {},
+    "C:\\Users\\tarde.cetafaju\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\BlackForge.csproj",
+      "projectUniqueName": "C:\\Users\\tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\BlackForge.csproj",
       "projectName": "BlackForge",
-      "projectPath": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\BlackForge.csproj",
-      "packagesPath": "C:\\Users\\Tarde.cetafaju\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\obj\\",
+      "projectPath": "C:\\Users\\tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\BlackForge.csproj",
+      "packagesPath": "C:\\Users\\tarde.cetafaju\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\tarde.cetafaju\\Documents\\GitHub\\BlackForge\\BlackForge\\BlackForge-BackEnd\\BlackForge\\BlackForge\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Tarde.cetafaju\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\tarde.cetafaju\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -4451,6 +4451,7 @@
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {}
         }
@@ -4464,10 +4465,12 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "11.0.100"
     },
     "frameworks": {
       "net8.0": {
+        "framework": "net8.0",
         "targetAlias": "net8.0",
         "dependencies": {
           "Microsoft.EntityFrameworkCore": {
@@ -4508,6 +4511,24 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[8.0.34, 8.0.34]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[8.0.34, 8.0.34]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[8.0.34, 8.0.34]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[8.0.34, 8.0.34]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -4516,7 +4537,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.200/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\11.0.100/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
