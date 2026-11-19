@@ -78,6 +78,14 @@ namespace BlackForge.Controllers
                     "O número de série da máquina é obrigatório.");
             }
 
+            if (string.IsNullOrWhiteSpace(maquina.Tipo))
+            {
+                return BadRequest(
+                    "O tipo da máquina é obrigatório.");
+            }
+
+            maquina.Tipo = maquina.Tipo.Trim().ToUpperInvariant();
+
             // ================= VALIDAR CÓDIGO =================
 
             var codigoExiste = await _context.Maquinas
@@ -154,6 +162,14 @@ namespace BlackForge.Controllers
                 return BadRequest(
                     "O número de série da máquina é obrigatório.");
             }
+
+            if (string.IsNullOrWhiteSpace(maquina.Tipo))
+            {
+                return BadRequest(
+                    "O tipo da máquina é obrigatório.");
+            }
+
+            maquina.Tipo = maquina.Tipo.Trim().ToUpperInvariant();
 
             // ================= VERIFICAR EXISTÊNCIA =================
 

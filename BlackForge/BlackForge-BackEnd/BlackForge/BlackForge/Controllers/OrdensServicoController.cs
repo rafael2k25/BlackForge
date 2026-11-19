@@ -387,7 +387,7 @@ namespace BlackForge.Controllers
 
                     var configuracaoCompativel = configuracoesAtivas
                         .FirstOrDefault(c =>
-                            NormalizarTipoServico(c.TipoServico) == tipoServicoOS);
+                        NormalizarTipoServico(c.TipoServico) == tipoServicoOS && NormalizarTipoMaquina(maquina.Tipo) == tipoServicoOS);
 
                     if (configuracaoCompativel == null)
                     {
@@ -450,7 +450,7 @@ namespace BlackForge.Controllers
 
                     var configuracaoSelecionada = configuracoesAtivas
                         .FirstOrDefault(c =>
-                            NormalizarTipoServico(c.TipoServico) == tipoServicoOS);
+                        NormalizarTipoServico(c.TipoServico) == tipoServicoOS && NormalizarTipoMaquina(c.Maquina.Tipo) == tipoServicoOS);
 
                     if (configuracaoSelecionada == null)
                     {
@@ -641,6 +641,7 @@ namespace BlackForge.Controllers
             "conformacao",
             "furacao",
             "retifica",
+            "prensagem",
             "outro"
         };
 
@@ -659,9 +660,32 @@ namespace BlackForge.Controllers
                 "conformacao" or "conformação" => "conformacao",
                 "furacao" or "furação" => "furacao",
                 "retifica" or "retífica" => "retifica",
+                "retificacao" or "retificação" => "retifica",
+                "prensagem" => "prensagem",
+                "outro" => "outro",              
+                _ => ""
+            };
+        }
+        private static string NormalizarTipoMaquina(string? tipo)
+        {
+            var valor = tipo?.Trim().ToLowerInvariant() ?? "";
+
+            return valor switch
+            {
+                "usinagem" => "usinagem",
+                "torneamento" => "torneamento",
+                "fresagem" => "fresagem",
+                "corte" => "corte",
+                "soldagem" or "solda" => "solda",
+                "acabamento" => "acabamento",
+                "conformacao" or "conformação" => "conformacao",
+                "furacao" or "furação" => "furacao",
+                "retifica" or "retífica" or "retificação" => "retifica",
+                "prensagem" => "prensagem",
                 "outro" => "outro",
                 _ => ""
             };
         }
+
     }
 }

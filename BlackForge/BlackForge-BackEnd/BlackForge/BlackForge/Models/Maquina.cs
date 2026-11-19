@@ -8,9 +8,12 @@
         public string Fabricante { get; set; } = string.Empty;
         public string Modelo { get; set; } = string.Empty;
         public string NumeroSerie { get; set; } = string.Empty;
+        public string Tipo { get; set; } = string.Empty;
         public DateTime DataAquisicao { get; set; }
+
         public ICollection<ProcessoProducao> ProcessosProducao { get; set; }
             = new List<ProcessoProducao>();
+
         public ICollection<ConfiguracaoMaquina> Configuracoes { get; set; }
             = new List<ConfiguracaoMaquina>();
     }

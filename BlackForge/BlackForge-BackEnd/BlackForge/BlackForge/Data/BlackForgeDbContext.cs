@@ -493,6 +493,14 @@ namespace BlackForge.Data
                 .Property(c => c.MaterialId)
                 .IsRequired(false);
 
+            modelBuilder.Entity<Maquina>()
+                 .Property(m => m.Tipo)
+                 .HasMaxLength(50)
+                 .IsRequired();
+
+            modelBuilder.Entity<Maquina>()
+                 .HasIndex(m => m.Tipo);
+
             // =========================================================
             // TEMAS
             // =========================================================

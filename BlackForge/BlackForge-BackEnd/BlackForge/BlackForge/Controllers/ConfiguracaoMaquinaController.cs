@@ -52,10 +52,16 @@ namespace BlackForge.Controllers
         public async Task<ActionResult<ConfiguracaoMaquina>> CriarConfiguracao(
             ConfiguracaoMaquina configuracao)
         {
-            var maquinaExiste = await _context.Maquinas
-                .AnyAsync(m => m.Id == configuracao.MaquinaId);
-            if (!maquinaExiste)
+            var maquina = await _context.Maquinas
+                .FirstOrDefaultAsync(m => m.Id == configuracao.MaquinaId);
+            if (maquina == null)
                 return BadRequest("A máquina informada não existe.");
+            if (!TiposCompativeis(maquina.Tipo, configuracao.TipoServico))
+            {
+                return BadRequest(
+                    "O tipo de serviço da configuração não é compatível com o tipo da máquina."
+                );
+            }
             if (string.IsNullOrWhiteSpace(configuracao.TipoServico))
                 return BadRequest("O tipo de serviço é obrigatório.");
             if (configuracao.ProducaoPorMinuto <= 0)
@@ -77,10 +83,16 @@ namespace BlackForge.Controllers
         {
             if (id != configuracao.Id)
                 return BadRequest("O ID da URL não corresponde ao ID da configuração.");
-            var maquinaExiste = await _context.Maquinas
-                .AnyAsync(m => m.Id == configuracao.MaquinaId);
-            if (!maquinaExiste)
+            var maquina = await _context.Maquinas
+                .FirstOrDefaultAsync(m => m.Id == configuracao.MaquinaId);
+            if (maquina == null)
                 return BadRequest("A máquina informada não existe.");
+            if (!TiposCompativeis(maquina.Tipo, configuracao.TipoServico))
+            {
+                return BadRequest(
+                    "O tipo de serviço da configuração não é compatível com o tipo da máquina."
+                );
+            }
             if (string.IsNullOrWhiteSpace(configuracao.TipoServico))
                 return BadRequest("O tipo de serviço é obrigatório.");
             if (configuracao.ProducaoPorMinuto <= 0)
@@ -102,5 +114,31 @@ namespace BlackForge.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+        private static string NormalizarTipo(string? tipo)
+        {
+            var valor = tipo?.Trim().ToLowerInvariant() ?? "";
+
+            return valor switch
+            {
+                "usinagem" => "usinagem",
+                "torneamento" or "torneamento cnc" => "torneamento",
+                "fresagem" or "fresagem cnc" => "fresagem",
+                "corte" or "corte cnc" => "corte",
+                "solda" or "soldagem" => "solda",
+                "acabamento" => "acabamento",
+                "conformacao" or "conformação" => "conformacao",
+                "furacao" or "furação" => "furacao",
+                "retifica" or "retífica" or "retificacao" or "retificação" => "retifica",
+                "prensagem" => "prensagem",
+                "outro" => "outro",
+                _ => ""
+            };
+        }
+
+        private static bool TiposCompativeis(string? tipoMaquina, string? tipoServico)
+        {
+            return NormalizarTipo(tipoMaquina) == NormalizarTipo(tipoServico);
+        }
+
     }
 }
