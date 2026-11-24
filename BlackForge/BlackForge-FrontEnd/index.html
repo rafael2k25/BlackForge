@@ -224,7 +224,7 @@
                         </div>
                     </div>
                 </div>
-            
+
                 <!-- EVENTOS (o painel que já existia, movido pra cá) -->
                 <div class="industrial-panel">
                     <div class="panel-header">
@@ -238,7 +238,7 @@
                         <!-- mantenha aqui o .event-empty que já existe -->
                     </div>
                 </div>
-            
+
             </div>
         </section>
 
@@ -255,11 +255,8 @@
                     </p>
                 </div>
                 <div class="ordens-header-acoes">
-                    <button type="button"
-                            class="secondary-button ordens-prec-toggle"
-                            id="togglePainelPrecificacao"
-                            aria-expanded="false"
-                            aria-controls="painelPrecificacao">
+                    <button type="button" class="secondary-button ordens-prec-toggle" id="togglePainelPrecificacao"
+                        aria-expanded="false" aria-controls="painelPrecificacao">
                         <ion-icon name="calculator-outline"></ion-icon>
                         PRECIFICAÇÃO
                         <ion-icon name="chevron-down-outline" class="ordens-prec-toggle-seta"></ion-icon>
@@ -296,8 +293,7 @@
             <div class="ordens-toolbar">
                 <div class="ordens-search">
                     <ion-icon name="search-outline"></ion-icon>
-                    <input type="text" id="buscarOS" placeholder="Buscar por OS ou cliente..."
-                        autocomplete="off">
+                    <input type="text" id="buscarOS" placeholder="Buscar por OS ou cliente..." autocomplete="off">
                 </div>
                 <div class="ordens-filter">
                     <select id="filtroSituacaoOS">
@@ -1161,18 +1157,18 @@
 
                 <div class="material-section">
                     <div class="material-section-title">SERVIÇO</div>
-                
+
                     <div class="ordem-detalhes-grid">
                         <div class="ordem-info">
                             <span>TIPO DE SERVIÇO</span>
                             <strong id="detalhesOSTipoServico">-</strong>
                         </div>
-                
+
                         <div class="ordem-info">
                             <span>QUANTIDADE</span>
                             <strong id="detalhesOSQuantidade">-</strong>
                         </div>
-                
+
                         <div class="ordem-info">
                             <span>DESCRIÇÃO</span>
                             <strong id="detalhesOSDescricao">-</strong>
@@ -1184,7 +1180,8 @@
                 <div class="material-section">
                     <div class="material-section-title">FINANCEIRO</div>
                     <p class="os-precificacao-aviso">
-                        Os valores abaixo vêm do Orçamento aprovado. Antes da aprovação, o sistema não exibe custos como se fossem valores finais.
+                        Os valores abaixo vêm do Orçamento aprovado. Antes da aprovação, o sistema não exibe custos como
+                        se fossem valores finais.
                     </p>
                     <div class="ordem-detalhes-grid">
                         <div class="ordem-info">
@@ -1296,15 +1293,14 @@
                         <label for="tipoMaquina">Tipo</label>
                         <select id="tipoMaquina" name="tipoMaquina">
                             <option value="">Selecione</option>
-                            <option value="TORNO_CNC">Torno CNC</option>
-                            <option value="TORNO_CONVENCIONAL">Torno Convencional</option>
-                            <option value="CENTRO_USINAGEM">Centro de Usinagem</option>
-                            <option value="FRESADORA">Fresadora</option>
-                            <option value="RETIFICA">Retífica</option>
-                            <option value="SERRA">Serra</option>
-                            <option value="PRENSA">Prensa</option>
-                            <option value="SOLDAGEM">Equipamento de Soldagem</option>
-                            <option value="OUTRO">Outro</option>
+                            <option value="USINAGEM">Usinagem</option>
+                            <option value="TORNEAMENTO">Torneamento</option>
+                            <option value="FRESAGEM">Fresagem</option>
+                            <option value="CORTE">Corte</option>
+                            <option value="SOLDAGEM">Soldagem</option>
+                            <option value="RETIFICACAO">Retificação</option>
+                            <option value="PRENSAGEM">Prensagem</option>
+                            <option value="FURACAO">Furação</option>
                         </select>
                     </div>
 
@@ -1712,7 +1708,7 @@
                     <div class="material-section-title">OBSERVAÇÕES</div>
                     <div class="material-form-group">
                         <textarea id="funcionarioObservacoes" rows="4"
-                        placeholder="Informações adicionais sobre o funcionário..."></textarea>
+                            placeholder="Informações adicionais sobre o funcionário..."></textarea>
                     </div>
                 </div>
             </div>

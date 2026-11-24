@@ -3312,6 +3312,10 @@
             "type": "string",
             "nullable": true
           },
+          "tipo": {
+            "type": "string",
+            "nullable": true
+          },
           "dataAquisicao": {
             "type": "string",
             "format": "date-time"

@@ -1307,10 +1307,11 @@ async function salvarNovaMaquina() {
     const fabricante = valor("fabricanteMaquina");
     const modelo = valor("modeloMaquina");
     const numeroSerie = valor("serieMaquina");
-
+    const tipo = normalizarTipoMaquina(valor("tipoMaquina"));
     const obrigatorios = [
         [nome, "nomeMaquina", "o nome da máquina"],
         [codigo, "codigoMaquina", "o código"],
+        [tipo, "tipoMaquina", "o tipo da máquina"],
         [fabricante, "fabricanteMaquina", "o fabricante"],
         [modelo, "modeloMaquina", "o modelo"],
         [numeroSerie, "serieMaquina", "o número de série"]
@@ -1325,7 +1326,7 @@ async function salvarNovaMaquina() {
 
     const maquina = {
         nome, codigo,
-        tipo: valor("tipoMaquina"),
+        tipo,
         fabricante, modelo,
         numeroSerie,
         observacoes: valor("observacoesMaquina")
@@ -1354,6 +1355,12 @@ async function salvarNovaMaquina() {
             try {
                 const json = JSON.parse(mensagem);
                 if (json.errors) mensagem = Object.values(json.errors).flat().join("\n");
+                else if (json.erro) {
+                    mensagem = json.erro;
+                    if (Array.isArray(json.tiposPermitidos)) {
+                        mensagem += "\nPermitidos: " + json.tiposPermitidos.join(", ");
+                    }
+                }
                 else if (json.title) mensagem = json.title;
             } catch (_) { }
             throw new Error(mensagem || `Erro HTTP: ${resposta.status}`);
@@ -1378,6 +1385,30 @@ async function salvarNovaMaquina() {
 }
 
 if (cadastrarMaquina) cadastrarMaquina.addEventListener("click", salvarNovaMaquina);
+
+const TIPOS_MAQUINA = {
+    USINAGEM: "Usinagem",
+    TORNEAMENTO: "Torneamento",
+    FRESAGEM: "Fresagem",
+    CORTE: "Corte",
+    SOLDAGEM: "Soldagem",
+    RETIFICACAO: "Retificação",
+    PRENSAGEM: "Prensagem",
+    FURACAO: "Furação"
+};
+
+function normalizarTipoMaquina(valor) {
+    return String(valor ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .toUpperCase();
+}
+
+function obterNomeTipoMaquina(valor) {
+    const chave = normalizarTipoMaquina(valor);
+    return TIPOS_MAQUINA[chave] || (valor ? String(valor) : "-");
+}
 
 let maquinas = [];
 let processosAtivos = [];
@@ -1439,7 +1470,7 @@ function renderizarMaquinas() {
                 <div class="maquina-icon"><ion-icon name="hardware-chip-outline"></ion-icon></div>
                 <div class="maquina-info">
                     <strong class="maquina-nome">${escaparHtmlOS(maquina.nome)}</strong>
-                    <span class="maquina-descricao">${escaparHtmlOS(maquina.codigo)}</span>
+                    <span class="maquina-descricao">${escaparHtmlOS(maquina.codigo)} • ${escaparHtmlOS(obterNomeTipoMaquina(maquina.tipo))}</span>
                 </div>
             </div>
             <div class="maquina-status ${statusClasse}">${statusTexto}</div>
@@ -1592,16 +1623,10 @@ async function abrirDetalhesMaquina(id) {
         const respostaProcesso = await fetch(`${API_URL}/ProcessosProducao/maquina/${id}`);
         if (respostaProcesso.ok) processo = await respostaProcesso.json();
         else if (respostaProcesso.status !== 404) throw new Error(`Erro ao buscar processo: ${respostaProcesso.status}`);
-
         const configuracoes = await carregarConfiguracoesMaquina(id);
         maquinaDetalhesAtual = maquina;
-        const tipoMaquinaRotulos = {
-            TORNO_CNC: "Torno CNC", TORNO_CONVENCIONAL: "Torno Convencional",
-            CENTRO_USINAGEM: "Centro de Usinagem", FRESADORA: "Fresadora",
-            RETIFICA: "Retífica", SERRA: "Serra", PRENSA: "Prensa",
-            SOLDAGEM: "Equipamento de Soldagem", OUTRO: "Outro"
-        };
-        definirTexto("detalhesMaquinaTipo", tipoMaquinaRotulos[maquina.tipo] || maquina.tipo || "-");
+        
+        definirTexto("detalhesMaquinaTipo", obterNomeTipoMaquina(maquina.tipo));
         definirTexto("detalhesMaquinaSerie", maquina.numeroSerie || "-");
         definirTexto("detalhesMaquinaDataAquisicao", maquina.dataAquisicao ? formatarDataOS(maquina.dataAquisicao) : "-");
         definirTexto("detalhesMaquinaObservacoes", maquina.observacoes || "Nenhuma observação registrada.");
@@ -1677,7 +1702,7 @@ function editarMaquinaDosDetalhes() {
     };
     definirValor("nomeMaquina", maquina.nome);
     definirValor("codigoMaquina", maquina.codigo);
-    definirValor("tipoMaquina", maquina.tipo);
+    definirValor("tipoMaquina", normalizarTipoMaquina(maquina.tipo));
     definirValor("fabricanteMaquina", maquina.fabricante);
     definirValor("modeloMaquina", maquina.modelo);
     definirValor("serieMaquina", maquina.numeroSerie);
@@ -2687,7 +2712,7 @@ async function atualizarDashboard() {
             fetch(`${API_URL}/Maquinas`),
             fetch(`${API_URL}/ProcessosProducao/ativos`)
         ]);
-        
+
         const listaMaquinas = respMaquinas.ok ? await respMaquinas.json() : [];
         const processos = respProcessos.ok ? await respProcessos.json() : [];
 
@@ -2766,8 +2791,8 @@ function renderizarMaquinasDashboard(listaMaquinas, processos) {
 // =========================================================
 
 (async function inicializar() {
-    await carregarFuncionarios();   
-    await carregarMateriais();      
+    await carregarFuncionarios();
+    await carregarMateriais();
     carregarMaquinas();
     carregarOrdensServico();
     carregarLotes();
